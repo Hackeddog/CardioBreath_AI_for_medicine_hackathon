@@ -1,0 +1,34 @@
+[
+  {
+    "case_id": "x08",
+    "split": "held_out_test",
+    "duration_minutes": 517,
+    "duration_hours": 8.62,
+    "true_eahi": 37.6,
+    "clinical_tier": "Severe"
+  },
+  {
+    "case_id": "x09",
+    "split": "held_out_test",
+    "duration_minutes": 507,
+    "duration_hours": 8.45,
+    "true_eahi": 19.76,
+    "clinical_tier": "Moderate"
+  },
+  {
+    "case_id": "x21",
+    "split": "held_out_test",
+    "duration_minutes": 509,
+    "duration_hours": 8.48,
+    "true_eahi": 14.15,
+    "clinical_tier": "Mild/Borderline"
+  },
+  {
+    "case_id": "x04",
+    "split": "held_out_test",
+    "duration_minutes": 481,
+    "duration_hours": 8.02,
+    "true_eahi": 0.0,
+    "clinical_tier": "Normal"
+  }
+]

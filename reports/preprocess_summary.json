@@ -1,0 +1,636 @@
+{
+  "train": [
+    {
+      "record_id": "a01",
+      "n_minutes": 489,
+      "apnea_minutes": 470,
+      "true_eahi": 57.67,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0737
+    },
+    {
+      "record_id": "a02",
+      "n_minutes": 528,
+      "apnea_minutes": 420,
+      "true_eahi": 47.73,
+      "usable_ratio": 0.9981,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0279
+    },
+    {
+      "record_id": "a03",
+      "n_minutes": 519,
+      "apnea_minutes": 246,
+      "true_eahi": 28.44,
+      "usable_ratio": 0.9981,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0532
+    },
+    {
+      "record_id": "a04",
+      "n_minutes": 492,
+      "apnea_minutes": 453,
+      "true_eahi": 55.24,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0368
+    },
+    {
+      "record_id": "a05",
+      "n_minutes": 453,
+      "apnea_minutes": 276,
+      "true_eahi": 36.56,
+      "usable_ratio": 0.9912,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0331
+    },
+    {
+      "record_id": "a06",
+      "n_minutes": 509,
+      "apnea_minutes": 206,
+      "true_eahi": 24.28,
+      "usable_ratio": 0.9764,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.048
+    },
+    {
+      "record_id": "a07",
+      "n_minutes": 510,
+      "apnea_minutes": 321,
+      "true_eahi": 37.76,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0707
+    },
+    {
+      "record_id": "a08",
+      "n_minutes": 500,
+      "apnea_minutes": 189,
+      "true_eahi": 22.68,
+      "usable_ratio": 0.998,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0323
+    },
+    {
+      "record_id": "a09",
+      "n_minutes": 495,
+      "apnea_minutes": 381,
+      "true_eahi": 46.18,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0217
+    },
+    {
+      "record_id": "a10",
+      "n_minutes": 516,
+      "apnea_minutes": 99,
+      "true_eahi": 11.51,
+      "usable_ratio": 0.9903,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0337
+    },
+    {
+      "record_id": "a11",
+      "n_minutes": 466,
+      "apnea_minutes": 222,
+      "true_eahi": 28.58,
+      "usable_ratio": 0.9979,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0348
+    },
+    {
+      "record_id": "a12",
+      "n_minutes": 577,
+      "apnea_minutes": 534,
+      "true_eahi": 55.53,
+      "usable_ratio": 0.9064,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0606
+    },
+    {
+      "record_id": "a13",
+      "n_minutes": 494,
+      "apnea_minutes": 243,
+      "true_eahi": 29.51,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0365
+    },
+    {
+      "record_id": "a14",
+      "n_minutes": 509,
+      "apnea_minutes": 383,
+      "true_eahi": 45.15,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0793
+    },
+    {
+      "record_id": "a15",
+      "n_minutes": 509,
+      "apnea_minutes": 368,
+      "true_eahi": 43.38,
+      "usable_ratio": 0.9745,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0297
+    },
+    {
+      "record_id": "a16",
+      "n_minutes": 481,
+      "apnea_minutes": 320,
+      "true_eahi": 39.92,
+      "usable_ratio": 0.9647,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0466
+    },
+    {
+      "record_id": "a17",
+      "n_minutes": 484,
+      "apnea_minutes": 158,
+      "true_eahi": 19.59,
+      "usable_ratio": 0.9607,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0458
+    },
+    {
+      "record_id": "a18",
+      "n_minutes": 489,
+      "apnea_minutes": 438,
+      "true_eahi": 53.74,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0198
+    },
+    {
+      "record_id": "a19",
+      "n_minutes": 502,
+      "apnea_minutes": 205,
+      "true_eahi": 24.5,
+      "usable_ratio": 0.9781,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0167
+    },
+    {
+      "record_id": "a20",
+      "n_minutes": 510,
+      "apnea_minutes": 315,
+      "true_eahi": 37.06,
+      "usable_ratio": 0.9961,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0269
+    },
+    {
+      "record_id": "b01",
+      "n_minutes": 486,
+      "apnea_minutes": 19,
+      "true_eahi": 2.35,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0449
+    },
+    {
+      "record_id": "b02",
+      "n_minutes": 517,
+      "apnea_minutes": 93,
+      "true_eahi": 10.79,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0214
+    },
+    {
+      "record_id": "b03",
+      "n_minutes": 440,
+      "apnea_minutes": 73,
+      "true_eahi": 9.95,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0223
+    },
+    {
+      "record_id": "b04",
+      "n_minutes": 428,
+      "apnea_minutes": 10,
+      "true_eahi": 1.4,
+      "usable_ratio": 0.7757,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.095
+    },
+    {
+      "record_id": "b05",
+      "n_minutes": 432,
+      "apnea_minutes": 57,
+      "true_eahi": 7.92,
+      "usable_ratio": 0.8472,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0651
+    },
+    {
+      "record_id": "c01",
+      "n_minutes": 483,
+      "apnea_minutes": 0,
+      "true_eahi": 0.0,
+      "usable_ratio": 0.9772,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0645
+    },
+    {
+      "record_id": "c02",
+      "n_minutes": 501,
+      "apnea_minutes": 1,
+      "true_eahi": 0.12,
+      "usable_ratio": 0.978,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0271
+    },
+    {
+      "record_id": "c03",
+      "n_minutes": 453,
+      "apnea_minutes": 0,
+      "true_eahi": 0.0,
+      "usable_ratio": 0.9956,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.1
+    },
+    {
+      "record_id": "c04",
+      "n_minutes": 481,
+      "apnea_minutes": 0,
+      "true_eahi": 0.0,
+      "usable_ratio": 0.9563,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.119
+    },
+    {
+      "record_id": "c05",
+      "n_minutes": 465,
+      "apnea_minutes": 3,
+      "true_eahi": 0.39,
+      "usable_ratio": 0.9957,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0513
+    },
+    {
+      "record_id": "c06",
+      "n_minutes": 467,
+      "apnea_minutes": 1,
+      "true_eahi": 0.13,
+      "usable_ratio": 0.9936,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0516
+    },
+    {
+      "record_id": "c07",
+      "n_minutes": 428,
+      "apnea_minutes": 4,
+      "true_eahi": 0.56,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0327
+    },
+    {
+      "record_id": "c08",
+      "n_minutes": 513,
+      "apnea_minutes": 0,
+      "true_eahi": 0.0,
+      "usable_ratio": 0.8031,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0701
+    },
+    {
+      "record_id": "c09",
+      "n_minutes": 467,
+      "apnea_minutes": 2,
+      "true_eahi": 0.26,
+      "usable_ratio": 0.9636,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0261
+    },
+    {
+      "record_id": "c10",
+      "n_minutes": 430,
+      "apnea_minutes": 1,
+      "true_eahi": 0.14,
+      "usable_ratio": 0.9698,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0452
+    }
+  ],
+  "test": [
+    {
+      "record_id": "x01",
+      "n_minutes": 522,
+      "apnea_minutes": 375,
+      "true_eahi": 43.1,
+      "usable_ratio": 0.9789,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0505
+    },
+    {
+      "record_id": "x02",
+      "n_minutes": 469,
+      "apnea_minutes": 209,
+      "true_eahi": 26.74,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0323
+    },
+    {
+      "record_id": "x03",
+      "n_minutes": 465,
+      "apnea_minutes": 12,
+      "true_eahi": 1.55,
+      "usable_ratio": 0.9978,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0457
+    },
+    {
+      "record_id": "x04",
+      "n_minutes": 481,
+      "apnea_minutes": 0,
+      "true_eahi": 0.0,
+      "usable_ratio": 0.9647,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0984
+    },
+    {
+      "record_id": "x05",
+      "n_minutes": 504,
+      "apnea_minutes": 316,
+      "true_eahi": 37.62,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0267
+    },
+    {
+      "record_id": "x06",
+      "n_minutes": 449,
+      "apnea_minutes": 0,
+      "true_eahi": 0.0,
+      "usable_ratio": 0.9866,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0503
+    },
+    {
+      "record_id": "x07",
+      "n_minutes": 508,
+      "apnea_minutes": 239,
+      "true_eahi": 28.23,
+      "usable_ratio": 0.9921,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0354
+    },
+    {
+      "record_id": "x08",
+      "n_minutes": 517,
+      "apnea_minutes": 324,
+      "true_eahi": 37.6,
+      "usable_ratio": 0.9981,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0225
+    },
+    {
+      "record_id": "x09",
+      "n_minutes": 507,
+      "apnea_minutes": 167,
+      "true_eahi": 19.76,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0235
+    },
+    {
+      "record_id": "x10",
+      "n_minutes": 509,
+      "apnea_minutes": 96,
+      "true_eahi": 11.32,
+      "usable_ratio": 0.9882,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0481
+    },
+    {
+      "record_id": "x11",
+      "n_minutes": 456,
+      "apnea_minutes": 13,
+      "true_eahi": 1.71,
+      "usable_ratio": 0.9868,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0515
+    },
+    {
+      "record_id": "x12",
+      "n_minutes": 527,
+      "apnea_minutes": 57,
+      "true_eahi": 6.49,
+      "usable_ratio": 0.9981,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0349
+    },
+    {
+      "record_id": "x13",
+      "n_minutes": 506,
+      "apnea_minutes": 292,
+      "true_eahi": 34.62,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0257
+    },
+    {
+      "record_id": "x14",
+      "n_minutes": 490,
+      "apnea_minutes": 439,
+      "true_eahi": 53.76,
+      "usable_ratio": 0.998,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0239
+    },
+    {
+      "record_id": "x15",
+      "n_minutes": 498,
+      "apnea_minutes": 200,
+      "true_eahi": 24.1,
+      "usable_ratio": 0.994,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0432
+    },
+    {
+      "record_id": "x16",
+      "n_minutes": 514,
+      "apnea_minutes": 65,
+      "true_eahi": 7.59,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0212
+    },
+    {
+      "record_id": "x17",
+      "n_minutes": 400,
+      "apnea_minutes": 1,
+      "true_eahi": 0.15,
+      "usable_ratio": 0.675,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0808
+    },
+    {
+      "record_id": "x18",
+      "n_minutes": 458,
+      "apnea_minutes": 2,
+      "true_eahi": 0.26,
+      "usable_ratio": 0.9651,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0376
+    },
+    {
+      "record_id": "x19",
+      "n_minutes": 487,
+      "apnea_minutes": 407,
+      "true_eahi": 50.14,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0746
+    },
+    {
+      "record_id": "x20",
+      "n_minutes": 512,
+      "apnea_minutes": 264,
+      "true_eahi": 30.94,
+      "usable_ratio": 0.9473,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.046
+    },
+    {
+      "record_id": "x21",
+      "n_minutes": 509,
+      "apnea_minutes": 120,
+      "true_eahi": 14.15,
+      "usable_ratio": 0.998,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0208
+    },
+    {
+      "record_id": "x22",
+      "n_minutes": 481,
+      "apnea_minutes": 2,
+      "true_eahi": 0.25,
+      "usable_ratio": 0.9771,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0615
+    },
+    {
+      "record_id": "x23",
+      "n_minutes": 527,
+      "apnea_minutes": 119,
+      "true_eahi": 13.55,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0243
+    },
+    {
+      "record_id": "x24",
+      "n_minutes": 428,
+      "apnea_minutes": 1,
+      "true_eahi": 0.14,
+      "usable_ratio": 0.9673,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0488
+    },
+    {
+      "record_id": "x25",
+      "n_minutes": 509,
+      "apnea_minutes": 290,
+      "true_eahi": 34.18,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0239
+    },
+    {
+      "record_id": "x26",
+      "n_minutes": 519,
+      "apnea_minutes": 344,
+      "true_eahi": 39.77,
+      "usable_ratio": 0.9961,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0216
+    },
+    {
+      "record_id": "x27",
+      "n_minutes": 497,
+      "apnea_minutes": 486,
+      "true_eahi": 58.67,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0277
+    },
+    {
+      "record_id": "x28",
+      "n_minutes": 495,
+      "apnea_minutes": 433,
+      "true_eahi": 52.48,
+      "usable_ratio": 0.9657,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0299
+    },
+    {
+      "record_id": "x29",
+      "n_minutes": 470,
+      "apnea_minutes": 0,
+      "true_eahi": 0.0,
+      "usable_ratio": 0.9596,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.1093
+    },
+    {
+      "record_id": "x30",
+      "n_minutes": 511,
+      "apnea_minutes": 326,
+      "true_eahi": 38.28,
+      "usable_ratio": 0.9961,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0442
+    },
+    {
+      "record_id": "x31",
+      "n_minutes": 557,
+      "apnea_minutes": 516,
+      "true_eahi": 55.58,
+      "usable_ratio": 0.9892,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0908
+    },
+    {
+      "record_id": "x32",
+      "n_minutes": 538,
+      "apnea_minutes": 425,
+      "true_eahi": 47.4,
+      "usable_ratio": 0.9981,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0899
+    },
+    {
+      "record_id": "x33",
+      "n_minutes": 472,
+      "apnea_minutes": 3,
+      "true_eahi": 0.38,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0362
+    },
+    {
+      "record_id": "x34",
+      "n_minutes": 474,
+      "apnea_minutes": 4,
+      "true_eahi": 0.51,
+      "usable_ratio": 1.0,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0362
+    },
+    {
+      "record_id": "x35",
+      "n_minutes": 482,
+      "apnea_minutes": 0,
+      "true_eahi": 0.0,
+      "usable_ratio": 0.9751,
+      "rhythm_irregular": false,
+      "rhythm_rmssd_ratio": 0.0615
+    }
+  ]
+}

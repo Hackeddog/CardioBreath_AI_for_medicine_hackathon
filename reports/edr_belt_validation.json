@@ -1,0 +1,88 @@
+{
+  "n_records_validated": 8,
+  "mean_peak_resp_coherence": 0.2511,
+  "mean_breathing_rate_mae_bpm": 0.94,
+  "mean_best_60s_abs_corr": 0.7047,
+  "per_record": [
+    {
+      "record_id": "a01",
+      "belt_channel": "Resp C",
+      "peak_resp_coherence": 0.6092,
+      "mean_resp_coherence": 0.352,
+      "edr_breathing_rate_bpm": 18.75,
+      "belt_breathing_rate_bpm": 19.22,
+      "breathing_rate_abs_err_bpm": 0.47,
+      "best_60s_abs_corr": 0.8007
+    },
+    {
+      "record_id": "a02",
+      "belt_channel": "Resp C",
+      "peak_resp_coherence": 0.0426,
+      "mean_resp_coherence": 0.0201,
+      "edr_breathing_rate_bpm": 10.31,
+      "belt_breathing_rate_bpm": 9.38,
+      "breathing_rate_abs_err_bpm": 0.94,
+      "best_60s_abs_corr": 0.7593
+    },
+    {
+      "record_id": "a03",
+      "belt_channel": "Resp C",
+      "peak_resp_coherence": 0.4291,
+      "mean_resp_coherence": 0.1954,
+      "edr_breathing_rate_bpm": 10.78,
+      "belt_breathing_rate_bpm": 10.78,
+      "breathing_rate_abs_err_bpm": 0.0,
+      "best_60s_abs_corr": 0.7774
+    },
+    {
+      "record_id": "a04",
+      "belt_channel": "Resp C",
+      "peak_resp_coherence": 0.0271,
+      "mean_resp_coherence": 0.0114,
+      "edr_breathing_rate_bpm": 15.94,
+      "belt_breathing_rate_bpm": 10.31,
+      "breathing_rate_abs_err_bpm": 5.62,
+      "best_60s_abs_corr": 0.4988
+    },
+    {
+      "record_id": "b01",
+      "belt_channel": "Resp C",
+      "peak_resp_coherence": 0.1762,
+      "mean_resp_coherence": 0.0397,
+      "edr_breathing_rate_bpm": 14.53,
+      "belt_breathing_rate_bpm": 14.53,
+      "breathing_rate_abs_err_bpm": 0.0,
+      "best_60s_abs_corr": 0.5994
+    },
+    {
+      "record_id": "c01",
+      "belt_channel": "Resp C",
+      "peak_resp_coherence": 0.366,
+      "mean_resp_coherence": 0.0791,
+      "edr_breathing_rate_bpm": 12.66,
+      "belt_breathing_rate_bpm": 13.12,
+      "breathing_rate_abs_err_bpm": 0.47,
+      "best_60s_abs_corr": 0.668
+    },
+    {
+      "record_id": "c02",
+      "belt_channel": "Resp C",
+      "peak_resp_coherence": 0.0737,
+      "mean_resp_coherence": 0.0205,
+      "edr_breathing_rate_bpm": 14.06,
+      "belt_breathing_rate_bpm": 14.06,
+      "breathing_rate_abs_err_bpm": 0.0,
+      "best_60s_abs_corr": 0.7525
+    },
+    {
+      "record_id": "c03",
+      "belt_channel": "Resp C",
+      "peak_resp_coherence": 0.2847,
+      "mean_resp_coherence": 0.0834,
+      "edr_breathing_rate_bpm": 14.06,
+      "belt_breathing_rate_bpm": 14.06,
+      "breathing_rate_abs_err_bpm": 0.0,
+      "best_60s_abs_corr": 0.7818
+    }
+  ]
+}
