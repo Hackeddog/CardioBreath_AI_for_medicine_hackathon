@@ -1,0 +1,9 @@
+<svg width="240" height="72" viewBox="0 0 240 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="2" y="2" width="68" height="68" rx="16" fill="#0F2942"/>
+  <path d="M10 40 H17 L21 34 L25 46 L30 18 L36 54 L40 38 H44" stroke="#5EEAD4" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M44 38 C48 38, 49 26, 54 26 C59 26, 59 46, 64 46" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round"/>
+  <circle cx="30" cy="18" r="3.4" fill="#FB7185"/>
+  <circle cx="54" cy="26" r="2.8" fill="#5EEAD4"/>
+  <text x="82" y="37" fill="#0F2942" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="24" font-weight="800" letter-spacing="-0.5">Cardio<tspan fill="#0D9488">Breath</tspan></text>
+  <text x="83" y="54" fill="#64748B" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="9.5" font-weight="600" letter-spacing="0.8">CARDIOPULMONARY APNEA TRIAGE</text>
+</svg>
