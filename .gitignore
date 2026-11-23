@@ -17,11 +17,19 @@ npm-debug.log*
 # Datasets & large training outputs (reproducible via scripts)
 data/raw/
 data/processed/
-artifacts/checkpoints/
-*.pt
+artifacts/checkpoints/*
+!artifacts/checkpoints/lgbm/
+artifacts/checkpoints/lgbm/*.npz
+!artifacts/checkpoints/cardiobreath/
+artifacts/checkpoints/cardiobreath/*
+!artifacts/checkpoints/cardiobreath/cv_summary.json
+!artifacts/checkpoints/cardiobreath/fold_0.pt
+artifacts/onnx/cardiobreath/*_int8.onnx
 *.pth
+cardiobreath_trained_artifacts.zip
+cardiobreath_trained_artifacts/
 
-# Keep lightweight demo artifacts & ONNX models if explicitly added
+# Keep lightweight deployment artifacts
 !demo_data/**
 !artifacts/onnx/**
 

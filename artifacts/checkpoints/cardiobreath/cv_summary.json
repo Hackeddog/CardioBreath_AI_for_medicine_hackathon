@@ -1,0 +1,23 @@
+{
+  "model": "cardiobreath",
+  "mode": "dual_5min",
+  "seed": 42,
+  "smoke": false,
+  "folds_trained": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "temperature": 1.83459,
+  "threshold": 0.6,
+  "oof_auroc": 0.944,
+  "fold_aurocs": [
+    0.9474,
+    0.9575,
+    0.96,
+    0.9846,
+    0.9533
+  ]
+}

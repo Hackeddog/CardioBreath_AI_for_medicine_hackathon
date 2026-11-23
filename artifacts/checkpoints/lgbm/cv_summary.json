@@ -1,0 +1,14 @@
+{
+  "model": "lgbm",
+  "seed": 42,
+  "temperature": 1.20618,
+  "threshold": 0.35,
+  "oof_auroc": 0.8665,
+  "fold_aurocs": [
+    0.881,
+    0.579,
+    0.8793,
+    0.9601,
+    0.9059
+  ]
+}
