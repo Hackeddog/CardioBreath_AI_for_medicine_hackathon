@@ -1,0 +1,54 @@
+# CardioBreath — Single Source of Truth Configuration
+project:
+  name: CardioBreath
+  seed: 42
+
+paths:
+  raw_dir: data/raw/apnea-ecg
+  processed_dir: data/processed
+  demo_dir: demo_data
+  checkpoints_dir: artifacts/checkpoints
+  onnx_dir: artifacts/onnx
+  reports_dir: reports
+  folds_path: configs/folds.json
+
+dsp:
+  sampling_rate_raw: 100          # Hz (PhysioNet Apnea-ECG native rate)
+  sampling_rate_dsp: 4            # Hz (uniform resampled EDR & RRI rate)
+  context_minutes: 5              # 2 min before + center 1 min + 2 min after -> 1200 samples @ 4 Hz
+  bandpass_low_hz: 0.5
+  bandpass_high_hz: 40.0
+  bandpass_order: 4
+  edr_low_hz: 0.08
+  edr_high_hz: 0.60
+  rr_min_sec: 0.30                # 200 bpm upper physiological bound
+  rr_max_sec: 2.00                # 30 bpm lower physiological bound
+  rr_outlier_rel_tol: 0.25        # reject beats deviating >25% from local median RR
+  zscore_clip: 5.0
+  sqi_min_hr_bpm: 30.0
+  sqi_max_hr_bpm: 180.0
+  sqi_min_valid_ratio: 0.75       # >=75% valid beats in a minute required to trust prediction
+  sqi_min_std_mv: 0.02            # flatline rejection threshold
+  sqi_max_abs_mv: 8.0             # extreme saturation/spike rejection threshold
+  sqi_pass_threshold: 0.65
+  afib_rmssd_ratio_threshold: 0.22
+
+model:
+  cnn_channels: 32
+  cnn_kernels: [21, 61, 121]      # ~5s, ~15s, ~30s cycles at 4 Hz
+  gru_hidden: 96
+  gru_layers: 2
+  dropout: 0.30
+  lr: 0.001
+  weight_decay: 0.0001
+  batch_size: 64
+  max_epochs: 35
+  early_stop_patience: 7
+
+clinical:
+  eahi_screening_cutoff: 5.0      # Mild+ OSA screening referral threshold (apnea-min/hr)
+  eahi_moderate_cutoff: 15.0      # Moderate-to-severe threshold
+  eahi_severe_cutoff: 30.0        # Severe OSA threshold
+  fn_to_fp_cost_ratio: 5.0        # Clinical cost weight: missed severe OSA vs. PSG referral
+  bootstrap_resamples: 1000
+  noise_stress_snr_db: [20, 10, 5, 0]
