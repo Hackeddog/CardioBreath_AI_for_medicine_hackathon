@@ -35,7 +35,7 @@ dsp:
 
 model:
   cnn_channels: 32
-  cnn_kernels: [21, 61, 121]      # ~5s, ~15s, ~30s cycles at 4 Hz
+  cnn_kernels: [5, 15, 31]        # ~5s, ~15s, ~31s cardiopulmonary cycles at 1 Hz post-stem rate
   gru_hidden: 96
   gru_layers: 2
   dropout: 0.30
