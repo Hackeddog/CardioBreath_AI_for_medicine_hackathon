@@ -1,0 +1,6 @@
+# Preserve exact byte offsets for LightGBM text boosters across Windows/Linux checkouts
+artifacts/checkpoints/lgbm/*.txt -text
+*.onnx binary
+*.pt binary
+*.npz binary
+*.png binary

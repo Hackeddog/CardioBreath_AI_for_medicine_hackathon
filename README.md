@@ -1,3 +1,14 @@
+---
+title: CardioBreath
+emoji: 🫁
+colorFrom: teal
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+short_description: Single-Lead ECG Sleep Apnea Screening (AUROC 0.973)
+---
+
 # CardioBreath
 
 **Single-Lead ECG Sleep Apnea Screening via Cardiopulmonary Coupling & Deep Sequence Modeling**

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import threading
 import time
 import uuid
 from collections import OrderedDict
@@ -13,7 +14,7 @@ import numpy as np
 import onnxruntime as ort
 import torch
 
-from src.baselines import predict_lgbm_ensemble
+from src.baselines import load_lgbm_boosters, predict_lgbm_ensemble
 from src.calibration import aggregate_ensemble_predictions, apply_temperature
 from src.config import load_config, resolve_path
 from src.data_io import load_uploaded_csv_ecg
@@ -92,13 +93,16 @@ class CardioBreathInferenceEngine:
                     ort.InferenceSession(str(fpath), sess_options=sess_opts, providers=["CPUExecutionProvider"])
                 )
 
-        # Load Baseline 1 (LightGBM) availability
+        # Load Baseline 1 (LightGBM) boosters once at startup (CRLF-safe & thread-safe)
         self.lgbm_dir = self.ckpt_dir / "lgbm"
         self.lgbm_available = (self.lgbm_dir / "cv_summary.json").exists() and (self.lgbm_dir / "fold_0.txt").exists()
         self.lgbm_threshold = 0.5
+        self.lgbm_boosters = None
+        self.lgbm_temperature = 1.0
         if self.lgbm_available:
             lgbm_meta = json.loads((self.lgbm_dir / "cv_summary.json").read_text(encoding="utf-8"))
             self.lgbm_threshold = float(lgbm_meta.get("threshold", 0.5))
+            self.lgbm_boosters, self.lgbm_temperature = load_lgbm_boosters(self.lgbm_dir)
 
         # Load fold_0 PyTorch checkpoint for exact 1D Grad-CAM saliency attribution
         self.gradcam_model: torch.nn.Module | None = None
@@ -110,11 +114,12 @@ class CardioBreathInferenceEngine:
             m.eval()
             self.gradcam_model = m
 
-        # Load demo manifest & LRU analysis cache
+        # Load demo manifest & thread-safe LRU analysis cache
         manifest_path = self.demo_dir / "manifest.json"
         self.demo_manifest: list[dict[str, Any]] = (
             json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else []
         )
+        self._lock = threading.Lock()
         self._cache: OrderedDict[tuple[str, float | None], CachedNightBundle] = OrderedDict()
         self._uploads: OrderedDict[str, tuple[np.ndarray, float]] = OrderedDict()
         self._max_cache = 16
@@ -163,75 +168,81 @@ class CardioBreathInferenceEngine:
     ) -> CachedNightBundle:
         snr_key = round(float(inject_noise_snr_db), 1) if inject_noise_snr_db is not None else None
         cache_key = (case_id, snr_key)
-        if cache_key in self._cache:
-            self._cache.move_to_end(cache_key)
-            return self._cache[cache_key]
+        with self._lock:
+            if cache_key in self._cache:
+                self._cache.move_to_end(cache_key)
+                return self._cache[cache_key]
 
-        ecg_raw, fs, labels = self._load_raw_case(case_id)
-        if snr_key is not None:
-            ecg_proc_in = inject_motion_artifact(ecg_raw, snr_db=snr_key, fs=fs, seed=42, burst_fraction=0.65)
-        else:
-            ecg_proc_in = ecg_raw
+            ecg_raw, fs, labels = self._load_raw_case(case_id)
+            if snr_key is not None:
+                ecg_proc_in = inject_motion_artifact(ecg_raw, snr_db=snr_key, fs=fs, seed=42, burst_fraction=0.65)
+            else:
+                ecg_proc_in = ecg_raw
 
-        n_minutes = len(labels) if labels is not None else max(1, len(ecg_proc_in) // round(60.0 * fs))
+            n_minutes = len(labels) if labels is not None else max(1, len(ecg_proc_in) // round(60.0 * fs))
 
-        t0 = time.perf_counter()
-        dsp_res = run_dsp_pipeline(
-            ecg_proc_in,
-            fs=fs,
-            n_minutes=n_minutes,
-            dsp_cfg=self.dsp_cfg,
-            prefer_neurokit=False,  # Fast deterministic Pan-Tompkins (<200 ms for 8 hrs!)
-        )
-        dual_windows, _ = slice_windows(
-            dsp_res.edr_4hz,
-            dsp_res.rri_4hz,
-            dsp_res.ecg_clean,
-            n_minutes=n_minutes,
-            context_minutes=int(self.dsp_cfg.get("context_minutes", 5)),
-            target_fs=float(self.dsp_cfg.get("sampling_rate_dsp", 4.0)),
-            raw_fs=float(self.dsp_cfg.get("sampling_rate_raw", 100.0)),
-        )
-        hrv_feats = extract_hrv_features_per_minute(
-            dsp_res.rri_raw_4hz,
-            dsp_res.edr_raw_4hz,
-            dsp_res.sqi_score,
-            n_minutes=n_minutes,
-            context_minutes=int(self.dsp_cfg.get("context_minutes", 5)),
-            target_fs=float(self.dsp_cfg.get("sampling_rate_dsp", 4.0)),
-        )
-        fold_probs = self._run_onnx_ensemble(dual_windows)
-        inference_ms = (time.perf_counter() - t0) * 1000.0
+            t0 = time.perf_counter()
+            dsp_res = run_dsp_pipeline(
+                ecg_proc_in,
+                fs=fs,
+                n_minutes=n_minutes,
+                dsp_cfg=self.dsp_cfg,
+                prefer_neurokit=False,  # Fast deterministic Pan-Tompkins (<200 ms for 8 hrs!)
+            )
+            dual_windows, _ = slice_windows(
+                dsp_res.edr_4hz,
+                dsp_res.rri_4hz,
+                dsp_res.ecg_clean,
+                n_minutes=n_minutes,
+                context_minutes=int(self.dsp_cfg.get("context_minutes", 5)),
+                target_fs=float(self.dsp_cfg.get("sampling_rate_dsp", 4.0)),
+                raw_fs=float(self.dsp_cfg.get("sampling_rate_raw", 100.0)),
+            )
+            hrv_feats = extract_hrv_features_per_minute(
+                dsp_res.rri_raw_4hz,
+                dsp_res.edr_raw_4hz,
+                dsp_res.sqi_score,
+                n_minutes=n_minutes,
+                context_minutes=int(self.dsp_cfg.get("context_minutes", 5)),
+                target_fs=float(self.dsp_cfg.get("sampling_rate_dsp", 4.0)),
+            )
+            fold_probs = self._run_onnx_ensemble(dual_windows)
+            inference_ms = (time.perf_counter() - t0) * 1000.0
 
-        p_mean = np.mean(fold_probs, axis=0).astype(np.float32)
-        p_std = (
-            np.std(fold_probs, axis=0, ddof=1).astype(np.float32)
-            if fold_probs.shape[0] > 1
-            else np.zeros(n_minutes, dtype=np.float32)
-        )
+            p_mean = np.mean(fold_probs, axis=0).astype(np.float32)
+            p_std = (
+                np.std(fold_probs, axis=0, ddof=1).astype(np.float32)
+                if fold_probs.shape[0] > 1
+                else np.zeros(n_minutes, dtype=np.float32)
+            )
 
-        baseline_probs = None
-        if self.lgbm_available:
-            baseline_probs, _ = predict_lgbm_ensemble(self.lgbm_dir, hrv_feats)
+            baseline_probs = None
+            if self.lgbm_available and self.lgbm_boosters is not None:
+                baseline_probs, _ = predict_lgbm_ensemble(
+                    self.lgbm_dir,
+                    hrv_feats,
+                    boosters=self.lgbm_boosters,
+                    temperature=self.lgbm_temperature,
+                )
 
-        bundle = CachedNightBundle(
-            case_id=case_id,
-            ecg_raw=ecg_proc_in,
-            fs=100.0,
-            labels=labels,
-            dsp=dsp_res,
-            dual_windows=dual_windows,
-            hrv_features=hrv_feats,
-            fold_probs=fold_probs,
-            p_mean=p_mean,
-            p_std=p_std,
-            baseline_probs=baseline_probs,
-            inference_ms=inference_ms,
-        )
-        self._cache[cache_key] = bundle
-        if len(self._cache) > self._max_cache:
-            self._cache.popitem(last=False)
-        return bundle
+            bundle = CachedNightBundle(
+                case_id=case_id,
+                ecg_raw=ecg_proc_in,
+                fs=100.0,
+                labels=labels,
+                dsp=dsp_res,
+                dual_windows=dual_windows,
+                hrv_features=hrv_feats,
+                fold_probs=fold_probs,
+                p_mean=p_mean,
+                p_std=p_std,
+                baseline_probs=baseline_probs,
+                inference_ms=inference_ms,
+            )
+            self._cache[cache_key] = bundle
+            if len(self._cache) > self._max_cache:
+                self._cache.popitem(last=False)
+            return bundle
 
     def analyze_case(
         self,

@@ -120,15 +120,33 @@ def train_lgbm_cv(
     return meta
 
 
-def predict_lgbm_ensemble(model_dir: str | Path, x_hrv: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Predict calibrated probabilities using the 5 saved LightGBM fold boosters."""
+def load_lgbm_boosters(model_dir: str | Path) -> tuple[list[lgb.Booster], float]:
+    """Load all 5 LightGBM fold boosters cleanly, normalizing CRLF->LF so byte offsets never drift."""
     mdir = Path(model_dir)
     meta = json.loads((mdir / "cv_summary.json").read_text(encoding="utf-8"))
     temp = float(meta.get("temperature", 1.0))
 
-    fold_probs = []
+    boosters: list[lgb.Booster] = []
     for k in range(5):
-        booster = lgb.Booster(model_file=str(mdir / f"fold_{k}.txt"))
+        model_str = (mdir / f"fold_{k}.txt").read_text(encoding="utf-8").replace("\r\n", "\n")
+        boosters.append(lgb.Booster(model_str=model_str))
+    return boosters, temp
+
+
+def predict_lgbm_ensemble(
+    model_dir: str | Path,
+    x_hrv: np.ndarray,
+    boosters: list[lgb.Booster] | None = None,
+    temperature: float | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Predict calibrated probabilities using the 5 saved LightGBM fold boosters."""
+    if boosters is None or temperature is None:
+        boosters, temp = load_lgbm_boosters(model_dir)
+    else:
+        temp = float(temperature)
+
+    fold_probs = []
+    for booster in boosters:
         raw_p = booster.predict(x_hrv)
         logits = _prob_to_logit(raw_p)
         fold_probs.append(apply_temperature(logits, temp))

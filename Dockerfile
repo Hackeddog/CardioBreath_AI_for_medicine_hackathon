@@ -13,14 +13,15 @@ WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    OMP_NUM_THREADS=4
+    OMP_NUM_THREADS=4 \
+    HOME=/tmp \
+    MPLCONFIGDIR=/tmp/matplotlib
 
 RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./
-RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.5.1+cpu || \
-    pip install --no-cache-dir torch
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple torch && \
+    pip install --no-cache-dir -r requirements.txt
 
 COPY configs/ ./configs/
 COPY src/ ./src/
@@ -32,6 +33,9 @@ COPY artifacts/checkpoints/lgbm/ ./artifacts/checkpoints/lgbm/
 COPY artifacts/checkpoints/cardiobreath/cv_summary.json ./artifacts/checkpoints/cardiobreath/cv_summary.json
 COPY artifacts/checkpoints/cardiobreath/fold_0.pt ./artifacts/checkpoints/cardiobreath/fold_0.pt
 COPY --from=frontend-builder /app/frontend/out ./frontend/out
+
+# Ensure compatibility with Hugging Face Spaces non-root container user (uid 1000)
+RUN chmod -R a+rX /app
 
 EXPOSE 7860
 CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "7860"]
