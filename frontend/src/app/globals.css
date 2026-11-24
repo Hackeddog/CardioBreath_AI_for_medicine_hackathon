@@ -2,13 +2,125 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design tokens. Contrast pairs checked for WCAG AA (text >= 4.5:1) in both themes. */
+:root {
+  color-scheme: light;
+  --bg: #f6f4ef;
+  --surface: #ffffff;
+  --surface-2: #efece5;
+  --border: #ddd8ce;
+  --text: #1b2420;
+  --muted: #4f5b56;
+  --primary: #1f6b65;
+  --primary-hover: #185852;
+  --primary-ink: #ffffff;
+  --primary-soft: #e3efec;
+
+  --grid: #e9e5dc;
+  --trace: #1b2420;
+  --strip-normal: #c9d8d2;
+  --strip-deferred: #b8ad8f;
+
+  --normal: #2b6a99;
+  --normal-soft: #e5eef5;
+  --normal-fg: #1d4f75;
+  --mild: #9a7200;
+  --mild-soft: #f6eed6;
+  --mild-fg: #6b4f00;
+  --moderate: #b3541e;
+  --moderate-soft: #f7e6da;
+  --moderate-fg: #84390f;
+  --severe: #7d2a4f;
+  --severe-soft: #f3e3ea;
+  --severe-fg: #6a1f41;
+
+  --shadow: 0 1px 2px rgb(27 36 32 / 0.05), 0 4px 16px rgb(27 36 32 / 0.04);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #101513;
+  --surface: #161c1a;
+  --surface-2: #1d2522;
+  --border: #2b3531;
+  --text: #e4e8e6;
+  --muted: #a5afaa;
+  --primary: #6db5ab;
+  --primary-hover: #84c4bb;
+  --primary-ink: #0c1f1c;
+  --primary-soft: #1a2e2b;
+
+  --grid: #232c29;
+  --trace: #e4e8e6;
+  --strip-normal: #2f4a43;
+  --strip-deferred: #6b6450;
+
+  --normal: #7fb3db;
+  --normal-soft: #17242e;
+  --normal-fg: #a9cce8;
+  --mild: #d9b44a;
+  --mild-soft: #2a2414;
+  --mild-fg: #e5c873;
+  --moderate: #e08a55;
+  --moderate-soft: #2e1f16;
+  --moderate-fg: #eba77e;
+  --severe: #d98aae;
+  --severe-soft: #2c1a23;
+  --severe-fg: #e8aec8;
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+}
+
 @layer base {
   body {
-    @apply bg-[#F4F7FA] text-slate-900 antialiased;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    @apply bg-bg text-ink antialiased;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 6px;
   }
 }
 
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-surface;
+    box-shadow: var(--shadow);
+  }
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-primary text-primary-ink hover:bg-primary-hover;
+  }
+  .btn-secondary {
+    @apply btn border border-line bg-surface text-ink hover:bg-surface-2;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.08em] text-muted;
+  }
+  .skeleton {
+    @apply rounded-lg bg-surface-2;
+    animation: pulse 1.6s var(--ease) infinite;
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

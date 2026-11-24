@@ -54,3 +54,8 @@ docs/
 
 # Local code-graph tool output (paths exceed Windows MAX_PATH)
 graphify-out/
+
+# Playwright output
+frontend/test-results/
+frontend/playwright-report/
+frontend/tsconfig.tsbuildinfo
