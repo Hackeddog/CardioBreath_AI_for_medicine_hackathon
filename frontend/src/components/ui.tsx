@@ -24,9 +24,10 @@ export function SeverityBadge({ tier, size = "md" }: { tier: string; size?: "md"
   const Icon = t.icon;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full font-semibold ${t.cls} ${
-        size === "lg" ? "px-3.5 py-1.5 text-base" : "px-2.5 py-1 text-sm"
+      className={`inline-flex items-center gap-1.5 font-hud leading-none ${t.cls} ${
+        size === "lg" ? "px-3 py-1.5 text-2xl" : "px-2 py-1 text-xl"
       }`}
+      style={{ boxShadow: "inset 0 0 0 2px currentColor" }}
     >
       <Icon className={size === "lg" ? "h-5 w-5" : "h-4 w-4"} aria-hidden />
       {tierOf(tier)}

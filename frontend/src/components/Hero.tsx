@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ArrowDown, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import type { EvaluationPayload, FullNightAnalysis, WindowInspectorData } from "@/lib/types";
 import { Reveal, SeverityBadge, sentenceCase } from "./ui";
 
@@ -25,75 +25,120 @@ function EcgStrip({ ecg }: { ecg: WindowInspectorData }) {
   const W = 1000;
   const H = 300;
   const d = pts
-    .map(([s, v], i) => `${i ? "L" : "M"}${(((s - t0) / STRIP_SECONDS) * W).toFixed(1)},${(H * 0.12 + (1 - (v - lo) / Math.max(hi - lo, 1e-6)) * H * 0.76).toFixed(1)}`)
+    .map(([s, v], i) => `${i ? "L" : "M"}${(((s - t0) / STRIP_SECONDS) * W).toFixed(1)},${(H * 0.14 + (1 - (v - lo) / Math.max(hi - lo, 1e-6)) * H * 0.72).toFixed(1)}`)
     .join(" ");
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" aria-hidden>
-      <path d={d} pathLength={1} fill="none" strokeWidth="2" strokeLinejoin="round" className="draw stroke-trace" style={{ animationDuration: "2.6s" }} />
+      <path d={d} pathLength={1} fill="none" strokeWidth="2.5" strokeLinejoin="round" className="draw phosphor stroke-primary" style={{ animationDuration: "2.6s" }} />
+    </svg>
+  );
+}
+
+/** Pixel moon: a 12 x 12 disc with craters, drawn on a crisp grid. */
+function PixelMoon({ className }: { className?: string }) {
+  const r = 5.5;
+  const cells: React.ReactNode[] = [];
+  for (let y = 0; y < 12; y++)
+    for (let x = 0; x < 12; x++) {
+      const dx = x - r;
+      const dy = y - r;
+      if (dx * dx + dy * dy > r * r + 1) continue;
+      const crater = (x === 3 && y === 4) || (x === 4 && y === 4) || (x === 7 && y === 7) || (x === 8 && y === 3);
+      const shade = dx + dy > 4;
+      cells.push(<rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill={crater ? "#e0c98f" : shade ? "#ecd9a6" : "#fff4cf"} />);
+    }
+  return (
+    <svg viewBox="0 0 12 12" shapeRendering="crispEdges" className={className} aria-hidden>
+      {cells}
+    </svg>
+  );
+}
+
+/** Two stepped hill layers: the "ground" of the level. Heights are fixed so the skyline never shifts. */
+const FAR = [5, 6, 6, 7, 8, 8, 7, 6, 6, 5, 5, 6, 7, 9, 10, 10, 9, 8, 7, 7, 6, 6, 7, 8, 8, 9, 8, 7, 6, 5, 5, 6];
+const NEAR = [3, 3, 4, 4, 3, 2, 2, 3, 5, 6, 6, 5, 4, 3, 3, 4, 4, 5, 5, 4, 3, 2, 2, 3, 4, 6, 7, 6, 5, 4, 3, 3];
+function steps(h: number[], unit: number, total: number) {
+  const w = 1440 / h.length;
+  return `M0,${total} ` + h.map((v, i) => `L${i * w},${total - v * unit} L${(i + 1) * w},${total - v * unit}`).join(" ") + ` L1440,${total} Z`;
+}
+export function PixelHills() {
+  return (
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none" shapeRendering="crispEdges" className="block h-20 w-full sm:h-28" aria-hidden>
+      <path d={steps(FAR, 9, 120)} fill="#1b1650" />
+      <path d={steps(NEAR, 9, 120)} fill="#262062" />
+      <rect x="0" y="117" width="1440" height="3" fill="var(--primary)" opacity="0.5" />
     </svg>
   );
 }
 
 export default function Hero({ analysis, ecg, onTrySample, onUpload }: HeroProps) {
+  const center = ecg?.time_window_label.match(/Center:\s*([\d:]+)/)?.[1];
   return (
-    <section aria-labelledby="hero-title" className="grid items-center gap-10 pb-14 pt-10 sm:pt-16 lg:grid-cols-12">
-      <div className="lg:col-span-6">
-        <h1 id="hero-title" className="font-serif text-[2.6rem] font-semibold leading-[1.04] tracking-tight sm:text-6xl">
-          Sleep apnea screening from a single-lead ECG
-        </h1>
-        <p className="mt-6 max-w-[52ch] text-lg text-muted">
-          CardioBreath reads breathing out of an ordinary overnight ECG, estimates apnea burden, and tells you who
-          should go to the sleep lab first.
-        </p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <button type="button" onClick={onTrySample} className="btn-primary px-6 text-base">
-            Try a sample night
-          </button>
-          <button type="button" onClick={onUpload} className="btn-secondary px-5 text-base">
-            <Upload className="h-4 w-4" aria-hidden />
-            Upload ECG
-          </button>
+    <section aria-labelledby="hero-title" className="relative">
+      <div className="grid items-center gap-12 pb-10 pt-12 sm:pt-20 lg:grid-cols-12">
+        <div className="lg:col-span-6">
+          <h1 id="hero-title" className="font-pixel text-[1.9rem] font-bold leading-[1.15] sm:text-5xl">
+            Sleep apnea screening from a <span className="text-primary">single-lead ECG</span>
+          </h1>
+          <p className="mt-6 max-w-[50ch] text-lg text-muted">
+            CardioBreath reads breathing out of an ordinary overnight ECG, scores every minute of the night, and tells
+            you who should go to the sleep lab first.
+          </p>
+          <div className="mt-9 flex flex-wrap gap-4">
+            {/* The play glyph is the one arrow-like mark: it starts the sample night. */}
+            <button type="button" onClick={onTrySample} className="btn-primary px-6 text-lg">
+              <span aria-hidden>▶</span> Try a sample night
+            </button>
+            <button type="button" onClick={onUpload} className="btn-secondary px-5 text-lg">
+              <Upload className="h-4 w-4" aria-hidden />
+              Upload ECG
+            </button>
+          </div>
+          <p className="mt-7 max-w-[50ch] text-sm text-muted">
+            <strong className="font-semibold text-ink">Screening aid, not a diagnosis.</strong> Results support referral
+            decisions and must be confirmed by polysomnography.
+          </p>
         </div>
-        <p className="mt-6 max-w-[52ch] text-sm text-muted">
-          <strong className="font-semibold text-ink">Screening aid, not a diagnosis.</strong> Results support referral
-          decisions and must be confirmed by polysomnography.
-        </p>
-      </div>
 
-      <figure className="lg:col-span-6">
-        <div className="ecg-paper overflow-hidden rounded-xl border border-line">
-          {ecg ? (
-            <EcgStrip ecg={ecg} />
-          ) : (
-            <div className="grid aspect-[10/3] place-items-center text-sm text-muted">Loading the sample night…</div>
-          )}
-        </div>
-        <figcaption className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
-          {analysis && !analysis.case_id.startsWith("upload_") ? (
-            <>
-              <span className="text-muted tabular-nums">
-                Night {analysis.case_id}, {STRIP_SECONDS} s of ECG around{" "}
-                {ecg?.time_window_label.match(/Center:\s*([\d:]+)/)?.[1] ?? "…"}
+        <figure className="relative lg:col-span-6">
+          <PixelMoon className="absolute -top-14 right-2 h-12 w-12 sm:-top-16 sm:h-14 sm:w-14" />
+          <div className="card-raised p-3">
+            <div className="flex items-center justify-between px-1 pb-2 font-hud text-xl leading-none">
+              <span className="text-coral">
+                <span aria-hidden>♥ </span>
+                {analysis && !analysis.case_id.startsWith("upload_") ? `Night ${analysis.case_id}` : "Sample night"}
               </span>
-              <span className="flex items-center gap-3">
-                <span className="font-semibold tabular-nums">eAHI {analysis.eahi_pred.toFixed(1)}</span>
-                <SeverityBadge tier={analysis.severity_tier} />
-              </span>
-              <span className="w-full font-medium">{sentenceCase(analysis.triage_action)}</span>
-              <button
-                type="button"
-                onClick={onTrySample}
-                className="-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 font-semibold text-primary hover:underline"
-              >
-                See the full night
-                <ArrowDown className="h-4 w-4" aria-hidden />
-              </button>
-            </>
-          ) : (
-            <span className="text-muted">Single-lead ECG from a held-out test night.</span>
-          )}
-        </figcaption>
-      </figure>
+              <span className="text-muted">{center ? `${STRIP_SECONDS} s around ${center}` : "Loading…"}</span>
+            </div>
+            <div className="ecg-paper overflow-hidden">
+              {ecg ? (
+                <EcgStrip ecg={ecg} />
+              ) : (
+                <div className="grid aspect-[10/3] place-items-center font-hud text-2xl text-primary">Loading the sample night…</div>
+              )}
+            </div>
+            {analysis && !analysis.case_id.startsWith("upload_") && (
+              <div className="flex flex-wrap items-center justify-between gap-3 px-1 pt-3">
+                <span className="flex items-baseline gap-2">
+                  <span className="font-hud text-4xl leading-none text-ink">eAHI {analysis.eahi_pred.toFixed(1)}</span>
+                  <SeverityBadge tier={analysis.severity_tier} />
+                </span>
+                <button
+                  type="button"
+                  onClick={onTrySample}
+                  className="min-h-11 px-2 font-hud text-2xl leading-none text-primary underline-offset-4 hover:underline"
+                >
+                  See the full night ↓
+                </button>
+                <span className="w-full text-sm font-medium">{sentenceCase(analysis.triage_action)}</span>
+              </div>
+            )}
+          </div>
+        </figure>
+      </div>
+      <div className="mx-[calc(50%-50vw)]">
+        <PixelHills />
+      </div>
     </section>
   );
 }
@@ -129,15 +174,13 @@ export function Evidence({ evaluation, onOpenResearch }: { evaluation: Evaluatio
     : null;
 
   return (
-    <section aria-label="Method and evidence" className="grid gap-12 border-t border-line py-16 lg:grid-cols-12">
+    <section aria-label="Method and evidence" className="grid gap-12 py-16 lg:grid-cols-12">
       <Reveal className="lg:col-span-7">
-        <h2 className="font-serif text-3xl font-semibold tracking-tight">What it reads in one night</h2>
+        <h2 className="font-pixel text-2xl font-bold">What it reads in one night</h2>
         <ol className="mt-8 space-y-7">
           {STEPS.map((s, i) => (
-            <li key={s.title} className="grid grid-cols-[2.5rem_1fr] gap-x-2">
-              <span className="font-serif text-2xl leading-none text-muted tabular-nums" aria-hidden>
-                {i + 1}
-              </span>
+            <li key={s.title} className="grid grid-cols-[5.5rem_1fr] gap-x-3">
+              <span className="font-hud text-2xl leading-6 text-gold">Stage {i + 1}</span>
               <div>
                 <p className="font-semibold">{s.title}</p>
                 <p className="mt-1 max-w-[56ch] text-muted">{s.body}</p>
@@ -148,29 +191,31 @@ export function Evidence({ evaluation, onOpenResearch }: { evaluation: Evaluatio
       </Reveal>
 
       <Reveal className="lg:col-span-5">
-        <h2 className="font-serif text-3xl font-semibold tracking-tight">How well, on 35 nights it never saw</h2>
-        <div className="mt-8 space-y-6">
-          {(stats ?? [null, null, null]).map((s, i) =>
-            s ? (
-              <div key={i} className="border-t-2 border-ink pt-3">
-                <p className="text-5xl font-semibold tabular-nums tracking-tight">{s.value}</p>
-                <p className="mt-1 text-muted">{s.label}</p>
-              </div>
-            ) : (
-              <div key={i} className="skeleton h-20 w-48" aria-hidden />
-            )
-          )}
+        <div className="card p-6">
+          <h2 className="font-pixel text-xl font-bold">How well, on 35 nights it never saw</h2>
+          <div className="mt-6 space-y-5">
+            {(stats ?? [null, null, null]).map((s, i) =>
+              s ? (
+                <div key={i} className="border-t-[3px] border-dashed border-line pt-3">
+                  <p className="font-hud text-6xl leading-none text-primary">{s.value}</p>
+                  <p className="mt-1 text-muted">{s.label}</p>
+                </div>
+              ) : (
+                <div key={i} className="skeleton h-20 w-48" aria-hidden />
+              )
+            )}
+          </div>
+          <p className="mt-6 text-sm text-muted">
+            Locked held-out test set x01 to x35, PhysioNet Apnea-ECG (Penzel et al., 2000).{" "}
+            <button
+              type="button"
+              onClick={onOpenResearch}
+              className="inline-flex min-h-11 items-center font-semibold text-primary underline-offset-4 hover:underline"
+            >
+              Full benchmark and limitations
+            </button>
+          </p>
         </div>
-        <p className="mt-6 text-sm text-muted">
-          Locked held-out test set x01 to x35, PhysioNet Apnea-ECG (Penzel et al., 2000).{" "}
-          <button
-            type="button"
-            onClick={onOpenResearch}
-            className="inline-flex min-h-11 items-center font-semibold text-primary underline-offset-2 hover:underline"
-          >
-            Full benchmark and limitations
-          </button>
-        </p>
       </Reveal>
     </section>
   );

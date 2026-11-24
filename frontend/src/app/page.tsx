@@ -200,7 +200,7 @@ export default function HomePage() {
 
             <section id="workbench" aria-label="Screening workbench" className="scroll-mt-20 space-y-6 border-t border-line pb-16 pt-10">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                <h2 className="font-serif text-3xl font-semibold tracking-tight">Screen a night</h2>
+                <h2 className="font-pixel text-2xl font-bold">Screen a night</h2>
                 <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="case-select" className="text-sm font-medium">
@@ -235,8 +235,8 @@ export default function HomePage() {
                         disabled={loadingNight}
                         aria-pressed={noiseSnr === opt.value}
                         onClick={() => setNoiseSnr(opt.value)}
-                        className={`min-h-11 rounded-md px-3 text-sm font-semibold tabular-nums transition-colors ${
-                          noiseSnr === opt.value ? "bg-surface text-ink shadow-sm" : "text-muted hover:text-ink"
+                        className={`min-h-11 px-3 font-hud text-xl leading-none ${
+                          noiseSnr === opt.value ? "bg-primary text-primary-ink" : "text-muted hover:text-ink"
                         }`}
                       >
                         {opt.label}
