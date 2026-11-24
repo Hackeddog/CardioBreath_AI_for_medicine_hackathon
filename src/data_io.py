@@ -7,7 +7,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import wfdb
 
 TRAIN_RECORDS: list[str] = (
     [f"a{i:02d}" for i in range(1, 21)]
@@ -20,6 +19,8 @@ RESP_BELT_RECORDS: list[str] = ["a01", "a02", "a03", "a04", "b01", "c01", "c02",
 
 def load_ecg_record(record_id: str, raw_dir: str | Path) -> tuple[np.ndarray, float]:
     """Load single-lead ECG signal (float32, mV) and sampling frequency (Hz) from PhysioNet WFDB."""
+    import wfdb
+
     rec_path = str(Path(raw_dir) / record_id)
     rec = wfdb.rdrecord(rec_path)
     ecg = rec.p_signal[:, 0].astype(np.float32)
@@ -31,6 +32,8 @@ def load_ecg_record(record_id: str, raw_dir: str | Path) -> tuple[np.ndarray, fl
 
 def load_train_labels(record_id: str, raw_dir: str | Path) -> np.ndarray:
     """Load minute-by-minute .apn annotations (A -> 1, N -> 0) for a learning-set recording."""
+    import wfdb
+
     rec_path = str(Path(raw_dir) / record_id)
     ann = wfdb.rdann(rec_path, "apn")
     labels = [1 if sym == "A" else 0 for sym in ann.symbol if sym in ("A", "N")]
@@ -86,6 +89,8 @@ def load_respiratory_signals(
     record_id: str, raw_dir: str | Path
 ) -> tuple[dict[str, np.ndarray], float]:
     """Load concurrent Resp C, Resp A, Resp N, SpO2 signals from `a01r`..`c03r` multi-sensor files."""
+    import wfdb
+
     r_name = f"{record_id}r"
     rec_path = Path(raw_dir) / r_name
     if not rec_path.with_suffix(".hea").exists():

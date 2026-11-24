@@ -4,14 +4,13 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     OMP_NUM_THREADS=4 \
-    HOME=/tmp \
-    MPLCONFIGDIR=/tmp/matplotlib
+    HOME=/tmp
 
 RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt ./
+COPY requirements-runtime.txt ./
 RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple torch && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements-runtime.txt
 
 COPY configs/ ./configs/
 COPY src/ ./src/

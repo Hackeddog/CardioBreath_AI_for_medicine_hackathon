@@ -206,7 +206,7 @@ class CardioBreathInferenceEngine:
                 n_minutes=n_minutes,
                 context_minutes=int(self.dsp_cfg.get("context_minutes", 5)),
                 target_fs=float(self.dsp_cfg.get("sampling_rate_dsp", 4.0)),
-                raw_fs=float(self.dsp_cfg.get("sampling_rate_raw", 100.0)),
+                raw_fs=fs,
             )
             hrv_feats = extract_hrv_features_per_minute(
                 dsp_res.rri_raw_4hz,
@@ -238,7 +238,7 @@ class CardioBreathInferenceEngine:
             bundle = CachedNightBundle(
                 case_id=case_id,
                 ecg_raw=ecg_proc_in,
-                fs=100.0,
+                fs=fs,
                 labels=labels,
                 dsp=dsp_res,
                 dual_windows=dual_windows,
@@ -387,11 +387,9 @@ class CardioBreathInferenceEngine:
         rri_bpm = [round(float(v), 2) for v in hr_bpm_1200[::step_4hz]]
         saliency = [round(float(v), 3) for v in saliency_1200[::step_4hz]]
 
-        # Center 30-second high-resolution ECG snippet (3000 samples @ 100 Hz -> 600 pts @ 20 Hz for clear QRS peaks)
         ecg_start = max(0, m * 6000 + 1500)
         ecg_end = min(len(bundle.dsp.ecg_clean), ecg_start + 3000)
         ecg_seg = bundle.dsp.ecg_clean[ecg_start:ecg_end]
-        # Peak-preserving decimation (5 samples -> take max-abs sample per bin so R-peaks stay razor sharp!)
         n_bins = len(ecg_seg) // 5
         if n_bins > 0:
             blocks = ecg_seg[: n_bins * 5].reshape(n_bins, 5)
@@ -421,6 +419,8 @@ class CardioBreathInferenceEngine:
 
     def register_uploaded_csv(self, csv_bytes: bytes, filename: str) -> str:
         ecg, fs = load_uploaded_csv_ecg(csv_bytes)
+        if not (25.0 <= fs <= 2000.0):
+            raise ValueError(f"Unsupported sampling rate: {fs} Hz (expected 25–2000 Hz).")
         if len(ecg) < round(60 * fs):
             raise ValueError("Uploaded ECG must contain at least 60 seconds (1 minute) of samples.")
         case_id = f"upload_{uuid.uuid4().hex[:8]}"

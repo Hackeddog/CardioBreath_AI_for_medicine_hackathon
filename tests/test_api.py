@@ -180,3 +180,29 @@ def test_cors_wildcard_disables_credentials() -> None:
     )
     assert resp.headers.get("access-control-allow-origin") == "*"
     assert resp.headers.get("access-control-allow-credentials") != "true"
+
+
+def test_csv_upload_non_100hz_sampling_rate() -> None:
+    fs = 250
+    n = 180 * fs
+    t = np.arange(n) / fs
+    ecg = np.zeros(n, dtype=np.float32)
+    for beat_t in np.arange(0.5, 179.5, 0.9):
+        idx = round(beat_t * fs)
+        lo, hi = max(0, idx - 15), min(n, idx + 16)
+        dt = (np.arange(lo, hi) - idx) / fs
+        ecg[lo:hi] += np.exp(-0.5 * (dt / 0.015) ** 2)
+    lines = ["time,ecg"] + [f"{ti:.3f},{vi:.4f}" for ti, vi in zip(t, ecg)]
+    csv_bytes = "\n".join(lines).encode("utf-8")
+
+    case_id = engine.register_uploaded_csv(csv_bytes, "ecg_250hz.csv")
+    body = FullNightAnalysisResponse(
+        **engine.analyze_case(case_id=case_id, compare_baseline=True)
+    )
+    assert body.duration_minutes == 3
+
+    win = WindowInspectorResponse(
+        **inspect_window(WindowInspectorRequest(case_id=case_id, minute_index=1))
+    )
+    assert len(win.ecg_mv) >= 500
+    assert 135.0 <= win.ecg_time_sec[0] < win.ecg_time_sec[-1] <= 166.0
