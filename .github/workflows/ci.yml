@@ -17,8 +17,8 @@ jobs:
           cache: "pip"
       - name: Install dependencies
         run: |
-          pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple torch
-          pip install --no-cache-dir -r requirements-dev.txt
+          pip install --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple torch
+          pip install -r requirements-dev.txt
       - name: Lint with ruff
         run: ruff check src scripts backend tests train.py evaluate.py
       - name: Run pytest
