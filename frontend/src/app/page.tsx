@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Navbar from "@/components/Navbar";
 import TriageSummaryPanel from "@/components/TriageSummaryPanel";
 import FullNightTimeline from "@/components/FullNightTimeline";
@@ -40,6 +40,7 @@ export default function HomePage() {
   const [loadingNight, setLoadingNight] = useState<boolean>(true);
   const [loadingWindow, setLoadingWindow] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const nightRequestId = useRef(0);
 
   // Initial bootstrap: health, held-out cases, evaluation report
   useEffect(() => {
@@ -58,6 +59,7 @@ export default function HomePage() {
   // Load full-night analysis whenever case, threshold, noise SNR, or baseline toggle changes
   const runNightAnalysis = useCallback(
     async (caseId: string, thr: number, snr: number | null, compBase: boolean) => {
+      const requestId = ++nightRequestId.current;
       setLoadingNight(true);
       setErrorMsg(null);
       try {
@@ -66,6 +68,8 @@ export default function HomePage() {
           inject_noise_snr_db: snr,
           compare_baseline: compBase,
         });
+        // Slider drags fire many requests; drop any response that a newer request superseded
+        if (requestId !== nightRequestId.current) return;
         setAnalysis(res);
         setSelectedMinute((prev) =>
           res.case_id !== analysis?.case_id || prev >= res.duration_minutes
@@ -73,9 +77,10 @@ export default function HomePage() {
             : prev
         );
       } catch (err) {
+        if (requestId !== nightRequestId.current) return;
         setErrorMsg(err instanceof Error ? err.message : "Failed to analyze recording.");
       } finally {
-        setLoadingNight(false);
+        if (requestId === nightRequestId.current) setLoadingNight(false);
       }
     },
     [analysis?.case_id]
@@ -108,6 +113,7 @@ export default function HomePage() {
   }, [analysis?.case_id, selectedMinute, noiseSnr]);
 
   const handleUploadCsv = async (file: File) => {
+    ++nightRequestId.current; // an in-flight case analysis must not overwrite the upload result
     setLoadingNight(true);
     setErrorMsg(null);
     try {

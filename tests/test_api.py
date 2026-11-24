@@ -206,3 +206,21 @@ def test_csv_upload_non_100hz_sampling_rate() -> None:
     )
     assert len(win.ecg_mv) >= 500
     assert 135.0 <= win.ecg_time_sec[0] < win.ecg_time_sec[-1] <= 166.0
+
+
+def test_upload_non_numeric_ecg_column_returns_400() -> None:
+    client = TestClient(app)
+    rows = "".join(f"{i / 100:.2f},bad\n" for i in range(6100))
+    resp = client.post(
+        "/api/analyze/upload",
+        files={"file": ("text.csv", ("time,ecg\n" + rows).encode(), "text/csv")},
+    )
+    assert resp.status_code == 400
+
+
+def test_csv_fallback_column_never_picks_time() -> None:
+    from src.data_io import load_uploaded_csv_ecg
+
+    ecg, fs = load_uploaded_csv_ecg(b"mV,time\n0.5,0.00\n0.6,0.01\n0.7,0.02\n0.8,0.03\n")
+    assert fs == 100.0
+    assert np.allclose(ecg, [0.5, 0.6, 0.7, 0.8])
