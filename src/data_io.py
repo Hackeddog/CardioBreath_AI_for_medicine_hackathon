@@ -131,7 +131,7 @@ def load_uploaded_csv_ecg(csv_bytes_or_path: bytes | str | Path) -> tuple[np.nda
             ecg_col = cols_lower[candidate]
             break
     if ecg_col is None:
-        numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+        numeric_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c != cols_lower.get("time")]
         if not numeric_cols:
             raise ValueError("Uploaded CSV contains no numeric ECG column.")
         ecg_col = numeric_cols[-1]

@@ -206,7 +206,7 @@ class CardioBreathInferenceEngine:
                 n_minutes=n_minutes,
                 context_minutes=int(self.dsp_cfg.get("context_minutes", 5)),
                 target_fs=float(self.dsp_cfg.get("sampling_rate_dsp", 4.0)),
-                raw_fs=fs,
+                raw_fs=100.0,  # run_dsp_pipeline resamples ecg_clean to 100 Hz
             )
             hrv_feats = extract_hrv_features_per_minute(
                 dsp_res.rri_raw_4hz,
@@ -423,9 +423,13 @@ class CardioBreathInferenceEngine:
             raise ValueError(f"Unsupported sampling rate: {fs} Hz (expected 25–2000 Hz).")
         if len(ecg) < round(60 * fs):
             raise ValueError("Uploaded ECG must contain at least 60 seconds (1 minute) of samples.")
+        if not np.all(np.isfinite(ecg)):
+            raise ValueError("Uploaded ECG column contains no numeric samples or infinite values.")
         case_id = f"upload_{uuid.uuid4().hex[:8]}"
         with self._lock:
             self._uploads[case_id] = (ecg, fs)
+            # shortcut: only the last 6 uploads stay in RAM (older ones 404 on re-analysis),
+            # persist them to disk once real users upload
             if len(self._uploads) > 6:
                 self._uploads.popitem(last=False)
         return case_id

@@ -10,6 +10,7 @@ from typing import Annotated
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -72,8 +73,6 @@ def analyze_case(case_id: str, req: AnalyzeCaseRequest) -> dict:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.post("/api/analyze/window", response_model=WindowInspectorResponse)
@@ -88,8 +87,6 @@ def inspect_window(req: WindowInspectorRequest) -> dict:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.post("/api/analyze/upload", response_model=FullNightAnalysisResponse)
@@ -110,14 +107,13 @@ async def upload_ecg(
                     detail=f"Uploaded file exceeds maximum allowed size of {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.",
                 )
         content = bytes(buf)
-        case_id = engine.register_uploaded_csv(content, file.filename or "upload.csv")
-        return engine.analyze_case(case_id=case_id, threshold=threshold, compare_baseline=True)
-    except HTTPException:
-        raise
+        # CPU-bound parsing + DSP + ONNX must not run on the event loop, or every other request stalls
+        case_id = await run_in_threadpool(engine.register_uploaded_csv, content, file.filename or "upload.csv")
+        return await run_in_threadpool(
+            engine.analyze_case, case_id=case_id, threshold=threshold, compare_baseline=True
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.get("/api/evaluation")
