@@ -151,12 +151,33 @@ test("guided tour walks through the stages and closes with Escape", async ({ pag
   await expect(tour).toHaveCount(0);
 });
 
-test("background scene can be paused", async ({ page }) => {
+test("background scene runs by default and can be paused", async ({ page }) => {
   await page.goto("/");
+  const scene = page.locator("canvas[data-scene]");
+  await expect(scene).toHaveAttribute("data-running", "true");
+  // The canvas actually changes between frames while running.
+  const shot = () => scene.evaluate((c: HTMLCanvasElement) => c.toDataURL().length + ":" + c.toDataURL().slice(-200));
+  await page.waitForTimeout(1500);
+  const a = await shot();
+  await page.waitForTimeout(400);
+  expect(await shot()).not.toBe(a);
   await page.getByRole("button", { name: "Pause scene" }).click();
+  await expect(scene).toHaveAttribute("data-running", "false");
   await expect(page.getByRole("button", { name: "Play scene" })).toBeVisible();
-  const state = await page.locator(".night-drive .car").first().evaluate((el) => getComputedStyle(el).animationPlayState);
-  expect(state).toBe("paused");
+});
+
+test("music starts only when asked and stops again", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/");
+  const music = page.getByRole("button", { name: "Music" });
+  await expect(music).toHaveAttribute("aria-pressed", "false");
+  await music.click();
+  await expect(music).toHaveAttribute("aria-pressed", "true");
+  await page.waitForTimeout(1200); // let the scheduler run a few bars of notes
+  await music.click();
+  await expect(music).toHaveAttribute("aria-pressed", "false");
+  expect(errors).toEqual([]);
 });
 
 test("no serious or critical axe violations on any stage", async ({ page }) => {

@@ -60,7 +60,7 @@ export default function Hero({ analysis, ecg, onTrySample, onUpload, onTour, onS
   const center = ecg?.time_window_label.match(/Center:\s*([\d:]+)/)?.[1];
   return (
     <section aria-labelledby="hero-title" className="relative">
-      <div className="grid items-center gap-12 lg:grid-cols-12">
+      <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
         {/* Dark dialog panel so the copy never sits directly on neon windows */}
         <div className="card p-6 sm:p-8 lg:col-span-6" style={{ background: "rgb(13 10 38 / 0.86)" }}>
           <h1 id="hero-title" className="font-pixel text-[1.9rem] font-bold leading-[1.15] sm:text-5xl">
@@ -164,10 +164,10 @@ export function Evidence({ evaluation, onOpenResearch }: { evaluation: Evaluatio
     : null;
 
   return (
-    <section id="evidence" aria-label="Method and evidence" className="grid gap-12 lg:grid-cols-12">
+    <section id="evidence" aria-label="Method and evidence" className="grid gap-8 lg:grid-cols-12 lg:gap-12">
       <Reveal className="lg:col-span-7">
         <h2 className="font-pixel text-2xl font-bold">What it reads in one night</h2>
-        <ol className="mt-8 space-y-7">
+        <ol className="mt-6 space-y-5">
           {STEPS.map((s, i) => (
             <li key={s.title} className="grid grid-cols-[5.5rem_1fr] gap-x-3">
               <span className="font-hud text-2xl leading-6 text-gold">Stage {i + 1}</span>
