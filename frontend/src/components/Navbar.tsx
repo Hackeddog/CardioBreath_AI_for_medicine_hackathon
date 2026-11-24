@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { HealthStatus } from "@/lib/types";
+import { CityPop } from "@/lib/cityPop";
 
 export const PAGES = [
   { id: "start", label: "Start" },
@@ -60,6 +61,30 @@ export function BrandMark({ className = "h-8 w-8" }: { className?: string }) {
 
 const chip = "min-h-11 shrink-0 px-2 font-hud text-xl leading-none hover:text-ink sm:px-3";
 const chipFrame = { boxShadow: "inset 0 0 0 2px var(--border-strong)" };
+
+/** Off until clicked: browsers block autoplay, and sound should never surprise someone in a clinic. */
+function MusicToggle() {
+  const engine = useRef<CityPop | null>(null);
+  const [on, setOn] = useState(false);
+  useEffect(() => () => engine.current?.stop(), []);
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      data-music={on ? "playing" : "off"}
+      onClick={async () => {
+        engine.current ??= new CityPop();
+        if (on) engine.current.stop();
+        else await engine.current.start();
+        setOn(!on);
+      }}
+      className={`${chip} ${on ? "text-coral" : "text-muted"}`}
+      style={chipFrame}
+    >
+      <span aria-hidden>♪ </span>Music
+    </button>
+  );
+}
 
 function CrtToggle() {
   const [on, setOn] = useState(true);
@@ -124,13 +149,16 @@ export default function Navbar({ page, onPage, health, onTour, scenePaused, onTo
           <button type="button" onClick={onTour} className={`${chip} text-gold`} style={chipFrame}>
             Tour
           </button>
+          <MusicToggle />
           <button
             type="button"
+            title={scenePaused ? "Play scene" : "Pause scene"}
             onClick={onToggleScene}
             className={`${chip} ${scenePaused ? "text-muted" : "text-primary"}`}
             style={chipFrame}
           >
-            {scenePaused ? "Play scene" : "Pause scene"}
+            <span aria-hidden>{scenePaused ? "▶" : "❚❚"}</span>
+            <span className="sr-only">{scenePaused ? "Play scene" : "Pause scene"}</span>
           </button>
           <CrtToggle />
         </div>

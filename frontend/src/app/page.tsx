@@ -77,8 +77,8 @@ export default function HomePage() {
     const sync = () => setPage(pageFromHash());
     sync();
     window.addEventListener("hashchange", sync);
-    const saved = localStorage.getItem("cb-scene");
-    setScenePaused(saved ? saved === "paused" : matchMedia("(prefers-reduced-motion: reduce)").matches);
+    // The scene always starts running; only an OS-level reduced-motion setting starts it still.
+    setScenePaused(matchMedia("(prefers-reduced-motion: reduce)").matches);
     return () => window.removeEventListener("hashchange", sync);
   }, []);
 
@@ -105,12 +105,7 @@ export default function HomePage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [go, tourOpen]);
 
-  const toggleScene = () => {
-    setScenePaused((p) => {
-      localStorage.setItem("cb-scene", p ? "playing" : "paused");
-      return !p;
-    });
-  };
+  const toggleScene = () => setScenePaused((p) => !p);
 
   /* ---------- data (unchanged behaviour) ---------- */
 
@@ -251,7 +246,7 @@ export default function HomePage() {
     />,
 
     /* result */
-    <div key="result" className="grid items-start gap-8 lg:grid-cols-12">
+    <div key="result" className="grid items-start gap-6 lg:grid-cols-12 lg:gap-8">
       <div className="lg:col-span-5">
         {showProgress && <AnalysisProgress />}
         {analysis && threshold !== null ? (
@@ -286,7 +281,7 @@ export default function HomePage() {
         )}
       </div>
 
-      <div className="space-y-8 lg:col-span-7">
+      <div className="space-y-5 lg:col-span-7">
         <div>
           <h2 className="font-pixel text-2xl font-bold">Screen a night</h2>
           <p className="mt-2 max-w-[56ch] text-muted">
@@ -297,7 +292,7 @@ export default function HomePage() {
             <span className="text-muted">Confirm with polysomnography.</span>
           </p>
         </div>
-        <div id="toolbar" className="card space-y-5 p-6">
+        <div id="toolbar" className="card space-y-4 p-5 sm:p-6">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="case-select" className="text-sm font-medium">
               Recording
@@ -367,7 +362,7 @@ export default function HomePage() {
 
     /* night */
     analysis ? (
-      <div key="night" className="space-y-6">
+      <div key="night" className="space-y-4">
         <FullNightTimeline analysis={analysis} selectedMinute={selectedMinute} onSelectMinute={setSelectedMinute} showBaseline={compareBaseline} />
         <div className="flex flex-wrap items-center gap-3">
           <button type="button" onClick={() => go(P.signals)} className="btn-primary">
@@ -382,27 +377,31 @@ export default function HomePage() {
 
     /* signals */
     analysis ? (
-      <div key="signals" className="space-y-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <button type="button" onClick={() => setSelectedMinute((m) => Math.max(0, m - 1))} className="btn-secondary px-3" aria-label="Previous minute">
-            ◀ 1 min
-          </button>
-          <span className="min-w-[7rem] text-center font-hud text-2xl leading-none" aria-live="polite">
-            {sel?.time_label ?? "…"}
-          </span>
-          <button
-            type="button"
-            onClick={() => setSelectedMinute((m) => Math.min(analysis.duration_minutes - 1, m + 1))}
-            className="btn-secondary px-3"
-            aria-label="Next minute"
-          >
-            1 min ▶
-          </button>
-          <button type="button" onClick={() => go(P.night)} className="ml-auto min-h-11 font-hud text-xl leading-none text-primary hover:underline">
-            Back to the night
-          </button>
-        </div>
-        <SignalInspector data={windowData} loading={loadingWindow || loadingNight} threshold={analysis.threshold_used} />
+      // Width follows the free height (chart aspect ~2.5:1), so the whole inspector fits without scrolling.
+      <div key="signals" className="mx-auto w-full" style={{ maxWidth: "max(820px, calc((100dvh - var(--header-h) - var(--bar-h) - 260px) * 2.6))" }}>
+        <SignalInspector
+          data={windowData}
+          loading={loadingWindow || loadingNight}
+          threshold={analysis.threshold_used}
+          controls={
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={() => setSelectedMinute((m) => Math.max(0, m - 1))} className="btn-secondary px-3" aria-label="Previous minute">
+                ◀
+              </button>
+              <span className="min-w-[4.5rem] text-center font-hud text-2xl leading-none" aria-live="polite">
+                {sel?.time_label ?? "…"}
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedMinute((m) => Math.min(analysis.duration_minutes - 1, m + 1))}
+                className="btn-secondary px-3"
+                aria-label="Next minute"
+              >
+                ▶
+              </button>
+            </div>
+          }
+        />
       </div>
     ) : (
       <div key="signals">{needNight}</div>
@@ -487,7 +486,7 @@ export default function HomePage() {
               inert={i !== page}
               className="h-full w-full shrink-0 overflow-y-auto focus-visible:[outline-offset:-3px]"
             >
-              <div className="mx-auto flex min-h-full max-w-[1280px] flex-col justify-center px-4 py-8 sm:px-6 sm:py-10">
+              <div className="mx-auto flex min-h-full max-w-[1280px] flex-col justify-center px-4 py-5 sm:px-6 sm:py-6">
                 {pageBody[i]}
               </div>
             </section>

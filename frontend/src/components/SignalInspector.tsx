@@ -8,6 +8,7 @@ interface SignalInspectorProps {
   data: WindowInspectorData | null;
   loading: boolean;
   threshold: number;
+  controls?: React.ReactNode; // e.g. the minute stepper, shown in the header row
 }
 
 // Viridis: perceptually uniform and colorblind-safe, readable in both themes.
@@ -54,7 +55,7 @@ function Track({ y, h, x0, w, title, top, bottom, children }: { y: number; h: nu
   );
 }
 
-export default function SignalInspector({ data, loading, threshold }: SignalInspectorProps) {
+export default function SignalInspector({ data, loading, threshold, controls }: SignalInspectorProps) {
   if (!data) {
     return (
       <section className="card p-6" aria-labelledby="inspector-title">
@@ -74,10 +75,10 @@ export default function SignalInspector({ data, loading, threshold }: SignalInsp
   const padL = 56;
   const padR = 12;
   const plotW = width - padL - padR;
-  const t1Y = 28, t1H = 80;
-  const t2Y = t1Y + t1H + 40, t2H = 80;
-  const t3Y = t2Y + t2H + 40, t3H = 80;
-  const salY = t3Y + t3H + 34, salH = 14;
+  const t1Y = 26, t1H = 64;
+  const t2Y = t1Y + t1H + 34, t2H = 64;
+  const t3Y = t2Y + t2H + 34, t3H = 64;
+  const salY = t3Y + t3H + 30, salH = 14;
   const totalH = salY + salH + 26;
 
   const ecgMin = Math.min(...data.ecg_mv, -0.5);
@@ -111,14 +112,15 @@ export default function SignalInspector({ data, loading, threshold }: SignalInsp
   const verdict = !data.sqi_pass ? "Deferred, low signal quality" : isApnea ? "Apnea" : "Normal";
 
   return (
-    <section aria-labelledby="inspector-title" aria-busy={loading} className="card relative p-6 sm:p-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <section aria-labelledby="inspector-title" aria-busy={loading} className="card relative p-5 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 id="inspector-title" className="font-pixel text-xl font-bold">
             Signal inspector · <span className="font-sans text-xl tabular-nums">{data.time_window_label}</span>
           </h2>
           <p className="text-sm text-muted">Five minutes around the selected minute, which is outlined.</p>
         </div>
+        {controls}
         <span
           className={`inline-flex items-center gap-1.5 px-3 py-1 font-hud text-xl leading-none ${
             !data.sqi_pass ? "bg-mild-soft text-mild-fg" : isApnea ? "bg-severe-soft text-severe-fg" : "bg-normal-soft text-normal-fg"
@@ -129,8 +131,8 @@ export default function SignalInspector({ data, loading, threshold }: SignalInsp
         </span>
       </div>
 
-      <figure id="inspector-figure" className="mt-4">
-        <div data-hscroll className={`-mx-6 overflow-x-auto px-6 transition-opacity duration-200 ${loading ? "opacity-50" : ""}`}>
+      <figure id="inspector-figure" className="mt-3">
+        <div data-hscroll className={`-mx-5 overflow-x-auto px-5 transition-opacity duration-200 sm:-mx-6 sm:px-6 ${loading ? "opacity-50" : ""}`}>
           <svg viewBox={`0 0 ${width} ${totalH}`} className="h-auto w-full min-w-[640px] select-none" aria-hidden>
             <Track y={t1Y} h={t1H} x0={padL} w={plotW} title={`ECG, mV (centre 30 s: ${ecgT0.toFixed(0)} to ${ecgT1.toFixed(0)} s)`} top={ecgMax.toFixed(1)} bottom={ecgMin.toFixed(1)}>
               <path d={ecgPath} fill="none" strokeWidth="1" className="stroke-trace" />

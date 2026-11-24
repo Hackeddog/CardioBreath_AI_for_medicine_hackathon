@@ -105,7 +105,7 @@ export default function FullNightTimeline({
   });
 
   return (
-    <section aria-labelledby="timeline-title" className="card p-6 sm:p-8">
+    <section aria-labelledby="timeline-title" className="card p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 id="timeline-title" className="font-pixel text-xl font-bold">
@@ -125,7 +125,7 @@ export default function FullNightTimeline({
         </div>
       </div>
 
-      <div className="-mx-6 mt-4 overflow-x-auto px-6" data-hscroll>
+      <div className="-mx-5 mt-3 overflow-x-auto px-5 sm:-mx-6 sm:px-6" data-hscroll>
         <div
           id="timeline-chart"
           role="slider"
