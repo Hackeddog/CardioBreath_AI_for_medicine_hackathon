@@ -642,59 +642,59 @@
           3,
           4
         ],
-        "temperature": 1.98184,
-        "threshold": 0.49,
-        "oof_auroc": 0.8317,
+        "temperature": 2.27472,
+        "threshold": 0.38,
+        "oof_auroc": 0.8119,
         "fold_aurocs": [
-          0.8998,
-          0.738,
-          0.9397,
-          0.9226,
-          0.6973
+          0.9174,
+          0.8115,
+          0.932,
+          0.9388,
+          0.66
         ]
       },
       "minute_metrics": {
         "n_minutes": 16539,
         "coverage": 0.9716,
-        "accuracy": 0.7531,
-        "sensitivity": 0.7363,
-        "specificity": 0.7638,
-        "precision": 0.6652,
-        "f1": 0.699,
-        "auroc": 0.831,
-        "auprc": 0.7686,
-        "ece": 0.0616,
-        "brier": 0.1646
+        "accuracy": 0.7314,
+        "sensitivity": 0.8045,
+        "specificity": 0.6848,
+        "precision": 0.6193,
+        "f1": 0.6999,
+        "auroc": 0.811,
+        "auprc": 0.741,
+        "ece": 0.0494,
+        "brier": 0.1703
       },
       "minute_metrics_ungated": {
         "n_minutes": 17023,
         "coverage": 1.0,
-        "accuracy": 0.7543,
-        "sensitivity": 0.7346,
-        "specificity": 0.7665,
-        "precision": 0.6608,
-        "f1": 0.6958,
-        "auroc": 0.8317,
-        "auprc": 0.7631,
-        "ece": 0.0611,
-        "brier": 0.1637
+        "accuracy": 0.7318,
+        "sensitivity": 0.8051,
+        "specificity": 0.6865,
+        "precision": 0.614,
+        "f1": 0.6967,
+        "auroc": 0.8119,
+        "auprc": 0.7343,
+        "ece": 0.0489,
+        "brier": 0.1693
       },
       "recording_metrics": {
         "n_recordings": 35,
-        "eahi_mae": 12.21,
-        "eahi_rmse": 18.19,
-        "eahi_pearson_r": 0.6476,
-        "bland_altman_bias": 2.63,
-        "bland_altman_loa_low": -33.17,
-        "bland_altman_loa_high": 38.42,
+        "eahi_mae": 12.65,
+        "eahi_rmse": 19.39,
+        "eahi_pearson_r": 0.6857,
+        "bland_altman_bias": 6.95,
+        "bland_altman_loa_low": -29.05,
+        "bland_altman_loa_high": 42.96,
         "screening_cutoff_5": {
           "accuracy": 0.8286,
-          "sensitivity": 0.8696,
-          "specificity": 0.75
+          "sensitivity": 0.913,
+          "specificity": 0.6667
         },
         "moderate_cutoff_15": {
-          "accuracy": 0.8,
-          "sensitivity": 0.8421,
+          "accuracy": 0.8286,
+          "sensitivity": 0.8947,
           "specificity": 0.75
         },
         "per_record": [
@@ -703,143 +703,143 @@
             "n_minutes": 489,
             "usable_ratio": 1.0,
             "true_eahi": 57.67,
-            "pred_eahi": 58.04,
-            "abs_err_eahi": 0.37,
+            "pred_eahi": 60.0,
+            "abs_err_eahi": 2.33,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.9857
+            "minute_acc": 0.9611
           },
           {
             "record_id": "a02",
             "n_minutes": 528,
             "usable_ratio": 0.9981,
             "true_eahi": 47.73,
-            "pred_eahi": 27.32,
-            "abs_err_eahi": 20.4,
+            "pred_eahi": 59.32,
+            "abs_err_eahi": 11.59,
             "true_tier": "Severe",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.5863
+            "pred_tier": "Severe",
+            "minute_acc": 0.7894
           },
           {
             "record_id": "a03",
             "n_minutes": 519,
             "usable_ratio": 0.9981,
             "true_eahi": 28.44,
-            "pred_eahi": 47.84,
-            "abs_err_eahi": 19.4,
+            "pred_eahi": 26.53,
+            "abs_err_eahi": 1.91,
             "true_tier": "Moderate",
-            "pred_tier": "Severe",
-            "minute_acc": 0.6776
+            "pred_tier": "Moderate",
+            "minute_acc": 0.7124
           },
           {
             "record_id": "a04",
             "n_minutes": 492,
             "usable_ratio": 1.0,
             "true_eahi": 55.24,
-            "pred_eahi": 59.88,
-            "abs_err_eahi": 4.63,
+            "pred_eahi": 59.76,
+            "abs_err_eahi": 4.51,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.9228
+            "minute_acc": 0.9248
           },
           {
             "record_id": "a05",
             "n_minutes": 453,
             "usable_ratio": 0.9912,
             "true_eahi": 36.56,
-            "pred_eahi": 8.69,
-            "abs_err_eahi": 27.87,
+            "pred_eahi": 2.81,
+            "abs_err_eahi": 33.75,
             "true_tier": "Severe",
-            "pred_tier": "Mild",
-            "minute_acc": 0.4388
+            "pred_tier": "Normal",
+            "minute_acc": 0.412
           },
           {
             "record_id": "a06",
             "n_minutes": 509,
             "usable_ratio": 0.9764,
             "true_eahi": 24.28,
-            "pred_eahi": 52.88,
-            "abs_err_eahi": 28.59,
+            "pred_eahi": 60.0,
+            "abs_err_eahi": 35.72,
             "true_tier": "Moderate",
             "pred_tier": "Severe",
-            "minute_acc": 0.5252
+            "minute_acc": 0.4105
           },
           {
             "record_id": "a07",
             "n_minutes": 510,
             "usable_ratio": 1.0,
             "true_eahi": 37.76,
-            "pred_eahi": 50.94,
-            "abs_err_eahi": 13.18,
+            "pred_eahi": 54.82,
+            "abs_err_eahi": 17.06,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.7569
+            "minute_acc": 0.7118
           },
           {
             "record_id": "a08",
             "n_minutes": 500,
             "usable_ratio": 0.998,
             "true_eahi": 22.68,
-            "pred_eahi": 24.77,
-            "abs_err_eahi": 2.09,
+            "pred_eahi": 25.61,
+            "abs_err_eahi": 2.93,
             "true_tier": "Moderate",
             "pred_tier": "Moderate",
-            "minute_acc": 0.8056
+            "minute_acc": 0.7796
           },
           {
             "record_id": "a09",
             "n_minutes": 495,
             "usable_ratio": 1.0,
             "true_eahi": 46.18,
-            "pred_eahi": 59.88,
-            "abs_err_eahi": 13.7,
+            "pred_eahi": 60.0,
+            "abs_err_eahi": 13.82,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.7717
+            "minute_acc": 0.7697
           },
           {
             "record_id": "a10",
             "n_minutes": 516,
             "usable_ratio": 0.9903,
             "true_eahi": 11.51,
-            "pred_eahi": 20.08,
-            "abs_err_eahi": 8.57,
+            "pred_eahi": 20.78,
+            "abs_err_eahi": 9.27,
             "true_tier": "Mild",
             "pred_tier": "Moderate",
-            "minute_acc": 0.6477
+            "minute_acc": 0.6595
           },
           {
             "record_id": "a11",
             "n_minutes": 466,
             "usable_ratio": 0.9979,
             "true_eahi": 28.58,
-            "pred_eahi": 0.0,
-            "abs_err_eahi": 28.58,
+            "pred_eahi": 60.0,
+            "abs_err_eahi": 31.42,
             "true_tier": "Moderate",
-            "pred_tier": "Normal",
-            "minute_acc": 0.5226
+            "pred_tier": "Severe",
+            "minute_acc": 0.4774
           },
           {
             "record_id": "a12",
             "n_minutes": 577,
             "usable_ratio": 0.9064,
             "true_eahi": 55.53,
-            "pred_eahi": 25.12,
-            "abs_err_eahi": 30.4,
+            "pred_eahi": 40.5,
+            "abs_err_eahi": 15.03,
             "true_tier": "Severe",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.4512
+            "pred_tier": "Severe",
+            "minute_acc": 0.6386
           },
           {
             "record_id": "a13",
             "n_minutes": 494,
             "usable_ratio": 1.0,
             "true_eahi": 29.51,
-            "pred_eahi": 27.57,
-            "abs_err_eahi": 1.94,
+            "pred_eahi": 23.08,
+            "abs_err_eahi": 6.44,
             "true_tier": "Moderate",
             "pred_tier": "Moderate",
-            "minute_acc": 0.8745
+            "minute_acc": 0.8401
           },
           {
             "record_id": "a14",
@@ -857,165 +857,165 @@
             "n_minutes": 509,
             "usable_ratio": 0.9745,
             "true_eahi": 43.38,
-            "pred_eahi": 28.67,
-            "abs_err_eahi": 14.71,
+            "pred_eahi": 43.31,
+            "abs_err_eahi": 0.07,
             "true_tier": "Severe",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.498
+            "pred_tier": "Severe",
+            "minute_acc": 0.6411
           },
           {
             "record_id": "a16",
             "n_minutes": 481,
             "usable_ratio": 0.9647,
             "true_eahi": 39.92,
-            "pred_eahi": 44.22,
-            "abs_err_eahi": 4.31,
+            "pred_eahi": 59.74,
+            "abs_err_eahi": 19.82,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8599
+            "minute_acc": 0.6832
           },
           {
             "record_id": "a17",
             "n_minutes": 484,
             "usable_ratio": 0.9607,
             "true_eahi": 19.59,
-            "pred_eahi": 41.16,
-            "abs_err_eahi": 21.57,
+            "pred_eahi": 35.35,
+            "abs_err_eahi": 15.77,
             "true_tier": "Moderate",
             "pred_tier": "Severe",
-            "minute_acc": 0.572
+            "minute_acc": 0.5054
           },
           {
             "record_id": "a18",
             "n_minutes": 489,
             "usable_ratio": 1.0,
             "true_eahi": 53.74,
-            "pred_eahi": 58.28,
-            "abs_err_eahi": 4.54,
+            "pred_eahi": 54.11,
+            "abs_err_eahi": 0.37,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.9243
+            "minute_acc": 0.9039
           },
           {
             "record_id": "a19",
             "n_minutes": 502,
             "usable_ratio": 0.9781,
             "true_eahi": 24.5,
-            "pred_eahi": 27.49,
-            "abs_err_eahi": 2.99,
+            "pred_eahi": 37.76,
+            "abs_err_eahi": 13.26,
             "true_tier": "Moderate",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.9145
+            "pred_tier": "Severe",
+            "minute_acc": 0.776
           },
           {
             "record_id": "a20",
             "n_minutes": 510,
             "usable_ratio": 0.9961,
             "true_eahi": 37.06,
-            "pred_eahi": 3.31,
-            "abs_err_eahi": 33.75,
+            "pred_eahi": 0.24,
+            "abs_err_eahi": 36.82,
             "true_tier": "Severe",
             "pred_tier": "Normal",
-            "minute_acc": 0.437
+            "minute_acc": 0.3858
           },
           {
             "record_id": "b01",
             "n_minutes": 486,
             "usable_ratio": 1.0,
             "true_eahi": 2.35,
-            "pred_eahi": 3.46,
-            "abs_err_eahi": 1.11,
+            "pred_eahi": 18.64,
+            "abs_err_eahi": 16.3,
             "true_tier": "Normal",
-            "pred_tier": "Normal",
-            "minute_acc": 0.9115
+            "pred_tier": "Moderate",
+            "minute_acc": 0.6996
           },
           {
             "record_id": "b02",
             "n_minutes": 517,
             "usable_ratio": 1.0,
             "true_eahi": 10.79,
-            "pred_eahi": 39.11,
-            "abs_err_eahi": 28.32,
+            "pred_eahi": 58.49,
+            "abs_err_eahi": 47.7,
             "true_tier": "Mild",
             "pred_tier": "Severe",
-            "minute_acc": 0.5203
+            "minute_acc": 0.2012
           },
           {
             "record_id": "b03",
             "n_minutes": 440,
             "usable_ratio": 1.0,
             "true_eahi": 9.95,
-            "pred_eahi": 8.45,
-            "abs_err_eahi": 1.5,
+            "pred_eahi": 6.55,
+            "abs_err_eahi": 3.41,
             "true_tier": "Mild",
             "pred_tier": "Mild",
-            "minute_acc": 0.9568
+            "minute_acc": 0.925
           },
           {
             "record_id": "b04",
             "n_minutes": 428,
             "usable_ratio": 0.7757,
             "true_eahi": 1.4,
-            "pred_eahi": 0.0,
-            "abs_err_eahi": 1.4,
+            "pred_eahi": 1.99,
+            "abs_err_eahi": 0.59,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9699
+            "minute_acc": 0.9367
           },
           {
             "record_id": "b05",
             "n_minutes": 432,
             "usable_ratio": 0.8472,
             "true_eahi": 7.92,
-            "pred_eahi": 1.97,
-            "abs_err_eahi": 5.95,
+            "pred_eahi": 6.56,
+            "abs_err_eahi": 1.36,
             "true_tier": "Mild",
-            "pred_tier": "Normal",
-            "minute_acc": 0.8115
+            "pred_tier": "Mild",
+            "minute_acc": 0.735
           },
           {
             "record_id": "c01",
             "n_minutes": 483,
             "usable_ratio": 0.9772,
             "true_eahi": 0.0,
-            "pred_eahi": 0.13,
-            "abs_err_eahi": 0.13,
+            "pred_eahi": 11.82,
+            "abs_err_eahi": 11.82,
             "true_tier": "Normal",
-            "pred_tier": "Normal",
-            "minute_acc": 0.9979
+            "pred_tier": "Mild",
+            "minute_acc": 0.803
           },
           {
             "record_id": "c02",
             "n_minutes": 501,
             "usable_ratio": 0.978,
             "true_eahi": 0.12,
-            "pred_eahi": 0.0,
-            "abs_err_eahi": 0.12,
+            "pred_eahi": 1.1,
+            "abs_err_eahi": 0.98,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.998
+            "minute_acc": 0.9796
           },
           {
             "record_id": "c03",
             "n_minutes": 453,
             "usable_ratio": 0.9956,
             "true_eahi": 0.0,
-            "pred_eahi": 22.08,
-            "abs_err_eahi": 22.08,
+            "pred_eahi": 3.33,
+            "abs_err_eahi": 3.33,
             "true_tier": "Normal",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.6319
+            "pred_tier": "Normal",
+            "minute_acc": 0.9446
           },
           {
             "record_id": "c04",
             "n_minutes": 481,
             "usable_ratio": 0.9563,
             "true_eahi": 0.0,
-            "pred_eahi": 0.0,
-            "abs_err_eahi": 0.0,
+            "pred_eahi": 0.39,
+            "abs_err_eahi": 0.39,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 1.0
+            "minute_acc": 0.9935
           },
           {
             "record_id": "c05",
@@ -1033,11 +1033,11 @@
             "n_minutes": 467,
             "usable_ratio": 0.9936,
             "true_eahi": 0.13,
-            "pred_eahi": 0.0,
-            "abs_err_eahi": 0.13,
+            "pred_eahi": 0.52,
+            "abs_err_eahi": 0.39,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9978
+            "minute_acc": 0.9892
           },
           {
             "record_id": "c07",
@@ -1066,67 +1066,67 @@
             "n_minutes": 467,
             "usable_ratio": 0.9636,
             "true_eahi": 0.26,
-            "pred_eahi": 59.07,
-            "abs_err_eahi": 58.81,
+            "pred_eahi": 60.0,
+            "abs_err_eahi": 59.74,
             "true_tier": "Normal",
             "pred_tier": "Severe",
-            "minute_acc": 0.02
+            "minute_acc": 0.0044
           },
           {
             "record_id": "c10",
             "n_minutes": 430,
             "usable_ratio": 0.9698,
             "true_eahi": 0.14,
-            "pred_eahi": 10.5,
-            "abs_err_eahi": 10.36,
+            "pred_eahi": 9.35,
+            "abs_err_eahi": 9.21,
             "true_tier": "Normal",
             "pred_tier": "Mild",
-            "minute_acc": 0.8273
+            "minute_acc": 0.8465
           }
         ]
       },
       "bootstrap_ci_95": {
         "accuracy": {
-          "mean": 0.7516,
-          "median": 0.7519,
-          "ci95_low": 0.6736,
-          "ci95_high": 0.8251
+          "mean": 0.7304,
+          "median": 0.7328,
+          "ci95_low": 0.6469,
+          "ci95_high": 0.8036
         },
         "sensitivity": {
-          "mean": 0.7335,
-          "median": 0.7353,
-          "ci95_low": 0.5818,
-          "ci95_high": 0.8729
+          "mean": 0.8038,
+          "median": 0.8058,
+          "ci95_low": 0.67,
+          "ci95_high": 0.9069
         },
         "specificity": {
-          "mean": 0.7617,
-          "median": 0.763,
-          "ci95_low": 0.6471,
-          "ci95_high": 0.8566
+          "mean": 0.6807,
+          "median": 0.6849,
+          "ci95_low": 0.5377,
+          "ci95_high": 0.795
         },
         "f1": {
-          "mean": 0.6942,
-          "median": 0.6985,
-          "ci95_low": 0.5783,
-          "ci95_high": 0.7862
+          "mean": 0.6965,
+          "median": 0.7007,
+          "ci95_low": 0.5902,
+          "ci95_high": 0.7851
         },
         "auroc": {
-          "mean": 0.8292,
-          "median": 0.8318,
-          "ci95_low": 0.7348,
-          "ci95_high": 0.9052
+          "mean": 0.8098,
+          "median": 0.8125,
+          "ci95_low": 0.7166,
+          "ci95_high": 0.891
         },
         "auprc": {
-          "mean": 0.768,
-          "median": 0.7726,
-          "ci95_low": 0.6436,
-          "ci95_high": 0.8668
+          "mean": 0.743,
+          "median": 0.7491,
+          "ci95_low": 0.6035,
+          "ci95_high": 0.8396
         },
         "eahi_mae": {
-          "mean": 12.2902,
-          "median": 12.2058,
-          "ci95_low": 8.0597,
-          "ci95_high": 16.8249
+          "mean": 12.7346,
+          "median": 12.5163,
+          "ci95_low": 8.4177,
+          "ci95_high": 18.3136
         }
       },
       "decision_curve": {
@@ -1164,37 +1164,37 @@
           0.8
         ],
         "net_benefit_model": [
-          0.3598,
-          0.3444,
-          0.3307,
-          0.3168,
-          0.3031,
-          0.288,
-          0.2762,
-          0.2619,
-          0.2478,
-          0.2339,
-          0.22,
-          0.2069,
-          0.1967,
-          0.1865,
-          0.1767,
-          0.1671,
-          0.1598,
-          0.1522,
-          0.145,
-          0.1344,
-          0.1239,
-          0.118,
-          0.1115,
-          0.1062,
-          0.1005,
-          0.0934,
-          0.0979,
-          0.1004,
-          0.0943,
-          0.0821,
-          0.0655
+          0.3575,
+          0.341,
+          0.3232,
+          0.3047,
+          0.2879,
+          0.2717,
+          0.2598,
+          0.2477,
+          0.2368,
+          0.2278,
+          0.2201,
+          0.2142,
+          0.2063,
+          0.1968,
+          0.1853,
+          0.1756,
+          0.1657,
+          0.1573,
+          0.15,
+          0.1408,
+          0.1303,
+          0.1155,
+          0.1035,
+          0.0929,
+          0.0829,
+          0.0724,
+          0.0711,
+          0.0653,
+          0.0556,
+          0.0473,
+          0.0388
         ],
         "net_benefit_refer_all": [
           0.3572,
@@ -1277,60 +1277,60 @@
           3,
           4
         ],
-        "temperature": 1.78431,
-        "threshold": 0.33,
-        "oof_auroc": 0.9319,
+        "temperature": 1.67703,
+        "threshold": 0.47,
+        "oof_auroc": 0.9487,
         "fold_aurocs": [
-          0.9322,
-          0.9543,
-          0.9435,
-          0.9869,
-          0.951
+          0.9449,
+          0.9529,
+          0.9413,
+          0.9868,
+          0.9611
         ]
       },
       "minute_metrics": {
         "n_minutes": 16539,
         "coverage": 0.9716,
-        "accuracy": 0.8724,
-        "sensitivity": 0.8393,
-        "specificity": 0.8935,
-        "precision": 0.834,
-        "f1": 0.8366,
-        "auroc": 0.932,
-        "auprc": 0.9159,
-        "ece": 0.0236,
-        "brier": 0.095
+        "accuracy": 0.8887,
+        "sensitivity": 0.8703,
+        "specificity": 0.9005,
+        "precision": 0.8479,
+        "f1": 0.859,
+        "auroc": 0.9486,
+        "auprc": 0.9305,
+        "ece": 0.0234,
+        "brier": 0.0826
       },
       "minute_metrics_ungated": {
         "n_minutes": 17023,
         "coverage": 1.0,
-        "accuracy": 0.8731,
-        "sensitivity": 0.8397,
-        "specificity": 0.8937,
-        "precision": 0.8303,
-        "f1": 0.835,
-        "auroc": 0.9319,
-        "auprc": 0.9141,
-        "ece": 0.0203,
-        "brier": 0.094
+        "accuracy": 0.8895,
+        "sensitivity": 0.8708,
+        "specificity": 0.9011,
+        "precision": 0.845,
+        "f1": 0.8577,
+        "auroc": 0.9487,
+        "auprc": 0.9293,
+        "ece": 0.0262,
+        "brier": 0.0821
       },
       "recording_metrics": {
         "n_recordings": 35,
-        "eahi_mae": 6.3,
-        "eahi_rmse": 8.18,
-        "eahi_pearson_r": 0.9156,
-        "bland_altman_bias": 0.31,
-        "bland_altman_loa_low": -15.96,
-        "bland_altman_loa_high": 16.57,
+        "eahi_mae": 4.65,
+        "eahi_rmse": 6.39,
+        "eahi_pearson_r": 0.9497,
+        "bland_altman_bias": 0.75,
+        "bland_altman_loa_low": -11.86,
+        "bland_altman_loa_high": 13.36,
         "screening_cutoff_5": {
-          "accuracy": 0.8571,
-          "sensitivity": 0.913,
+          "accuracy": 0.8857,
+          "sensitivity": 0.9565,
           "specificity": 0.75
         },
         "moderate_cutoff_15": {
-          "accuracy": 0.8571,
-          "sensitivity": 0.8421,
-          "specificity": 0.875
+          "accuracy": 0.9143,
+          "sensitivity": 0.8947,
+          "specificity": 0.9375
         },
         "per_record": [
           {
@@ -1338,8 +1338,8 @@
             "n_minutes": 489,
             "usable_ratio": 1.0,
             "true_eahi": 57.67,
-            "pred_eahi": 56.93,
-            "abs_err_eahi": 0.74,
+            "pred_eahi": 57.18,
+            "abs_err_eahi": 0.49,
             "true_tier": "Severe",
             "pred_tier": "Severe",
             "minute_acc": 0.9714
@@ -1349,22 +1349,22 @@
             "n_minutes": 528,
             "usable_ratio": 0.9981,
             "true_eahi": 47.73,
-            "pred_eahi": 47.93,
-            "abs_err_eahi": 0.2,
+            "pred_eahi": 45.09,
+            "abs_err_eahi": 2.64,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.888
+            "minute_acc": 0.8824
           },
           {
             "record_id": "a03",
             "n_minutes": 519,
             "usable_ratio": 0.9981,
             "true_eahi": 28.44,
-            "pred_eahi": 31.74,
-            "abs_err_eahi": 3.3,
+            "pred_eahi": 34.29,
+            "abs_err_eahi": 5.85,
             "true_tier": "Moderate",
             "pred_tier": "Severe",
-            "minute_acc": 0.9228
+            "minute_acc": 0.8919
           },
           {
             "record_id": "a04",
@@ -1382,275 +1382,275 @@
             "n_minutes": 453,
             "usable_ratio": 0.9912,
             "true_eahi": 36.56,
-            "pred_eahi": 27.13,
-            "abs_err_eahi": 9.43,
+            "pred_eahi": 34.08,
+            "abs_err_eahi": 2.48,
             "true_tier": "Severe",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.8352
+            "pred_tier": "Severe",
+            "minute_acc": 0.8976
           },
           {
             "record_id": "a06",
             "n_minutes": 509,
             "usable_ratio": 0.9764,
             "true_eahi": 24.28,
-            "pred_eahi": 8.93,
-            "abs_err_eahi": 15.35,
+            "pred_eahi": 10.26,
+            "abs_err_eahi": 14.02,
             "true_tier": "Moderate",
             "pred_tier": "Mild",
-            "minute_acc": 0.7062
+            "minute_acc": 0.7123
           },
           {
             "record_id": "a07",
             "n_minutes": 510,
             "usable_ratio": 1.0,
             "true_eahi": 37.76,
-            "pred_eahi": 47.41,
-            "abs_err_eahi": 9.65,
+            "pred_eahi": 45.29,
+            "abs_err_eahi": 7.53,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8157
+            "minute_acc": 0.8353
           },
           {
             "record_id": "a08",
             "n_minutes": 500,
             "usable_ratio": 0.998,
             "true_eahi": 22.68,
-            "pred_eahi": 37.03,
-            "abs_err_eahi": 14.35,
+            "pred_eahi": 38.24,
+            "abs_err_eahi": 15.56,
             "true_tier": "Moderate",
             "pred_tier": "Severe",
-            "minute_acc": 0.7415
+            "minute_acc": 0.7134
           },
           {
             "record_id": "a09",
             "n_minutes": 495,
             "usable_ratio": 1.0,
             "true_eahi": 46.18,
-            "pred_eahi": 55.76,
-            "abs_err_eahi": 9.58,
+            "pred_eahi": 52.48,
+            "abs_err_eahi": 6.3,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8242
+            "minute_acc": 0.8626
           },
           {
             "record_id": "a10",
             "n_minutes": 516,
             "usable_ratio": 0.9903,
             "true_eahi": 11.51,
-            "pred_eahi": 2.23,
-            "abs_err_eahi": 9.28,
+            "pred_eahi": 5.75,
+            "abs_err_eahi": 5.76,
             "true_tier": "Mild",
-            "pred_tier": "Normal",
-            "minute_acc": 0.8395
+            "pred_tier": "Mild",
+            "minute_acc": 0.8787
           },
           {
             "record_id": "a11",
             "n_minutes": 466,
             "usable_ratio": 0.9979,
             "true_eahi": 28.58,
-            "pred_eahi": 14.84,
-            "abs_err_eahi": 13.74,
+            "pred_eahi": 17.55,
+            "abs_err_eahi": 11.04,
             "true_tier": "Moderate",
-            "pred_tier": "Mild",
-            "minute_acc": 0.7527
+            "pred_tier": "Moderate",
+            "minute_acc": 0.6946
           },
           {
             "record_id": "a12",
             "n_minutes": 577,
             "usable_ratio": 0.9064,
             "true_eahi": 55.53,
-            "pred_eahi": 57.13,
-            "abs_err_eahi": 1.6,
+            "pred_eahi": 56.56,
+            "abs_err_eahi": 1.03,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.9656
+            "minute_acc": 0.9675
           },
           {
             "record_id": "a13",
             "n_minutes": 494,
             "usable_ratio": 1.0,
             "true_eahi": 29.51,
-            "pred_eahi": 32.67,
-            "abs_err_eahi": 3.16,
+            "pred_eahi": 33.16,
+            "abs_err_eahi": 3.64,
             "true_tier": "Moderate",
             "pred_tier": "Severe",
-            "minute_acc": 0.9109
+            "minute_acc": 0.9028
           },
           {
             "record_id": "a14",
             "n_minutes": 509,
             "usable_ratio": 1.0,
             "true_eahi": 45.15,
-            "pred_eahi": 50.33,
-            "abs_err_eahi": 5.19,
+            "pred_eahi": 46.8,
+            "abs_err_eahi": 1.65,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8978
+            "minute_acc": 0.9214
           },
           {
             "record_id": "a15",
             "n_minutes": 509,
             "usable_ratio": 0.9745,
             "true_eahi": 43.38,
-            "pred_eahi": 25.89,
-            "abs_err_eahi": 17.49,
+            "pred_eahi": 38.1,
+            "abs_err_eahi": 5.27,
             "true_tier": "Severe",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.6976
+            "pred_tier": "Severe",
+            "minute_acc": 0.8327
           },
           {
             "record_id": "a16",
             "n_minutes": 481,
             "usable_ratio": 0.9647,
             "true_eahi": 39.92,
-            "pred_eahi": 40.47,
-            "abs_err_eahi": 0.56,
+            "pred_eahi": 41.12,
+            "abs_err_eahi": 1.2,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8879
+            "minute_acc": 0.8556
           },
           {
             "record_id": "a17",
             "n_minutes": 484,
             "usable_ratio": 0.9607,
             "true_eahi": 19.59,
-            "pred_eahi": 13.55,
-            "abs_err_eahi": 6.04,
+            "pred_eahi": 9.03,
+            "abs_err_eahi": 10.55,
             "true_tier": "Moderate",
             "pred_tier": "Mild",
-            "minute_acc": 0.8301
+            "minute_acc": 0.8151
           },
           {
             "record_id": "a18",
             "n_minutes": 489,
             "usable_ratio": 1.0,
             "true_eahi": 53.74,
-            "pred_eahi": 45.64,
-            "abs_err_eahi": 8.1,
+            "pred_eahi": 49.57,
+            "abs_err_eahi": 4.17,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.7955
+            "minute_acc": 0.8323
           },
           {
             "record_id": "a19",
             "n_minutes": 502,
             "usable_ratio": 0.9781,
             "true_eahi": 24.5,
-            "pred_eahi": 30.31,
-            "abs_err_eahi": 5.8,
+            "pred_eahi": 27.25,
+            "abs_err_eahi": 2.75,
             "true_tier": "Moderate",
-            "pred_tier": "Severe",
-            "minute_acc": 0.8921
+            "pred_tier": "Moderate",
+            "minute_acc": 0.9226
           },
           {
             "record_id": "a20",
             "n_minutes": 510,
             "usable_ratio": 0.9961,
             "true_eahi": 37.06,
-            "pred_eahi": 20.43,
-            "abs_err_eahi": 16.63,
+            "pred_eahi": 31.06,
+            "abs_err_eahi": 6.0,
             "true_tier": "Severe",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.7067
+            "pred_tier": "Severe",
+            "minute_acc": 0.8524
           },
           {
             "record_id": "b01",
             "n_minutes": 486,
             "usable_ratio": 1.0,
             "true_eahi": 2.35,
-            "pred_eahi": 4.07,
-            "abs_err_eahi": 1.73,
+            "pred_eahi": 5.06,
+            "abs_err_eahi": 2.72,
             "true_tier": "Normal",
-            "pred_tier": "Normal",
-            "minute_acc": 0.9465
+            "pred_tier": "Mild",
+            "minute_acc": 0.93
           },
           {
             "record_id": "b02",
             "n_minutes": 517,
             "usable_ratio": 1.0,
             "true_eahi": 10.79,
-            "pred_eahi": 20.66,
-            "abs_err_eahi": 9.86,
+            "pred_eahi": 14.16,
+            "abs_err_eahi": 3.37,
             "true_tier": "Mild",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.8085
+            "pred_tier": "Mild",
+            "minute_acc": 0.8743
           },
           {
             "record_id": "b03",
             "n_minutes": 440,
             "usable_ratio": 1.0,
             "true_eahi": 9.95,
-            "pred_eahi": 21.82,
-            "abs_err_eahi": 11.86,
+            "pred_eahi": 26.59,
+            "abs_err_eahi": 16.64,
             "true_tier": "Mild",
             "pred_tier": "Moderate",
-            "minute_acc": 0.8023
+            "minute_acc": 0.7182
           },
           {
             "record_id": "b04",
             "n_minutes": 428,
             "usable_ratio": 0.7757,
             "true_eahi": 1.4,
-            "pred_eahi": 7.77,
-            "abs_err_eahi": 6.37,
+            "pred_eahi": 1.81,
+            "abs_err_eahi": 0.41,
             "true_tier": "Normal",
-            "pred_tier": "Mild",
-            "minute_acc": 0.8584
+            "pred_tier": "Normal",
+            "minute_acc": 0.9518
           },
           {
             "record_id": "b05",
             "n_minutes": 432,
             "usable_ratio": 0.8472,
             "true_eahi": 7.92,
-            "pred_eahi": 0.33,
-            "abs_err_eahi": 7.59,
+            "pred_eahi": 2.95,
+            "abs_err_eahi": 4.97,
             "true_tier": "Mild",
             "pred_tier": "Normal",
-            "minute_acc": 0.8497
+            "minute_acc": 0.877
           },
           {
             "record_id": "c01",
             "n_minutes": 483,
             "usable_ratio": 0.9772,
             "true_eahi": 0.0,
-            "pred_eahi": 0.64,
-            "abs_err_eahi": 0.64,
+            "pred_eahi": 0.0,
+            "abs_err_eahi": 0.0,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9894
+            "minute_acc": 1.0
           },
           {
             "record_id": "c02",
             "n_minutes": 501,
             "usable_ratio": 0.978,
             "true_eahi": 0.12,
-            "pred_eahi": 2.69,
-            "abs_err_eahi": 2.57,
+            "pred_eahi": 0.98,
+            "abs_err_eahi": 0.86,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9531
+            "minute_acc": 0.9816
           },
           {
             "record_id": "c03",
             "n_minutes": 453,
             "usable_ratio": 0.9956,
             "true_eahi": 0.0,
-            "pred_eahi": 5.99,
-            "abs_err_eahi": 5.99,
+            "pred_eahi": 8.78,
+            "abs_err_eahi": 8.78,
             "true_tier": "Normal",
             "pred_tier": "Mild",
-            "minute_acc": 0.9002
+            "minute_acc": 0.8537
           },
           {
             "record_id": "c04",
             "n_minutes": 481,
             "usable_ratio": 0.9563,
             "true_eahi": 0.0,
-            "pred_eahi": 12.78,
-            "abs_err_eahi": 12.78,
+            "pred_eahi": 3.52,
+            "abs_err_eahi": 3.52,
             "true_tier": "Normal",
-            "pred_tier": "Mild",
-            "minute_acc": 0.787
+            "pred_tier": "Normal",
+            "minute_acc": 0.9413
           },
           {
             "record_id": "c05",
@@ -1679,89 +1679,89 @@
             "n_minutes": 428,
             "usable_ratio": 1.0,
             "true_eahi": 0.56,
-            "pred_eahi": 4.49,
-            "abs_err_eahi": 3.93,
+            "pred_eahi": 4.07,
+            "abs_err_eahi": 3.5,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9206
+            "minute_acc": 0.9369
           },
           {
             "record_id": "c08",
             "n_minutes": 513,
             "usable_ratio": 0.8031,
             "true_eahi": 0.0,
-            "pred_eahi": 4.66,
-            "abs_err_eahi": 4.66,
+            "pred_eahi": 6.7,
+            "abs_err_eahi": 6.7,
             "true_tier": "Normal",
-            "pred_tier": "Normal",
-            "minute_acc": 0.9223
+            "pred_tier": "Mild",
+            "minute_acc": 0.8883
           },
           {
             "record_id": "c09",
             "n_minutes": 467,
             "usable_ratio": 0.9636,
             "true_eahi": 0.26,
-            "pred_eahi": 1.07,
-            "abs_err_eahi": 0.81,
+            "pred_eahi": 0.0,
+            "abs_err_eahi": 0.26,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9778
+            "minute_acc": 0.9956
           },
           {
             "record_id": "c10",
             "n_minutes": 430,
             "usable_ratio": 0.9698,
             "true_eahi": 0.14,
-            "pred_eahi": 0.43,
-            "abs_err_eahi": 0.29,
+            "pred_eahi": 1.87,
+            "abs_err_eahi": 1.73,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9904
+            "minute_acc": 0.9664
           }
         ]
       },
       "bootstrap_ci_95": {
         "accuracy": {
-          "mean": 0.872,
-          "median": 0.8722,
-          "ci95_low": 0.8392,
-          "ci95_high": 0.9012
+          "mean": 0.8883,
+          "median": 0.8888,
+          "ci95_low": 0.8576,
+          "ci95_high": 0.9164
         },
         "sensitivity": {
-          "mean": 0.8373,
-          "median": 0.8401,
-          "ci95_low": 0.7411,
-          "ci95_high": 0.9138
+          "mean": 0.8689,
+          "median": 0.8717,
+          "ci95_low": 0.7928,
+          "ci95_high": 0.9264
         },
         "specificity": {
-          "mean": 0.8927,
-          "median": 0.8943,
-          "ci95_low": 0.8468,
-          "ci95_high": 0.9304
+          "mean": 0.8991,
+          "median": 0.9,
+          "ci95_low": 0.8532,
+          "ci95_high": 0.9358
         },
         "f1": {
-          "mean": 0.8336,
-          "median": 0.8354,
-          "ci95_low": 0.7683,
-          "ci95_high": 0.884
+          "mean": 0.8564,
+          "median": 0.8588,
+          "ci95_low": 0.7993,
+          "ci95_high": 0.9001
         },
         "auroc": {
-          "mean": 0.9314,
-          "median": 0.9328,
-          "ci95_low": 0.893,
-          "ci95_high": 0.9598
+          "mean": 0.9481,
+          "median": 0.9482,
+          "ci95_low": 0.9233,
+          "ci95_high": 0.9682
         },
         "auprc": {
-          "mean": 0.9138,
-          "median": 0.9162,
-          "ci95_low": 0.8563,
-          "ci95_high": 0.9552
+          "mean": 0.9284,
+          "median": 0.9304,
+          "ci95_low": 0.8801,
+          "ci95_high": 0.9624
         },
         "eahi_mae": {
-          "mean": 6.3241,
-          "median": 6.2682,
-          "ci95_low": 4.6156,
-          "ci95_high": 8.1805
+          "mean": 4.6659,
+          "median": 4.6472,
+          "ci95_low": 3.2271,
+          "ci95_high": 6.1923
         }
       },
       "decision_curve": {
@@ -1799,37 +1799,37 @@
           0.8
         ],
         "net_benefit_model": [
-          0.3615,
-          0.3506,
-          0.3423,
-          0.3371,
-          0.3323,
-          0.3265,
-          0.3208,
-          0.3157,
-          0.3108,
-          0.3052,
-          0.3001,
-          0.2954,
-          0.2901,
-          0.2849,
-          0.2805,
-          0.2755,
-          0.2702,
-          0.2646,
-          0.2591,
+          0.3649,
+          0.3579,
+          0.3519,
+          0.3456,
+          0.3405,
+          0.3358,
+          0.3308,
+          0.3255,
+          0.3213,
+          0.3167,
+          0.3129,
+          0.3093,
+          0.3054,
+          0.3007,
+          0.2974,
+          0.2939,
+          0.2888,
+          0.2839,
+          0.2788,
+          0.2737,
+          0.2688,
+          0.2637,
+          0.2588,
           0.2542,
-          0.2486,
-          0.245,
-          0.2407,
-          0.2346,
-          0.2296,
-          0.2224,
-          0.2166,
-          0.2086,
-          0.2027,
-          0.1951,
-          0.185
+          0.2491,
+          0.2426,
+          0.2365,
+          0.2305,
+          0.2232,
+          0.2123,
+          0.2055
         ],
         "net_benefit_refer_all": [
           0.3572,
@@ -1912,59 +1912,59 @@
           3,
           4
         ],
-        "temperature": 1.86479,
-        "threshold": 0.42,
-        "oof_auroc": 0.8753,
+        "temperature": 1.9036,
+        "threshold": 0.58,
+        "oof_auroc": 0.8624,
         "fold_aurocs": [
-          0.9105,
-          0.9023,
-          0.8566,
-          0.8383,
-          0.9143
+          0.9008,
+          0.9118,
+          0.8634,
+          0.8318,
+          0.9238
         ]
       },
       "minute_metrics": {
         "n_minutes": 16539,
         "coverage": 0.9716,
-        "accuracy": 0.7978,
-        "sensitivity": 0.7638,
-        "specificity": 0.8194,
-        "precision": 0.7295,
-        "f1": 0.7462,
-        "auroc": 0.8759,
-        "auprc": 0.8381,
-        "ece": 0.0289,
-        "brier": 0.1363
+        "accuracy": 0.7957,
+        "sensitivity": 0.74,
+        "specificity": 0.8312,
+        "precision": 0.7365,
+        "f1": 0.7382,
+        "auroc": 0.8608,
+        "auprc": 0.8357,
+        "ece": 0.088,
+        "brier": 0.1513
       },
       "minute_metrics_ungated": {
         "n_minutes": 17023,
         "coverage": 1.0,
-        "accuracy": 0.7994,
-        "sensitivity": 0.7636,
-        "specificity": 0.8215,
-        "precision": 0.7261,
-        "f1": 0.7444,
-        "auroc": 0.8753,
-        "auprc": 0.8351,
-        "ece": 0.0279,
-        "brier": 0.1355
+        "accuracy": 0.7992,
+        "sensitivity": 0.7407,
+        "specificity": 0.8353,
+        "precision": 0.7359,
+        "f1": 0.7383,
+        "auroc": 0.8624,
+        "auprc": 0.8345,
+        "ece": 0.0895,
+        "brier": 0.1498
       },
       "recording_metrics": {
         "n_recordings": 35,
-        "eahi_mae": 8.84,
-        "eahi_rmse": 12.08,
-        "eahi_pearson_r": 0.8056,
-        "bland_altman_bias": 1.67,
-        "bland_altman_loa_low": -22.11,
-        "bland_altman_loa_high": 25.46,
+        "eahi_mae": 9.4,
+        "eahi_rmse": 13.17,
+        "eahi_pearson_r": 0.774,
+        "bland_altman_bias": 0.41,
+        "bland_altman_loa_low": -25.76,
+        "bland_altman_loa_high": 26.58,
         "screening_cutoff_5": {
           "accuracy": 0.8286,
           "sensitivity": 0.9565,
           "specificity": 0.5833
         },
         "moderate_cutoff_15": {
-          "accuracy": 0.8571,
-          "sensitivity": 0.9474,
+          "accuracy": 0.7714,
+          "sensitivity": 0.7895,
           "specificity": 0.75
         },
         "per_record": [
@@ -1973,430 +1973,430 @@
             "n_minutes": 489,
             "usable_ratio": 1.0,
             "true_eahi": 57.67,
-            "pred_eahi": 56.56,
-            "abs_err_eahi": 1.1,
+            "pred_eahi": 52.64,
+            "abs_err_eahi": 5.03,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.9652
+            "minute_acc": 0.908
           },
           {
             "record_id": "a02",
             "n_minutes": 528,
             "usable_ratio": 0.9981,
             "true_eahi": 47.73,
-            "pred_eahi": 30.63,
-            "abs_err_eahi": 17.1,
+            "pred_eahi": 57.04,
+            "abs_err_eahi": 9.31,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.6907
+            "minute_acc": 0.8046
           },
           {
             "record_id": "a03",
             "n_minutes": 519,
             "usable_ratio": 0.9981,
             "true_eahi": 28.44,
-            "pred_eahi": 21.2,
-            "abs_err_eahi": 7.24,
+            "pred_eahi": 14.83,
+            "abs_err_eahi": 13.61,
             "true_tier": "Moderate",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.8591
+            "pred_tier": "Mild",
+            "minute_acc": 0.749
           },
           {
             "record_id": "a04",
             "n_minutes": 492,
             "usable_ratio": 1.0,
             "true_eahi": 55.24,
-            "pred_eahi": 31.59,
-            "abs_err_eahi": 23.66,
+            "pred_eahi": 14.02,
+            "abs_err_eahi": 41.22,
             "true_tier": "Severe",
-            "pred_tier": "Severe",
-            "minute_acc": 0.5447
+            "pred_tier": "Mild",
+            "minute_acc": 0.2967
           },
           {
             "record_id": "a05",
             "n_minutes": 453,
             "usable_ratio": 0.9912,
             "true_eahi": 36.56,
-            "pred_eahi": 44.9,
-            "abs_err_eahi": 8.34,
+            "pred_eahi": 44.77,
+            "abs_err_eahi": 8.21,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8508
+            "minute_acc": 0.8575
           },
           {
             "record_id": "a06",
             "n_minutes": 509,
             "usable_ratio": 0.9764,
             "true_eahi": 24.28,
-            "pred_eahi": 13.28,
-            "abs_err_eahi": 11.0,
+            "pred_eahi": 9.54,
+            "abs_err_eahi": 14.75,
             "true_tier": "Moderate",
             "pred_tier": "Mild",
-            "minute_acc": 0.7384
+            "minute_acc": 0.6841
           },
           {
             "record_id": "a07",
             "n_minutes": 510,
             "usable_ratio": 1.0,
             "true_eahi": 37.76,
-            "pred_eahi": 37.06,
-            "abs_err_eahi": 0.71,
+            "pred_eahi": 49.65,
+            "abs_err_eahi": 11.88,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8157
+            "minute_acc": 0.7353
           },
           {
             "record_id": "a08",
             "n_minutes": 500,
             "usable_ratio": 0.998,
             "true_eahi": 22.68,
-            "pred_eahi": 40.4,
-            "abs_err_eahi": 17.72,
+            "pred_eahi": 20.92,
+            "abs_err_eahi": 1.76,
             "true_tier": "Moderate",
-            "pred_tier": "Severe",
-            "minute_acc": 0.6613
+            "pred_tier": "Moderate",
+            "minute_acc": 0.8016
           },
           {
             "record_id": "a09",
             "n_minutes": 495,
             "usable_ratio": 1.0,
             "true_eahi": 46.18,
-            "pred_eahi": 58.79,
-            "abs_err_eahi": 12.61,
+            "pred_eahi": 57.7,
+            "abs_err_eahi": 11.52,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.7657
+            "minute_acc": 0.7556
           },
           {
             "record_id": "a10",
             "n_minutes": 516,
             "usable_ratio": 0.9903,
             "true_eahi": 11.51,
-            "pred_eahi": 6.46,
-            "abs_err_eahi": 5.05,
+            "pred_eahi": 11.39,
+            "abs_err_eahi": 0.12,
             "true_tier": "Mild",
             "pred_tier": "Mild",
-            "minute_acc": 0.8865
+            "minute_acc": 0.8904
           },
           {
             "record_id": "a11",
             "n_minutes": 466,
             "usable_ratio": 0.9979,
             "true_eahi": 28.58,
-            "pred_eahi": 22.32,
-            "abs_err_eahi": 6.26,
+            "pred_eahi": 13.55,
+            "abs_err_eahi": 15.04,
             "true_tier": "Moderate",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.5806
+            "pred_tier": "Mild",
+            "minute_acc": 0.6151
           },
           {
             "record_id": "a12",
             "n_minutes": 577,
             "usable_ratio": 0.9064,
             "true_eahi": 55.53,
-            "pred_eahi": 45.43,
-            "abs_err_eahi": 10.1,
+            "pred_eahi": 58.62,
+            "abs_err_eahi": 3.09,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.7973
+            "minute_acc": 0.9407
           },
           {
             "record_id": "a13",
             "n_minutes": 494,
             "usable_ratio": 1.0,
             "true_eahi": 29.51,
-            "pred_eahi": 32.43,
-            "abs_err_eahi": 2.91,
+            "pred_eahi": 15.55,
+            "abs_err_eahi": 13.97,
             "true_tier": "Moderate",
-            "pred_tier": "Severe",
-            "minute_acc": 0.6032
+            "pred_tier": "Moderate",
+            "minute_acc": 0.7065
           },
           {
             "record_id": "a14",
             "n_minutes": 509,
             "usable_ratio": 1.0,
             "true_eahi": 45.15,
-            "pred_eahi": 46.92,
-            "abs_err_eahi": 1.77,
+            "pred_eahi": 45.5,
+            "abs_err_eahi": 0.35,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8723
+            "minute_acc": 0.8644
           },
           {
             "record_id": "a15",
             "n_minutes": 509,
             "usable_ratio": 0.9745,
             "true_eahi": 43.38,
-            "pred_eahi": 51.05,
-            "abs_err_eahi": 7.67,
+            "pred_eahi": 48.51,
+            "abs_err_eahi": 5.13,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8468
+            "minute_acc": 0.8569
           },
           {
             "record_id": "a16",
             "n_minutes": 481,
             "usable_ratio": 0.9647,
             "true_eahi": 39.92,
-            "pred_eahi": 27.03,
-            "abs_err_eahi": 12.89,
+            "pred_eahi": 22.24,
+            "abs_err_eahi": 17.68,
             "true_tier": "Severe",
             "pred_tier": "Moderate",
-            "minute_acc": 0.6466
+            "minute_acc": 0.6056
           },
           {
             "record_id": "a17",
             "n_minutes": 484,
             "usable_ratio": 0.9607,
             "true_eahi": 19.59,
-            "pred_eahi": 17.42,
-            "abs_err_eahi": 2.17,
+            "pred_eahi": 36.9,
+            "abs_err_eahi": 17.32,
             "true_tier": "Moderate",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.7871
+            "pred_tier": "Severe",
+            "minute_acc": 0.6301
           },
           {
             "record_id": "a18",
             "n_minutes": 489,
             "usable_ratio": 1.0,
             "true_eahi": 53.74,
-            "pred_eahi": 50.43,
-            "abs_err_eahi": 3.31,
+            "pred_eahi": 43.44,
+            "abs_err_eahi": 10.31,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8957
+            "minute_acc": 0.816
           },
           {
             "record_id": "a19",
             "n_minutes": 502,
             "usable_ratio": 0.9781,
             "true_eahi": 24.5,
-            "pred_eahi": 28.96,
-            "abs_err_eahi": 4.46,
+            "pred_eahi": 24.81,
+            "abs_err_eahi": 0.3,
             "true_tier": "Moderate",
             "pred_tier": "Moderate",
-            "minute_acc": 0.9063
+            "minute_acc": 0.9389
           },
           {
             "record_id": "a20",
             "n_minutes": 510,
             "usable_ratio": 0.9961,
             "true_eahi": 37.06,
-            "pred_eahi": 21.14,
-            "abs_err_eahi": 15.92,
+            "pred_eahi": 21.97,
+            "abs_err_eahi": 15.09,
             "true_tier": "Severe",
             "pred_tier": "Moderate",
-            "minute_acc": 0.6831
+            "minute_acc": 0.6969
           },
           {
             "record_id": "b01",
             "n_minutes": 486,
             "usable_ratio": 1.0,
             "true_eahi": 2.35,
-            "pred_eahi": 1.23,
-            "abs_err_eahi": 1.11,
+            "pred_eahi": 1.98,
+            "abs_err_eahi": 0.37,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9403
+            "minute_acc": 0.9321
           },
           {
             "record_id": "b02",
             "n_minutes": 517,
             "usable_ratio": 1.0,
             "true_eahi": 10.79,
-            "pred_eahi": 13.23,
-            "abs_err_eahi": 2.44,
+            "pred_eahi": 22.17,
+            "abs_err_eahi": 11.37,
             "true_tier": "Mild",
-            "pred_tier": "Mild",
-            "minute_acc": 0.8936
+            "pred_tier": "Moderate",
+            "minute_acc": 0.795
           },
           {
             "record_id": "b03",
             "n_minutes": 440,
             "usable_ratio": 1.0,
             "true_eahi": 9.95,
-            "pred_eahi": 14.59,
-            "abs_err_eahi": 4.64,
+            "pred_eahi": 9.55,
+            "abs_err_eahi": 0.41,
             "true_tier": "Mild",
             "pred_tier": "Mild",
-            "minute_acc": 0.8727
+            "minute_acc": 0.8114
           },
           {
             "record_id": "b04",
             "n_minutes": 428,
             "usable_ratio": 0.7757,
             "true_eahi": 1.4,
-            "pred_eahi": 26.75,
-            "abs_err_eahi": 25.35,
+            "pred_eahi": 17.35,
+            "abs_err_eahi": 15.95,
             "true_tier": "Normal",
             "pred_tier": "Moderate",
-            "minute_acc": 0.5723
+            "minute_acc": 0.6928
           },
           {
             "record_id": "b05",
             "n_minutes": 432,
             "usable_ratio": 0.8472,
             "true_eahi": 7.92,
-            "pred_eahi": 0.33,
-            "abs_err_eahi": 7.59,
+            "pred_eahi": 0.0,
+            "abs_err_eahi": 7.92,
             "true_tier": "Mild",
             "pred_tier": "Normal",
-            "minute_acc": 0.8388
+            "minute_acc": 0.8443
           },
           {
             "record_id": "c01",
             "n_minutes": 483,
             "usable_ratio": 0.9772,
             "true_eahi": 0.0,
-            "pred_eahi": 0.89,
-            "abs_err_eahi": 0.89,
+            "pred_eahi": 2.16,
+            "abs_err_eahi": 2.16,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9852
+            "minute_acc": 0.964
           },
           {
             "record_id": "c02",
             "n_minutes": 501,
             "usable_ratio": 0.978,
             "true_eahi": 0.12,
-            "pred_eahi": 4.78,
-            "abs_err_eahi": 4.66,
+            "pred_eahi": 35.02,
+            "abs_err_eahi": 34.9,
             "true_tier": "Normal",
-            "pred_tier": "Normal",
-            "minute_acc": 0.9184
+            "pred_tier": "Severe",
+            "minute_acc": 0.4143
           },
           {
             "record_id": "c03",
             "n_minutes": 453,
             "usable_ratio": 0.9956,
             "true_eahi": 0.0,
-            "pred_eahi": 23.28,
-            "abs_err_eahi": 23.28,
+            "pred_eahi": 7.05,
+            "abs_err_eahi": 7.05,
             "true_tier": "Normal",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.612
+            "pred_tier": "Mild",
+            "minute_acc": 0.8825
           },
           {
             "record_id": "c04",
             "n_minutes": 481,
             "usable_ratio": 0.9563,
             "true_eahi": 0.0,
-            "pred_eahi": 31.57,
-            "abs_err_eahi": 31.57,
+            "pred_eahi": 11.87,
+            "abs_err_eahi": 11.87,
             "true_tier": "Normal",
-            "pred_tier": "Severe",
-            "minute_acc": 0.4739
+            "pred_tier": "Mild",
+            "minute_acc": 0.8022
           },
           {
             "record_id": "c05",
             "n_minutes": 465,
             "usable_ratio": 0.9957,
             "true_eahi": 0.39,
-            "pred_eahi": 0.13,
-            "abs_err_eahi": 0.26,
+            "pred_eahi": 0.39,
+            "abs_err_eahi": 0.0,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9935
+            "minute_acc": 0.9892
           },
           {
             "record_id": "c06",
             "n_minutes": 467,
             "usable_ratio": 0.9936,
             "true_eahi": 0.13,
-            "pred_eahi": 0.26,
-            "abs_err_eahi": 0.13,
+            "pred_eahi": 0.13,
+            "abs_err_eahi": 0.0,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9935
+            "minute_acc": 0.9957
           },
           {
             "record_id": "c07",
             "n_minutes": 428,
             "usable_ratio": 1.0,
             "true_eahi": 0.56,
-            "pred_eahi": 2.38,
-            "abs_err_eahi": 1.82,
+            "pred_eahi": 15.84,
+            "abs_err_eahi": 15.28,
             "true_tier": "Normal",
-            "pred_tier": "Normal",
-            "minute_acc": 0.9509
+            "pred_tier": "Moderate",
+            "minute_acc": 0.7313
           },
           {
             "record_id": "c08",
             "n_minutes": 513,
             "usable_ratio": 0.8031,
             "true_eahi": 0.0,
-            "pred_eahi": 20.53,
-            "abs_err_eahi": 20.53,
+            "pred_eahi": 2.18,
+            "abs_err_eahi": 2.18,
             "true_tier": "Normal",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.6578
+            "pred_tier": "Normal",
+            "minute_acc": 0.9636
           },
           {
             "record_id": "c09",
             "n_minutes": 467,
             "usable_ratio": 0.9636,
             "true_eahi": 0.26,
-            "pred_eahi": 11.33,
-            "abs_err_eahi": 11.08,
+            "pred_eahi": 2.13,
+            "abs_err_eahi": 1.88,
             "true_tier": "Normal",
-            "pred_tier": "Mild",
-            "minute_acc": 0.8111
+            "pred_tier": "Normal",
+            "minute_acc": 0.96
           },
           {
             "record_id": "c10",
             "n_minutes": 430,
             "usable_ratio": 0.9698,
             "true_eahi": 0.14,
-            "pred_eahi": 2.3,
-            "abs_err_eahi": 2.16,
+            "pred_eahi": 2.01,
+            "abs_err_eahi": 1.87,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9592
+            "minute_acc": 0.964
           }
         ]
       },
       "bootstrap_ci_95": {
         "accuracy": {
-          "mean": 0.7971,
-          "median": 0.7976,
-          "ci95_low": 0.7501,
-          "ci95_high": 0.8423
+          "mean": 0.7957,
+          "median": 0.7974,
+          "ci95_low": 0.7401,
+          "ci95_high": 0.8404
         },
         "sensitivity": {
-          "mean": 0.7626,
-          "median": 0.7658,
-          "ci95_low": 0.6808,
-          "ci95_high": 0.8398
+          "mean": 0.7382,
+          "median": 0.7435,
+          "ci95_low": 0.609,
+          "ci95_high": 0.8391
         },
         "specificity": {
-          "mean": 0.8181,
-          "median": 0.8183,
-          "ci95_low": 0.7516,
-          "ci95_high": 0.8823
+          "mean": 0.8304,
+          "median": 0.8336,
+          "ci95_low": 0.7604,
+          "ci95_high": 0.8894
         },
         "f1": {
-          "mean": 0.7429,
-          "median": 0.7451,
-          "ci95_low": 0.6597,
-          "ci95_high": 0.8103
+          "mean": 0.7348,
+          "median": 0.7371,
+          "ci95_low": 0.6359,
+          "ci95_high": 0.8134
         },
         "auroc": {
-          "mean": 0.875,
-          "median": 0.8762,
-          "ci95_low": 0.8309,
-          "ci95_high": 0.9133
+          "mean": 0.8603,
+          "median": 0.8627,
+          "ci95_low": 0.8006,
+          "ci95_high": 0.9065
         },
         "auprc": {
-          "mean": 0.8341,
-          "median": 0.8387,
-          "ci95_low": 0.7373,
-          "ci95_high": 0.9003
+          "mean": 0.8323,
+          "median": 0.8373,
+          "ci95_low": 0.7355,
+          "ci95_high": 0.8996
         },
         "eahi_mae": {
-          "mean": 8.89,
-          "median": 8.9033,
-          "ci95_low": 6.2908,
-          "ci95_high": 11.6946
+          "mean": 9.3967,
+          "median": 9.2769,
+          "ci95_low": 6.6741,
+          "ci95_high": 12.5296
         }
       },
       "decision_curve": {
@@ -2434,37 +2434,37 @@
           0.8
         ],
         "net_benefit_model": [
-          0.3574,
-          0.3444,
-          0.3336,
-          0.3231,
-          0.3121,
-          0.3021,
-          0.2917,
-          0.2817,
-          0.2728,
-          0.264,
-          0.2557,
-          0.2468,
-          0.2381,
-          0.2306,
-          0.222,
-          0.2158,
-          0.2083,
-          0.2008,
-          0.1923,
-          0.1853,
-          0.1786,
-          0.1721,
-          0.1653,
-          0.1581,
-          0.1526,
-          0.149,
-          0.1424,
-          0.1339,
-          0.127,
-          0.117,
-          0.11
+          0.3591,
+          0.342,
+          0.3233,
+          0.3093,
+          0.2976,
+          0.2874,
+          0.277,
+          0.268,
+          0.2569,
+          0.2463,
+          0.236,
+          0.2254,
+          0.2163,
+          0.2082,
+          0.1996,
+          0.1904,
+          0.1826,
+          0.1752,
+          0.1683,
+          0.1602,
+          0.153,
+          0.1471,
+          0.1398,
+          0.1359,
+          0.1292,
+          0.1252,
+          0.1169,
+          0.1116,
+          0.1099,
+          0.1105,
+          0.1135
         ],
         "net_benefit_refer_all": [
           0.3572,
@@ -2547,60 +2547,60 @@
           3,
           4
         ],
-        "temperature": 1.82019,
+        "temperature": 1.33589,
         "threshold": 0.48,
-        "oof_auroc": 0.8873,
+        "oof_auroc": 0.9098,
         "fold_aurocs": [
-          0.9296,
-          0.9155,
-          0.9068,
-          0.9263,
-          0.9129
+          0.923,
+          0.911,
+          0.8979,
+          0.9385,
+          0.9122
         ]
       },
       "minute_metrics": {
         "n_minutes": 16539,
         "coverage": 0.9716,
-        "accuracy": 0.8034,
-        "sensitivity": 0.8175,
-        "specificity": 0.7944,
-        "precision": 0.7171,
-        "f1": 0.764,
-        "auroc": 0.8887,
-        "auprc": 0.8446,
-        "ece": 0.0534,
-        "brier": 0.1347
+        "accuracy": 0.8335,
+        "sensitivity": 0.8164,
+        "specificity": 0.8445,
+        "precision": 0.7699,
+        "f1": 0.7925,
+        "auroc": 0.9106,
+        "auprc": 0.8649,
+        "ece": 0.0325,
+        "brier": 0.1171
       },
       "minute_metrics_ungated": {
         "n_minutes": 17023,
         "coverage": 1.0,
-        "accuracy": 0.8018,
-        "sensitivity": 0.8169,
-        "specificity": 0.7924,
-        "precision": 0.7091,
-        "f1": 0.7592,
-        "auroc": 0.8873,
-        "auprc": 0.8403,
-        "ece": 0.0577,
-        "brier": 0.1356
+        "accuracy": 0.8332,
+        "sensitivity": 0.8159,
+        "specificity": 0.844,
+        "precision": 0.7641,
+        "f1": 0.7891,
+        "auroc": 0.9098,
+        "auprc": 0.8616,
+        "ece": 0.0366,
+        "brier": 0.1173
       },
       "recording_metrics": {
         "n_recordings": 35,
-        "eahi_mae": 8.84,
-        "eahi_rmse": 14.27,
-        "eahi_pearson_r": 0.7648,
-        "bland_altman_bias": 3.87,
-        "bland_altman_loa_low": -23.44,
-        "bland_altman_loa_high": 31.17,
+        "eahi_mae": 6.11,
+        "eahi_rmse": 8.2,
+        "eahi_pearson_r": 0.9178,
+        "bland_altman_bias": 1.73,
+        "bland_altman_loa_low": -14.2,
+        "bland_altman_loa_high": 17.66,
         "screening_cutoff_5": {
           "accuracy": 0.8857,
-          "sensitivity": 0.9565,
-          "specificity": 0.75
+          "sensitivity": 1.0,
+          "specificity": 0.6667
         },
         "moderate_cutoff_15": {
-          "accuracy": 0.8286,
-          "sensitivity": 0.8947,
-          "specificity": 0.75
+          "accuracy": 0.9429,
+          "sensitivity": 0.9474,
+          "specificity": 0.9375
         },
         "per_record": [
           {
@@ -2608,151 +2608,151 @@
             "n_minutes": 489,
             "usable_ratio": 1.0,
             "true_eahi": 57.67,
-            "pred_eahi": 56.93,
-            "abs_err_eahi": 0.74,
+            "pred_eahi": 57.67,
+            "abs_err_eahi": 0.0,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.9714
+            "minute_acc": 0.9836
           },
           {
             "record_id": "a02",
             "n_minutes": 528,
             "usable_ratio": 0.9981,
             "true_eahi": 47.73,
-            "pred_eahi": 39.39,
-            "abs_err_eahi": 8.33,
+            "pred_eahi": 37.46,
+            "abs_err_eahi": 10.27,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.7609
+            "minute_acc": 0.7324
           },
           {
             "record_id": "a03",
             "n_minutes": 519,
             "usable_ratio": 0.9981,
             "true_eahi": 28.44,
-            "pred_eahi": 31.51,
-            "abs_err_eahi": 3.07,
+            "pred_eahi": 34.52,
+            "abs_err_eahi": 6.08,
             "true_tier": "Moderate",
             "pred_tier": "Severe",
-            "minute_acc": 0.9112
+            "minute_acc": 0.8687
           },
           {
             "record_id": "a04",
             "n_minutes": 492,
             "usable_ratio": 1.0,
             "true_eahi": 55.24,
-            "pred_eahi": 55.49,
-            "abs_err_eahi": 0.24,
+            "pred_eahi": 51.22,
+            "abs_err_eahi": 4.02,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.9634
+            "minute_acc": 0.9085
           },
           {
             "record_id": "a05",
             "n_minutes": 453,
             "usable_ratio": 0.9912,
             "true_eahi": 36.56,
-            "pred_eahi": 41.02,
-            "abs_err_eahi": 4.47,
+            "pred_eahi": 42.9,
+            "abs_err_eahi": 6.34,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8396
+            "minute_acc": 0.804
           },
           {
             "record_id": "a06",
             "n_minutes": 509,
             "usable_ratio": 0.9764,
             "true_eahi": 24.28,
-            "pred_eahi": 9.54,
-            "abs_err_eahi": 14.75,
+            "pred_eahi": 16.54,
+            "abs_err_eahi": 7.74,
             "true_tier": "Moderate",
-            "pred_tier": "Mild",
-            "minute_acc": 0.6801
+            "pred_tier": "Moderate",
+            "minute_acc": 0.672
           },
           {
             "record_id": "a07",
             "n_minutes": 510,
             "usable_ratio": 1.0,
             "true_eahi": 37.76,
-            "pred_eahi": 44.0,
-            "abs_err_eahi": 6.24,
+            "pred_eahi": 41.76,
+            "abs_err_eahi": 4.0,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.7392
+            "minute_acc": 0.7451
           },
           {
             "record_id": "a08",
             "n_minutes": 500,
             "usable_ratio": 0.998,
             "true_eahi": 22.68,
-            "pred_eahi": 36.07,
-            "abs_err_eahi": 13.39,
+            "pred_eahi": 36.67,
+            "abs_err_eahi": 13.99,
             "true_tier": "Moderate",
             "pred_tier": "Severe",
-            "minute_acc": 0.7255
+            "minute_acc": 0.6954
           },
           {
             "record_id": "a09",
             "n_minutes": 495,
             "usable_ratio": 1.0,
             "true_eahi": 46.18,
-            "pred_eahi": 59.64,
-            "abs_err_eahi": 13.45,
+            "pred_eahi": 53.33,
+            "abs_err_eahi": 7.15,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.7717
+            "minute_acc": 0.7879
           },
           {
             "record_id": "a10",
             "n_minutes": 516,
             "usable_ratio": 0.9903,
             "true_eahi": 11.51,
-            "pred_eahi": 10.33,
-            "abs_err_eahi": 1.18,
+            "pred_eahi": 7.98,
+            "abs_err_eahi": 3.53,
             "true_tier": "Mild",
             "pred_tier": "Mild",
-            "minute_acc": 0.8063
+            "minute_acc": 0.8102
           },
           {
             "record_id": "a11",
             "n_minutes": 466,
             "usable_ratio": 0.9979,
             "true_eahi": 28.58,
-            "pred_eahi": 17.68,
-            "abs_err_eahi": 10.91,
+            "pred_eahi": 24.39,
+            "abs_err_eahi": 4.2,
             "true_tier": "Moderate",
             "pred_tier": "Moderate",
-            "minute_acc": 0.7226
+            "minute_acc": 0.7699
           },
           {
             "record_id": "a12",
             "n_minutes": 577,
             "usable_ratio": 0.9064,
             "true_eahi": 55.53,
-            "pred_eahi": 50.94,
-            "abs_err_eahi": 4.59,
+            "pred_eahi": 45.54,
+            "abs_err_eahi": 9.98,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8891
+            "minute_acc": 0.8031
           },
           {
             "record_id": "a13",
             "n_minutes": 494,
             "usable_ratio": 1.0,
             "true_eahi": 29.51,
-            "pred_eahi": 25.02,
-            "abs_err_eahi": 4.49,
+            "pred_eahi": 47.0,
+            "abs_err_eahi": 17.49,
             "true_tier": "Moderate",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.7996
+            "pred_tier": "Severe",
+            "minute_acc": 0.6275
           },
           {
             "record_id": "a14",
             "n_minutes": 509,
             "usable_ratio": 1.0,
             "true_eahi": 45.15,
-            "pred_eahi": 54.11,
-            "abs_err_eahi": 8.96,
+            "pred_eahi": 45.38,
+            "abs_err_eahi": 0.24,
             "true_tier": "Severe",
             "pred_tier": "Severe",
             "minute_acc": 0.831
@@ -2762,132 +2762,132 @@
             "n_minutes": 509,
             "usable_ratio": 0.9745,
             "true_eahi": 43.38,
-            "pred_eahi": 43.43,
-            "abs_err_eahi": 0.05,
+            "pred_eahi": 49.23,
+            "abs_err_eahi": 5.85,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8246
+            "minute_acc": 0.8165
           },
           {
             "record_id": "a16",
             "n_minutes": 481,
             "usable_ratio": 0.9647,
             "true_eahi": 39.92,
-            "pred_eahi": 39.7,
-            "abs_err_eahi": 0.22,
+            "pred_eahi": 43.19,
+            "abs_err_eahi": 3.27,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8664
+            "minute_acc": 0.8427
           },
           {
             "record_id": "a17",
             "n_minutes": 484,
             "usable_ratio": 0.9607,
             "true_eahi": 19.59,
-            "pred_eahi": 5.68,
-            "abs_err_eahi": 13.91,
+            "pred_eahi": 7.74,
+            "abs_err_eahi": 11.84,
             "true_tier": "Moderate",
             "pred_tier": "Mild",
-            "minute_acc": 0.7376
+            "minute_acc": 0.7333
           },
           {
             "record_id": "a18",
             "n_minutes": 489,
             "usable_ratio": 1.0,
             "true_eahi": 53.74,
-            "pred_eahi": 41.35,
-            "abs_err_eahi": 12.39,
+            "pred_eahi": 45.89,
+            "abs_err_eahi": 7.85,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.7566
+            "minute_acc": 0.8405
           },
           {
             "record_id": "a19",
             "n_minutes": 502,
             "usable_ratio": 0.9781,
             "true_eahi": 24.5,
-            "pred_eahi": 44.73,
-            "abs_err_eahi": 20.22,
+            "pred_eahi": 28.47,
+            "abs_err_eahi": 3.97,
             "true_tier": "Moderate",
-            "pred_tier": "Severe",
-            "minute_acc": 0.6599
+            "pred_tier": "Moderate",
+            "minute_acc": 0.9022
           },
           {
             "record_id": "a20",
             "n_minutes": 510,
             "usable_ratio": 0.9961,
             "true_eahi": 37.06,
-            "pred_eahi": 26.22,
-            "abs_err_eahi": 10.84,
+            "pred_eahi": 23.15,
+            "abs_err_eahi": 13.91,
             "true_tier": "Severe",
             "pred_tier": "Moderate",
-            "minute_acc": 0.7559
+            "minute_acc": 0.7047
           },
           {
             "record_id": "b01",
             "n_minutes": 486,
             "usable_ratio": 1.0,
             "true_eahi": 2.35,
-            "pred_eahi": 4.2,
-            "abs_err_eahi": 1.85,
+            "pred_eahi": 9.14,
+            "abs_err_eahi": 6.79,
             "true_tier": "Normal",
-            "pred_tier": "Normal",
-            "minute_acc": 0.928
+            "pred_tier": "Mild",
+            "minute_acc": 0.8663
           },
           {
             "record_id": "b02",
             "n_minutes": 517,
             "usable_ratio": 1.0,
             "true_eahi": 10.79,
-            "pred_eahi": 12.88,
-            "abs_err_eahi": 2.09,
+            "pred_eahi": 8.82,
+            "abs_err_eahi": 1.97,
             "true_tier": "Mild",
             "pred_tier": "Mild",
-            "minute_acc": 0.7756
+            "minute_acc": 0.8008
           },
           {
             "record_id": "b03",
             "n_minutes": 440,
             "usable_ratio": 1.0,
             "true_eahi": 9.95,
-            "pred_eahi": 24.0,
-            "abs_err_eahi": 14.05,
+            "pred_eahi": 36.27,
+            "abs_err_eahi": 26.32,
             "true_tier": "Mild",
-            "pred_tier": "Moderate",
-            "minute_acc": 0.7068
+            "pred_tier": "Severe",
+            "minute_acc": 0.5159
           },
           {
             "record_id": "b04",
             "n_minutes": 428,
             "usable_ratio": 0.7757,
             "true_eahi": 1.4,
-            "pred_eahi": 45.54,
-            "abs_err_eahi": 44.14,
+            "pred_eahi": 11.2,
+            "abs_err_eahi": 9.8,
             "true_tier": "Normal",
-            "pred_tier": "Severe",
-            "minute_acc": 0.247
+            "pred_tier": "Mild",
+            "minute_acc": 0.8012
           },
           {
             "record_id": "b05",
             "n_minutes": 432,
             "usable_ratio": 0.8472,
             "true_eahi": 7.92,
-            "pred_eahi": 3.44,
-            "abs_err_eahi": 4.47,
+            "pred_eahi": 6.89,
+            "abs_err_eahi": 1.03,
             "true_tier": "Mild",
-            "pred_tier": "Normal",
-            "minute_acc": 0.847
+            "pred_tier": "Mild",
+            "minute_acc": 0.8552
           },
           {
             "record_id": "c01",
             "n_minutes": 483,
             "usable_ratio": 0.9772,
             "true_eahi": 0.0,
-            "pred_eahi": 1.14,
-            "abs_err_eahi": 1.14,
+            "pred_eahi": 2.92,
+            "abs_err_eahi": 2.92,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9809
+            "minute_acc": 0.9513
           },
           {
             "record_id": "c02",
@@ -2905,22 +2905,22 @@
             "n_minutes": 453,
             "usable_ratio": 0.9956,
             "true_eahi": 0.0,
-            "pred_eahi": 0.93,
-            "abs_err_eahi": 0.93,
+            "pred_eahi": 1.6,
+            "abs_err_eahi": 1.6,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9845
+            "minute_acc": 0.9734
           },
           {
             "record_id": "c04",
             "n_minutes": 481,
             "usable_ratio": 0.9563,
             "true_eahi": 0.0,
-            "pred_eahi": 37.83,
-            "abs_err_eahi": 37.83,
+            "pred_eahi": 5.61,
+            "abs_err_eahi": 5.61,
             "true_tier": "Normal",
-            "pred_tier": "Severe",
-            "minute_acc": 0.3696
+            "pred_tier": "Mild",
+            "minute_acc": 0.9065
           },
           {
             "record_id": "c05",
@@ -2938,44 +2938,44 @@
             "n_minutes": 467,
             "usable_ratio": 0.9936,
             "true_eahi": 0.13,
-            "pred_eahi": 0.26,
-            "abs_err_eahi": 0.13,
+            "pred_eahi": 0.91,
+            "abs_err_eahi": 0.78,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9935
+            "minute_acc": 0.9828
           },
           {
             "record_id": "c07",
             "n_minutes": 428,
             "usable_ratio": 1.0,
             "true_eahi": 0.56,
-            "pred_eahi": 1.26,
-            "abs_err_eahi": 0.7,
+            "pred_eahi": 2.24,
+            "abs_err_eahi": 1.68,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9696
+            "minute_acc": 0.9533
           },
           {
             "record_id": "c08",
             "n_minutes": 513,
             "usable_ratio": 0.8031,
             "true_eahi": 0.0,
-            "pred_eahi": 4.37,
-            "abs_err_eahi": 4.37,
+            "pred_eahi": 4.22,
+            "abs_err_eahi": 4.22,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9272
+            "minute_acc": 0.9296
           },
           {
             "record_id": "c09",
             "n_minutes": 467,
             "usable_ratio": 0.9636,
             "true_eahi": 0.26,
-            "pred_eahi": 40.93,
-            "abs_err_eahi": 40.68,
+            "pred_eahi": 5.07,
+            "abs_err_eahi": 4.81,
             "true_tier": "Normal",
-            "pred_tier": "Severe",
-            "minute_acc": 0.3222
+            "pred_tier": "Mild",
+            "minute_acc": 0.9156
           },
           {
             "record_id": "c10",
@@ -2992,46 +2992,46 @@
       },
       "bootstrap_ci_95": {
         "accuracy": {
-          "mean": 0.8032,
-          "median": 0.8043,
-          "ci95_low": 0.7449,
-          "ci95_high": 0.8548
+          "mean": 0.8333,
+          "median": 0.8338,
+          "ci95_low": 0.7969,
+          "ci95_high": 0.8694
         },
         "sensitivity": {
-          "mean": 0.8159,
-          "median": 0.8166,
-          "ci95_low": 0.7337,
-          "ci95_high": 0.8859
+          "mean": 0.8153,
+          "median": 0.8165,
+          "ci95_low": 0.7481,
+          "ci95_high": 0.8735
         },
         "specificity": {
-          "mean": 0.7938,
-          "median": 0.7935,
-          "ci95_low": 0.698,
-          "ci95_high": 0.8774
+          "mean": 0.8429,
+          "median": 0.8449,
+          "ci95_low": 0.7832,
+          "ci95_high": 0.893
         },
         "f1": {
-          "mean": 0.7611,
-          "median": 0.7647,
-          "ci95_low": 0.6679,
-          "ci95_high": 0.8368
+          "mean": 0.79,
+          "median": 0.792,
+          "ci95_low": 0.7266,
+          "ci95_high": 0.8435
         },
         "auroc": {
-          "mean": 0.8878,
-          "median": 0.8884,
-          "ci95_low": 0.8429,
-          "ci95_high": 0.9267
+          "mean": 0.9096,
+          "median": 0.9103,
+          "ci95_low": 0.8782,
+          "ci95_high": 0.9371
         },
         "auprc": {
-          "mean": 0.8425,
-          "median": 0.8465,
-          "ci95_low": 0.7572,
-          "ci95_high": 0.9052
+          "mean": 0.8625,
+          "median": 0.8657,
+          "ci95_low": 0.7904,
+          "ci95_high": 0.9123
         },
         "eahi_mae": {
-          "mean": 8.8175,
-          "median": 8.702,
-          "ci95_low": 5.4484,
-          "ci95_high": 12.8949
+          "mean": 6.1306,
+          "median": 6.1134,
+          "ci95_low": 4.4902,
+          "ci95_high": 8.0118
         }
       },
       "decision_curve": {
@@ -3069,37 +3069,37 @@
           0.8
         ],
         "net_benefit_model": [
-          0.3606,
-          0.348,
-          0.3374,
-          0.3284,
-          0.3189,
-          0.309,
-          0.2996,
-          0.291,
-          0.2819,
-          0.2721,
-          0.263,
-          0.2544,
-          0.2462,
-          0.2378,
-          0.2292,
-          0.2218,
-          0.2126,
-          0.2038,
-          0.1952,
-          0.1861,
-          0.177,
-          0.1684,
-          0.1567,
-          0.1463,
-          0.137,
-          0.1293,
-          0.1229,
-          0.1142,
-          0.1084,
-          0.099,
-          0.0934
+          0.3647,
+          0.3541,
+          0.3436,
+          0.3354,
+          0.3269,
+          0.3182,
+          0.3103,
+          0.3029,
+          0.295,
+          0.2882,
+          0.2803,
+          0.2733,
+          0.2661,
+          0.2597,
+          0.2521,
+          0.2447,
+          0.2385,
+          0.2312,
+          0.2233,
+          0.2158,
+          0.209,
+          0.2014,
+          0.1954,
+          0.1911,
+          0.1829,
+          0.1767,
+          0.1693,
+          0.1572,
+          0.1483,
+          0.1362,
+          0.1239
         ],
         "net_benefit_refer_all": [
           0.3572,
@@ -3182,60 +3182,60 @@
           3,
           4
         ],
-        "temperature": 1.83459,
-        "threshold": 0.6,
-        "oof_auroc": 0.944,
+        "temperature": 1.78887,
+        "threshold": 0.63,
+        "oof_auroc": 0.9631,
         "fold_aurocs": [
-          0.9474,
-          0.9575,
-          0.96,
-          0.9846,
-          0.9533
+          0.9494,
+          0.9646,
+          0.9625,
+          0.9829,
+          0.9614
         ]
       },
       "minute_metrics": {
         "n_minutes": 16539,
         "coverage": 0.9716,
-        "accuracy": 0.9007,
-        "sensitivity": 0.8509,
-        "specificity": 0.9324,
-        "precision": 0.8892,
-        "f1": 0.8696,
-        "auroc": 0.9441,
-        "auprc": 0.9339,
-        "ece": 0.0347,
-        "brier": 0.0802
+        "accuracy": 0.9045,
+        "sensitivity": 0.8576,
+        "specificity": 0.9345,
+        "precision": 0.8929,
+        "f1": 0.8749,
+        "auroc": 0.9633,
+        "auprc": 0.9479,
+        "ece": 0.034,
+        "brier": 0.0738
       },
       "minute_metrics_ungated": {
         "n_minutes": 17023,
         "coverage": 1.0,
-        "accuracy": 0.9021,
-        "sensitivity": 0.8512,
-        "specificity": 0.9337,
-        "precision": 0.8883,
-        "f1": 0.8693,
-        "auroc": 0.944,
-        "auprc": 0.933,
-        "ece": 0.0369,
-        "brier": 0.0797
+        "accuracy": 0.9055,
+        "sensitivity": 0.8575,
+        "specificity": 0.9353,
+        "precision": 0.8914,
+        "f1": 0.8741,
+        "auroc": 0.9631,
+        "auprc": 0.9467,
+        "ece": 0.0343,
+        "brier": 0.0735
       },
       "recording_metrics": {
         "n_recordings": 35,
-        "eahi_mae": 3.9,
-        "eahi_rmse": 6.08,
-        "eahi_pearson_r": 0.9547,
-        "bland_altman_bias": -0.83,
-        "bland_altman_loa_low": -12.8,
-        "bland_altman_loa_high": 11.14,
+        "eahi_mae": 3.48,
+        "eahi_rmse": 5.48,
+        "eahi_pearson_r": 0.9634,
+        "bland_altman_bias": -0.81,
+        "bland_altman_loa_low": -11.59,
+        "bland_altman_loa_high": 9.96,
         "screening_cutoff_5": {
           "accuracy": 0.9714,
           "sensitivity": 0.9565,
           "specificity": 1.0
         },
         "moderate_cutoff_15": {
-          "accuracy": 0.8857,
-          "sensitivity": 0.8421,
-          "specificity": 0.9375
+          "accuracy": 0.9143,
+          "sensitivity": 0.9474,
+          "specificity": 0.875
         },
         "per_record": [
           {
@@ -3243,8 +3243,8 @@
             "n_minutes": 489,
             "usable_ratio": 1.0,
             "true_eahi": 57.67,
-            "pred_eahi": 56.69,
-            "abs_err_eahi": 0.98,
+            "pred_eahi": 57.18,
+            "abs_err_eahi": 0.49,
             "true_tier": "Severe",
             "pred_tier": "Severe",
             "minute_acc": 0.9836
@@ -3254,286 +3254,286 @@
             "n_minutes": 528,
             "usable_ratio": 0.9981,
             "true_eahi": 47.73,
-            "pred_eahi": 40.99,
-            "abs_err_eahi": 6.74,
+            "pred_eahi": 44.86,
+            "abs_err_eahi": 2.87,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8672
+            "minute_acc": 0.8975
           },
           {
             "record_id": "a03",
             "n_minutes": 519,
             "usable_ratio": 0.9981,
             "true_eahi": 28.44,
-            "pred_eahi": 31.16,
-            "abs_err_eahi": 2.72,
+            "pred_eahi": 29.42,
+            "abs_err_eahi": 0.98,
             "true_tier": "Moderate",
-            "pred_tier": "Severe",
-            "minute_acc": 0.9363
+            "pred_tier": "Moderate",
+            "minute_acc": 0.9459
           },
           {
             "record_id": "a04",
             "n_minutes": 492,
             "usable_ratio": 1.0,
             "true_eahi": 55.24,
-            "pred_eahi": 52.8,
-            "abs_err_eahi": 2.44,
+            "pred_eahi": 53.78,
+            "abs_err_eahi": 1.46,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.9512
+            "minute_acc": 0.9675
           },
           {
             "record_id": "a05",
             "n_minutes": 453,
             "usable_ratio": 0.9912,
             "true_eahi": 36.56,
-            "pred_eahi": 43.83,
-            "abs_err_eahi": 7.27,
+            "pred_eahi": 42.36,
+            "abs_err_eahi": 5.8,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8686
+            "minute_acc": 0.8976
           },
           {
             "record_id": "a06",
             "n_minutes": 509,
             "usable_ratio": 0.9764,
             "true_eahi": 24.28,
-            "pred_eahi": 8.93,
-            "abs_err_eahi": 15.35,
+            "pred_eahi": 7.36,
+            "abs_err_eahi": 16.92,
             "true_tier": "Moderate",
             "pred_tier": "Mild",
-            "minute_acc": 0.7183
+            "minute_acc": 0.668
           },
           {
             "record_id": "a07",
             "n_minutes": 510,
             "usable_ratio": 1.0,
             "true_eahi": 37.76,
-            "pred_eahi": 40.24,
-            "abs_err_eahi": 2.47,
+            "pred_eahi": 47.18,
+            "abs_err_eahi": 9.41,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8059
+            "minute_acc": 0.8275
           },
           {
             "record_id": "a08",
             "n_minutes": 500,
             "usable_ratio": 0.998,
             "true_eahi": 22.68,
-            "pred_eahi": 31.02,
-            "abs_err_eahi": 8.34,
+            "pred_eahi": 29.58,
+            "abs_err_eahi": 6.9,
             "true_tier": "Moderate",
-            "pred_tier": "Severe",
-            "minute_acc": 0.8016
+            "pred_tier": "Moderate",
+            "minute_acc": 0.8056
           },
           {
             "record_id": "a09",
             "n_minutes": 495,
             "usable_ratio": 1.0,
             "true_eahi": 46.18,
-            "pred_eahi": 49.09,
-            "abs_err_eahi": 2.91,
+            "pred_eahi": 48.85,
+            "abs_err_eahi": 2.67,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8626
+            "minute_acc": 0.8424
           },
           {
             "record_id": "a10",
             "n_minutes": 516,
             "usable_ratio": 0.9903,
             "true_eahi": 11.51,
-            "pred_eahi": 13.5,
-            "abs_err_eahi": 1.99,
+            "pred_eahi": 10.92,
+            "abs_err_eahi": 0.59,
             "true_tier": "Mild",
             "pred_tier": "Mild",
-            "minute_acc": 0.9022
+            "minute_acc": 0.8904
           },
           {
             "record_id": "a11",
             "n_minutes": 466,
             "usable_ratio": 0.9979,
             "true_eahi": 28.58,
-            "pred_eahi": 6.71,
-            "abs_err_eahi": 21.87,
+            "pred_eahi": 15.48,
+            "abs_err_eahi": 13.1,
             "true_tier": "Moderate",
-            "pred_tier": "Mild",
-            "minute_acc": 0.6301
+            "pred_tier": "Moderate",
+            "minute_acc": 0.7634
           },
           {
             "record_id": "a12",
             "n_minutes": 577,
             "usable_ratio": 0.9064,
             "true_eahi": 55.53,
-            "pred_eahi": 55.18,
-            "abs_err_eahi": 0.35,
+            "pred_eahi": 55.53,
+            "abs_err_eahi": 0.0,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.9598
+            "minute_acc": 0.9732
           },
           {
             "record_id": "a13",
             "n_minutes": 494,
             "usable_ratio": 1.0,
             "true_eahi": 29.51,
-            "pred_eahi": 25.26,
-            "abs_err_eahi": 4.25,
+            "pred_eahi": 25.02,
+            "abs_err_eahi": 4.49,
             "true_tier": "Moderate",
             "pred_tier": "Moderate",
-            "minute_acc": 0.8765
+            "minute_acc": 0.8968
           },
           {
             "record_id": "a14",
             "n_minutes": 509,
             "usable_ratio": 1.0,
             "true_eahi": 45.15,
-            "pred_eahi": 46.33,
-            "abs_err_eahi": 1.18,
+            "pred_eahi": 43.73,
+            "abs_err_eahi": 1.41,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.9096
+            "minute_acc": 0.8546
           },
           {
             "record_id": "a15",
             "n_minutes": 509,
             "usable_ratio": 0.9745,
             "true_eahi": 43.38,
-            "pred_eahi": 47.42,
-            "abs_err_eahi": 4.04,
+            "pred_eahi": 45.97,
+            "abs_err_eahi": 2.59,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8669
+            "minute_acc": 0.879
           },
           {
             "record_id": "a16",
             "n_minutes": 481,
             "usable_ratio": 0.9647,
             "true_eahi": 39.92,
-            "pred_eahi": 36.59,
-            "abs_err_eahi": 3.32,
+            "pred_eahi": 34.53,
+            "abs_err_eahi": 5.39,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.9009
+            "minute_acc": 0.8707
           },
           {
             "record_id": "a17",
             "n_minutes": 484,
             "usable_ratio": 0.9607,
             "true_eahi": 19.59,
-            "pred_eahi": 14.06,
-            "abs_err_eahi": 5.52,
+            "pred_eahi": 18.97,
+            "abs_err_eahi": 0.62,
             "true_tier": "Moderate",
-            "pred_tier": "Mild",
-            "minute_acc": 0.8043
+            "pred_tier": "Moderate",
+            "minute_acc": 0.7957
           },
           {
             "record_id": "a18",
             "n_minutes": 489,
             "usable_ratio": 1.0,
             "true_eahi": 53.74,
-            "pred_eahi": 48.96,
-            "abs_err_eahi": 4.79,
+            "pred_eahi": 46.99,
+            "abs_err_eahi": 6.75,
             "true_tier": "Severe",
             "pred_tier": "Severe",
-            "minute_acc": 0.8998
+            "minute_acc": 0.8793
           },
           {
             "record_id": "a19",
             "n_minutes": 502,
             "usable_ratio": 0.9781,
             "true_eahi": 24.5,
-            "pred_eahi": 23.34,
-            "abs_err_eahi": 1.16,
+            "pred_eahi": 24.93,
+            "abs_err_eahi": 0.43,
             "true_tier": "Moderate",
             "pred_tier": "Moderate",
-            "minute_acc": 0.943
+            "minute_acc": 0.9491
           },
           {
             "record_id": "a20",
             "n_minutes": 510,
             "usable_ratio": 0.9961,
             "true_eahi": 37.06,
-            "pred_eahi": 30.12,
-            "abs_err_eahi": 6.94,
+            "pred_eahi": 25.04,
+            "abs_err_eahi": 12.02,
             "true_tier": "Severe",
-            "pred_tier": "Severe",
-            "minute_acc": 0.8445
+            "pred_tier": "Moderate",
+            "minute_acc": 0.7992
           },
           {
             "record_id": "b01",
             "n_minutes": 486,
             "usable_ratio": 1.0,
             "true_eahi": 2.35,
-            "pred_eahi": 0.0,
-            "abs_err_eahi": 2.35,
+            "pred_eahi": 1.98,
+            "abs_err_eahi": 0.37,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9609
+            "minute_acc": 0.965
           },
           {
             "record_id": "b02",
             "n_minutes": 517,
             "usable_ratio": 1.0,
             "true_eahi": 10.79,
-            "pred_eahi": 10.1,
-            "abs_err_eahi": 0.7,
+            "pred_eahi": 15.9,
+            "abs_err_eahi": 5.11,
             "true_tier": "Mild",
-            "pred_tier": "Mild",
-            "minute_acc": 0.9149
+            "pred_tier": "Moderate",
+            "minute_acc": 0.8801
           },
           {
             "record_id": "b03",
             "n_minutes": 440,
             "usable_ratio": 1.0,
             "true_eahi": 9.95,
-            "pred_eahi": 22.64,
-            "abs_err_eahi": 12.68,
+            "pred_eahi": 17.86,
+            "abs_err_eahi": 7.91,
             "true_tier": "Mild",
             "pred_tier": "Moderate",
-            "minute_acc": 0.7568
+            "minute_acc": 0.7955
           },
           {
             "record_id": "b04",
             "n_minutes": 428,
             "usable_ratio": 0.7757,
             "true_eahi": 1.4,
-            "pred_eahi": 2.35,
-            "abs_err_eahi": 0.95,
+            "pred_eahi": 1.27,
+            "abs_err_eahi": 0.14,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9307
+            "minute_acc": 0.9488
           },
           {
             "record_id": "b05",
             "n_minutes": 432,
             "usable_ratio": 0.8472,
             "true_eahi": 7.92,
-            "pred_eahi": 2.46,
-            "abs_err_eahi": 5.46,
+            "pred_eahi": 0.16,
+            "abs_err_eahi": 7.75,
             "true_tier": "Mild",
             "pred_tier": "Normal",
-            "minute_acc": 0.8415
+            "minute_acc": 0.847
           },
           {
             "record_id": "c01",
             "n_minutes": 483,
             "usable_ratio": 0.9772,
             "true_eahi": 0.0,
-            "pred_eahi": 0.0,
-            "abs_err_eahi": 0.0,
+            "pred_eahi": 0.76,
+            "abs_err_eahi": 0.76,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 1.0
+            "minute_acc": 0.9873
           },
           {
             "record_id": "c02",
             "n_minutes": 501,
             "usable_ratio": 0.978,
             "true_eahi": 0.12,
-            "pred_eahi": 0.24,
-            "abs_err_eahi": 0.13,
+            "pred_eahi": 0.61,
+            "abs_err_eahi": 0.49,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9939
+            "minute_acc": 0.9878
           },
           {
             "record_id": "c03",
@@ -3551,11 +3551,11 @@
             "n_minutes": 481,
             "usable_ratio": 0.9563,
             "true_eahi": 0.0,
-            "pred_eahi": 1.17,
-            "abs_err_eahi": 1.17,
+            "pred_eahi": 0.52,
+            "abs_err_eahi": 0.52,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9804
+            "minute_acc": 0.9913
           },
           {
             "record_id": "c05",
@@ -3584,89 +3584,89 @@
             "n_minutes": 428,
             "usable_ratio": 1.0,
             "true_eahi": 0.56,
-            "pred_eahi": 0.56,
-            "abs_err_eahi": 0.0,
+            "pred_eahi": 1.4,
+            "abs_err_eahi": 0.84,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9813
+            "minute_acc": 0.972
           },
           {
             "record_id": "c08",
             "n_minutes": 513,
             "usable_ratio": 0.8031,
             "true_eahi": 0.0,
-            "pred_eahi": 2.77,
-            "abs_err_eahi": 2.77,
+            "pred_eahi": 2.04,
+            "abs_err_eahi": 2.04,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9539
+            "minute_acc": 0.966
           },
           {
             "record_id": "c09",
             "n_minutes": 467,
             "usable_ratio": 0.9636,
             "true_eahi": 0.26,
-            "pred_eahi": 0.67,
-            "abs_err_eahi": 0.41,
+            "pred_eahi": 0.0,
+            "abs_err_eahi": 0.26,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9844
+            "minute_acc": 0.9956
           },
           {
             "record_id": "c10",
             "n_minutes": 430,
             "usable_ratio": 0.9698,
             "true_eahi": 0.14,
-            "pred_eahi": 4.75,
-            "abs_err_eahi": 4.61,
+            "pred_eahi": 0.43,
+            "abs_err_eahi": 0.29,
             "true_tier": "Normal",
             "pred_tier": "Normal",
-            "minute_acc": 0.9185
+            "minute_acc": 0.9904
           }
         ]
       },
       "bootstrap_ci_95": {
         "accuracy": {
-          "mean": 0.9004,
-          "median": 0.9008,
-          "ci95_low": 0.8695,
-          "ci95_high": 0.9285
+          "mean": 0.9045,
+          "median": 0.9052,
+          "ci95_low": 0.8751,
+          "ci95_high": 0.9323
         },
         "sensitivity": {
-          "mean": 0.8492,
-          "median": 0.8537,
-          "ci95_low": 0.7673,
-          "ci95_high": 0.9086
+          "mean": 0.8562,
+          "median": 0.8594,
+          "ci95_low": 0.7786,
+          "ci95_high": 0.9146
         },
         "specificity": {
-          "mean": 0.9313,
-          "median": 0.9319,
-          "ci95_low": 0.8975,
-          "ci95_high": 0.9585
+          "mean": 0.9336,
+          "median": 0.9343,
+          "ci95_low": 0.8993,
+          "ci95_high": 0.9606
         },
         "f1": {
-          "mean": 0.8674,
-          "median": 0.8708,
-          "ci95_low": 0.8133,
-          "ci95_high": 0.9094
+          "mean": 0.8732,
+          "median": 0.8753,
+          "ci95_low": 0.82,
+          "ci95_high": 0.9124
         },
         "auroc": {
-          "mean": 0.9433,
-          "median": 0.9453,
-          "ci95_low": 0.9074,
-          "ci95_high": 0.9726
+          "mean": 0.9629,
+          "median": 0.9634,
+          "ci95_low": 0.946,
+          "ci95_high": 0.9772
         },
         "auprc": {
-          "mean": 0.9319,
-          "median": 0.9352,
-          "ci95_low": 0.8843,
-          "ci95_high": 0.9657
+          "mean": 0.9467,
+          "median": 0.9488,
+          "ci95_low": 0.9109,
+          "ci95_high": 0.9706
         },
         "eahi_mae": {
-          "mean": 3.9224,
-          "median": 3.8349,
-          "ci95_low": 2.5087,
-          "ci95_high": 5.6675
+          "mean": 3.5076,
+          "median": 3.4703,
+          "ci95_low": 2.0899,
+          "ci95_high": 4.9843
         }
       },
       "decision_curve": {
@@ -3704,37 +3704,37 @@
           0.8
         ],
         "net_benefit_model": [
-          0.3594,
-          0.3525,
-          0.3465,
-          0.3413,
-          0.3361,
-          0.3324,
-          0.3284,
+          0.3716,
+          0.3658,
+          0.3598,
+          0.3539,
+          0.3473,
+          0.3423,
+          0.3372,
+          0.3328,
+          0.3294,
           0.3251,
-          0.3213,
-          0.3176,
-          0.3141,
-          0.3106,
-          0.3065,
-          0.3032,
-          0.2994,
-          0.2961,
-          0.2922,
-          0.288,
-          0.2838,
-          0.2813,
-          0.2777,
-          0.2735,
-          0.2693,
-          0.266,
-          0.2606,
-          0.2562,
-          0.2501,
-          0.2432,
-          0.2354,
-          0.2304,
-          0.2238
+          0.321,
+          0.3169,
+          0.3136,
+          0.3093,
+          0.3058,
+          0.3017,
+          0.2978,
+          0.2937,
+          0.2888,
+          0.2851,
+          0.2796,
+          0.2753,
+          0.2713,
+          0.2666,
+          0.2614,
+          0.2555,
+          0.249,
+          0.2424,
+          0.2364,
+          0.2299,
+          0.2216
         ],
         "net_benefit_refer_all": [
           0.3572,
@@ -3810,64 +3810,64 @@
       "snr_label": "Clean",
       "snr_db": null,
       "coverage": 0.999,
-      "ungated_acc": 0.9818,
-      "gated_acc": 0.9817,
-      "ungated_auroc": 0.9971,
-      "gated_auroc": 0.9971
+      "ungated_acc": 0.9852,
+      "gated_acc": 0.9852,
+      "ungated_auroc": 0.9982,
+      "gated_auroc": 0.9982
     },
     {
       "snr_label": "20 dB",
       "snr_db": 20.0,
       "coverage": 0.9985,
-      "ungated_acc": 0.9808,
-      "gated_acc": 0.9807,
-      "ungated_auroc": 0.9968,
-      "gated_auroc": 0.9968
+      "ungated_acc": 0.9832,
+      "gated_acc": 0.9832,
+      "ungated_auroc": 0.9979,
+      "gated_auroc": 0.9979
     },
     {
       "snr_label": "10 dB",
       "snr_db": 10.0,
       "coverage": 0.9926,
-      "ungated_acc": 0.9744,
-      "gated_acc": 0.9747,
-      "ungated_auroc": 0.9951,
-      "gated_auroc": 0.9952
+      "ungated_acc": 0.9808,
+      "gated_acc": 0.9811,
+      "ungated_auroc": 0.9968,
+      "gated_auroc": 0.997
     },
     {
       "snr_label": "5 dB",
       "snr_db": 5.0,
       "coverage": 0.8008,
       "ungated_acc": 0.9694,
-      "gated_acc": 0.9815,
-      "ungated_auroc": 0.9926,
-      "gated_auroc": 0.9976
+      "gated_acc": 0.9803,
+      "ungated_auroc": 0.994,
+      "gated_auroc": 0.9979
     },
     {
       "snr_label": "0 dB",
       "snr_db": 0.0,
       "coverage": 0.0005,
-      "ungated_acc": 0.9581,
+      "ungated_acc": 0.9556,
       "gated_acc": 1.0,
-      "ungated_auroc": 0.9877,
+      "ungated_auroc": 0.9887,
       "gated_auroc": 0.5
     }
   ],
   "failure_cases": {
     "fn_recording": {
-      "record_id": "a11",
-      "n_minutes": 466,
-      "usable_ratio": 0.9979,
-      "true_eahi": 28.58,
-      "pred_eahi": 6.71,
-      "abs_err_eahi": 21.87,
+      "record_id": "a06",
+      "n_minutes": 509,
+      "usable_ratio": 0.9764,
+      "true_eahi": 24.28,
+      "pred_eahi": 7.36,
+      "abs_err_eahi": 16.92,
       "true_tier": "Moderate",
       "pred_tier": "Mild",
-      "minute_acc": 0.6301
+      "minute_acc": 0.668
     },
     "worst_fp_epoch": {
-      "record_id": "a15",
-      "minute_idx": 30,
-      "prob": 0.985,
+      "record_id": "a07",
+      "minute_idx": 403,
+      "prob": 0.99,
       "sqi_pass": true
     }
   }
