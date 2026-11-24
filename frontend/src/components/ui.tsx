@@ -34,6 +34,53 @@ export function SeverityBadge({ tier, size = "md" }: { tier: string; size?: "md"
   );
 }
 
+/**
+ * eAHI on the clinical scale, so the number reads without domain knowledge.
+ * shortcut: axis capped at 60, values above pin to the end; widen if severe nights need separating.
+ */
+const SCALE_MAX = 60;
+const SEGMENTS: { tier: TierName; from: number; to: number }[] = [
+  { tier: "Normal", from: 0, to: 5 },
+  { tier: "Mild", from: 5, to: 15 },
+  { tier: "Moderate", from: 15, to: 30 },
+  { tier: "Severe", from: 30, to: SCALE_MAX },
+];
+
+export function SeverityScale({ value, low, high }: { value: number; low: number; high: number }) {
+  const pct = (v: number) => `${(Math.min(SCALE_MAX, Math.max(0, v)) / SCALE_MAX) * 100}%`;
+  return (
+    <div
+      role="img"
+      aria-label={`eAHI ${value.toFixed(1)} on the severity scale; 90% interval ${low.toFixed(1)} to ${high.toFixed(1)}. Mild from 5, moderate from 15, severe from 30.`}
+      className="pt-6"
+    >
+      <div className="relative">
+        <div className="flex h-2.5 overflow-hidden rounded-full">
+          {SEGMENTS.map((s) => (
+            <div key={s.tier} className={TIERS[s.tier].bar} style={{ width: pct(s.to - s.from), opacity: 0.85 }} />
+          ))}
+        </div>
+        <div
+          className="absolute -top-1 h-[18px] rounded-sm border-2 border-ink"
+          style={{ left: pct(low), width: `calc(${pct(high)} - ${pct(low)})`, minWidth: 4 }}
+          aria-hidden
+        />
+        <div className="absolute -top-6 -translate-x-1/2 text-xs font-semibold tabular-nums" style={{ left: pct(value) }} aria-hidden>
+          {value.toFixed(1)}
+        </div>
+      </div>
+      <div className="relative mt-1.5 h-4 text-xs text-muted tabular-nums" aria-hidden>
+        {[0, 5, 15, 30].map((t) => (
+          <span key={t} className={`absolute ${t ? "-translate-x-1/2" : ""}`} style={{ left: pct(t) }}>
+            {t}
+          </span>
+        ))}
+        <span className="absolute right-0">60+</span>
+      </div>
+    </div>
+  );
+}
+
 /** Backend triage strings are ALL CAPS; sentence case reads faster. Keeps clinical acronyms. */
 export function sentenceCase(s: string): string {
   const lower = s.toLowerCase().replace(/\b(psg|ecg|ahi|afib)\b/g, (m) => m.toUpperCase());

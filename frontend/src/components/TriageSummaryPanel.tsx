@@ -3,7 +3,7 @@
 import React from "react";
 import { AlertTriangle, CheckCircle2, HeartPulse, RotateCcw, Signal } from "lucide-react";
 import type { FullNightAnalysis } from "@/lib/types";
-import { SeverityBadge, TIERS, sentenceCase, tierOf } from "./ui";
+import { SeverityBadge, SeverityScale, TIERS, sentenceCase, tierOf } from "./ui";
 
 interface TriageSummaryPanelProps {
   analysis: FullNightAnalysis;
@@ -65,15 +65,15 @@ export default function TriageSummaryPanel({
                 <span className="text-muted"> · Sleep-lab reference {analysis.true_eahi.toFixed(1)}</span>
               )}
             </p>
-            <p className="mt-1 text-sm text-muted">
-              {tier} range: {TIERS[tier].range}
-            </p>
+            <SeverityScale value={analysis.eahi_pred} low={analysis.eahi_ci90_low} high={analysis.eahi_ci90_high} />
 
             <p className={`mt-5 rounded-xl p-4 font-semibold ${TIERS[tier].cls}`}>{sentenceCase(analysis.triage_action)}</p>
           </div>
 
-          <p className="mt-2 min-h-5 text-sm text-muted" role="status" aria-live="polite">
-            {updating ? "Updating result…" : ""}
+          <p className="mt-2 min-h-5 text-sm text-muted tabular-nums" role="status" aria-live="polite">
+            {updating
+              ? "Updating result…"
+              : `Analyzed in ${(analysis.inference_ms / 1000).toFixed(1)} s on CPU · cutoff ${analysis.threshold_used.toFixed(2)}`}
           </p>
 
           {poorSignal && (

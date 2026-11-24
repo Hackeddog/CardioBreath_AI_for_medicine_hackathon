@@ -74,6 +74,26 @@ export default function FullNightTimeline({
   const hourTicks = Array.from({ length: Math.ceil(n / 60) }, (_, h) => h);
   const sel = timeline[selectedMinute];
 
+  // Plain-language takeaway: how much apnea, and the longest uninterrupted stretch.
+  const usableMin = timeline.filter((t) => t.sqi_pass).length;
+  const apneaMin = timeline.filter((t) => t.sqi_pass && t.pred === 1).length;
+  let best = { start: 0, len: 0 };
+  let runStart = -1;
+  timeline.forEach((t, i) => {
+    const on = t.sqi_pass && t.pred === 1;
+    if (on && runStart < 0) runStart = i;
+    if (runStart >= 0 && (!on || i === timeline.length - 1)) {
+      const len = (on ? i + 1 : i) - runStart;
+      if (len > best.len) best = { start: runStart, len };
+      runStart = -1;
+    }
+  });
+  const runEnd = timeline[best.start + best.len - 1];
+  const summary =
+    apneaMin === 0
+      ? `No apnea minutes detected in ${usableMin} usable minutes.`
+      : `Apnea in ${apneaMin} of ${usableMin} usable minutes (${Math.round((apneaMin / Math.max(usableMin, 1)) * 100)}%). Longest stretch ${timeline[best.start].time_label} to ${runEnd.time_label} (${best.len} min).`;
+
   const hours = hourTicks.map((h) => {
     const slice = timeline.slice(h * 60, h * 60 + 60);
     return {
@@ -92,9 +112,10 @@ export default function FullNightTimeline({
           <h2 id="timeline-title" className="text-lg font-semibold tracking-tight">
             Full night
           </h2>
+          <p className="mt-1 font-medium tabular-nums">{summary}</p>
           <p className="text-sm text-muted tabular-nums">
-            {analysis.duration_hours.toFixed(1)} hours · {analysis.duration_minutes} minutes. Select a minute to
-            inspect its signals.
+            {analysis.duration_hours.toFixed(1)} hours · {analysis.duration_minutes} minutes. Click or use arrow keys
+            on the chart to inspect a minute.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

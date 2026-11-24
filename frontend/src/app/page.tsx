@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Upload, Zap } from "lucide-react";
 import Navbar, { type Tab } from "@/components/Navbar";
-import Hero from "@/components/Hero";
+import Hero, { Evidence } from "@/components/Hero";
 import TriageSummaryPanel from "@/components/TriageSummaryPanel";
 import FullNightTimeline from "@/components/FullNightTimeline";
 import SignalInspector from "@/components/SignalInspector";
@@ -191,7 +191,7 @@ export default function HomePage() {
       <main id="main" className="mx-auto w-full max-w-[1280px] flex-1 px-4 sm:px-6">
         {activeTab === "workbench" ? (
           <>
-            <Hero evaluation={evaluation} analysis={analysis} onTrySample={goToWorkbench} onUpload={pickFile} />
+            <Hero analysis={analysis} onTrySample={goToWorkbench} onUpload={pickFile} />
 
             <section id="workbench" aria-label="Screening workbench" className="scroll-mt-20 space-y-6 pb-12">
               <div className="card flex flex-col gap-4 p-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
@@ -218,11 +218,14 @@ export default function HomePage() {
                   </select>
                 </div>
 
-                <fieldset className="flex flex-col gap-1.5">
+                <fieldset className="flex flex-col gap-1.5" aria-describedby="noise-hint">
                   <legend className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
                     <Zap className="h-4 w-4 text-muted" aria-hidden />
                     Noise stress test
                   </legend>
+                  <p id="noise-hint" className="-mt-1 mb-1 text-xs text-muted">
+                    Adds electrode noise to show how the quality gate defers minutes.
+                  </p>
                   <div className="flex flex-wrap gap-1 rounded-xl bg-surface-2 p-1">
                     {NOISE_OPTIONS.map((opt) => (
                       <button
@@ -241,10 +244,21 @@ export default function HomePage() {
                   </div>
                 </fieldset>
 
-                <button type="button" onClick={pickFile} disabled={uploading} className="btn-secondary">
-                  <Upload className="h-4 w-4" aria-hidden />
-                  Upload ECG (CSV)
-                </button>
+                <div className="flex flex-col gap-1.5">
+                  <button
+                    type="button"
+                    onClick={pickFile}
+                    disabled={uploading}
+                    aria-describedby="upload-hint"
+                    className="btn-secondary"
+                  >
+                    <Upload className="h-4 w-4" aria-hidden />
+                    Upload ECG (CSV)
+                  </button>
+                  <p id="upload-hint" className="text-xs text-muted">
+                    Columns <code>time,ecg</code> or just <code>ecg</code> (mV). At least 60 s.
+                  </p>
+                </div>
               </div>
 
               {notice && <NoticeBanner notice={notice} onDismiss={() => setNotice(null)} />}
@@ -292,6 +306,8 @@ export default function HomePage() {
                 </div>
               )}
             </section>
+
+            <Evidence evaluation={evaluation} />
           </>
         ) : (
           <ResearchBenchmarkView evaluation={evaluation} health={health} />
