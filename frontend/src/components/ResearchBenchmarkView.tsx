@@ -55,8 +55,8 @@ const FIGURE_CARDS = [
 
 function Metric({ value, label, note }: { value: string; label: string; note: string }) {
   return (
-    <div className="card p-5">
-      <p className="text-3xl font-semibold tabular-nums tracking-tight">{value}</p>
+    <div className="border-t-2 border-ink pt-4">
+      <p className="text-4xl font-semibold tabular-nums tracking-tight">{value}</p>
       <p className="mt-1 text-sm font-medium">{label}</p>
       <p className="text-sm text-muted tabular-nums">{note}</p>
     </div>
@@ -71,8 +71,7 @@ export default function ResearchBenchmarkView({ evaluation, health }: ResearchBe
   return (
     <div className="space-y-10 py-8">
       <header className="max-w-[70ch]">
-        <p className="eyebrow">Research</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Validation and limitations</h1>
+        <h1 className="font-serif text-4xl font-semibold tracking-tight sm:text-5xl">Validation and limitations</h1>
         <p className="mt-3 text-lg text-muted">
           All numbers come from a locked held-out test set of 35 nights (x01 to x35) from the PhysioNet Apnea-ECG
           database, never seen in training or tuning. Confidence intervals are 95% subject-clustered bootstrap (1,000
@@ -82,22 +81,22 @@ export default function ResearchBenchmarkView({ evaluation, health }: ResearchBe
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Metric
-          value={cb ? cb.minute_metrics.auroc.toFixed(3) : "—"}
+          value={cb ? cb.minute_metrics.auroc.toFixed(3) : "…"}
           label="AUROC per minute"
           note={cb ? `95% CI ${cb.bootstrap_ci_95.auroc.ci95_low.toFixed(3)} to ${cb.bootstrap_ci_95.auroc.ci95_high.toFixed(3)}` : "Loading…"}
         />
         <Metric
-          value={cb ? cb.recording_metrics.eahi_mae.toFixed(2) : "—"}
+          value={cb ? cb.recording_metrics.eahi_mae.toFixed(2) : "…"}
           label="eAHI mean absolute error"
-          note={`apnea-min/hr · Pearson r ${cb ? cb.recording_metrics.eahi_pearson_r.toFixed(3) : "—"}`}
+          note={`apnea-min/hr · Pearson r ${cb ? cb.recording_metrics.eahi_pearson_r.toFixed(3) : "…"}`}
         />
         <Metric
-          value={cb ? `${(cb.recording_metrics.screening_cutoff_5.sensitivity * 100).toFixed(1)}%` : "—"}
+          value={cb ? `${(cb.recording_metrics.screening_cutoff_5.sensitivity * 100).toFixed(1)}%` : "…"}
           label="Screening sensitivity at eAHI ≥ 5"
           note="Per night, on 35 held-out nights"
         />
         <Metric
-          value={belt ? `${belt.mean_breathing_rate_mae_bpm.toFixed(2)} bpm` : "—"}
+          value={belt ? `${belt.mean_breathing_rate_mae_bpm.toFixed(2)} bpm` : "…"}
           label="Breathing-rate error vs. belt"
           note={`Across ${belt?.n_records_validated ?? 8} nights with belt recordings`}
         />

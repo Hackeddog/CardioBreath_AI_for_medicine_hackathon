@@ -15,6 +15,15 @@ for (const scheme of schemes) {
       await page.goto("/");
       await page.getByText(/37\.9/).first().waitFor();
       await page.waitForTimeout(1500); // let the inspector window finish loading
+      // Scroll through once so scroll-reveal sections and draw-on traces are in their final state.
+      await page.evaluate(async () => {
+        for (let y = 0; y < document.body.scrollHeight; y += 400) {
+          window.scrollTo(0, y);
+          await new Promise((r) => setTimeout(r, 60));
+        }
+        window.scrollTo(0, 0);
+      });
+      await page.waitForTimeout(2800);
       const dir = `../docs/ui-redesign/${label}`;
       await page.screenshot({ path: `${dir}/workbench-${width}-${scheme}.png`, fullPage: true });
       await page.getByRole("button", { name: /Benchmark|Research/ }).first().click();

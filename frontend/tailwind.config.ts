@@ -22,7 +22,10 @@ const config: Config = {
         moderate: { DEFAULT: v("moderate"), soft: v("moderate-soft"), fg: v("moderate-fg") },
         severe: { DEFAULT: v("severe"), soft: v("severe-soft"), fg: v("severe-fg") },
       },
-      fontFamily: { sans: ["var(--font-inter)", "system-ui", "sans-serif"] },
+      fontFamily: {
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        serif: ["var(--font-serif)", "Georgia", "serif"],
+      },
       transitionTimingFunction: { DEFAULT: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
     },
   },

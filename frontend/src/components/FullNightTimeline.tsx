@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { AlertCircle, Crosshair } from "lucide-react";
 import type { FullNightAnalysis, MinutePoint } from "@/lib/types";
 
 interface FullNightTimelineProps {
@@ -106,26 +105,20 @@ export default function FullNightTimeline({
   });
 
   return (
-    <section aria-labelledby="timeline-title" className="card p-6">
+    <section aria-labelledby="timeline-title" className="card p-6 sm:p-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 id="timeline-title" className="text-lg font-semibold tracking-tight">
-            Full night
+          <h2 id="timeline-title" className="font-serif text-2xl font-semibold tracking-tight">
+            The night, minute by minute
           </h2>
-          <p className="mt-1 font-medium tabular-nums">{summary}</p>
-          <p className="text-sm text-muted tabular-nums">
-            {analysis.duration_hours.toFixed(1)} hours · {analysis.duration_minutes} minutes. Click or use arrow keys
-            on the chart to inspect a minute.
-          </p>
+          <p className="mt-1 max-w-[60ch] tabular-nums">{summary}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={jumpToPeakApnea} className="btn-secondary">
-            <Crosshair className="h-4 w-4" aria-hidden />
             Peak apnea
           </button>
           {firstDeferred && (
             <button type="button" onClick={() => select(firstDeferred.minute)} className="btn-secondary">
-              <AlertCircle className="h-4 w-4" aria-hidden />
               First deferred minute
             </button>
           )}
@@ -172,7 +165,15 @@ export default function FullNightTimeline({
             </text>
 
             {basePath && <path d={basePath} fill="none" strokeWidth="1.2" strokeDasharray="4 3" className="stroke-muted" />}
-            <path d={probPath} fill="none" strokeWidth="1.4" className="stroke-trace" />
+            {/* Re-draws only for a new night or noise level, not on cutoff changes (the curve itself is unchanged). */}
+            <path
+              key={`${analysis.case_id}-${analysis.noise_snr_db}`}
+              d={probPath}
+              pathLength={1}
+              fill="none"
+              strokeWidth="1.4"
+              className="draw stroke-trace"
+            />
             <line
               x1={padL}
               y1={thrY}
@@ -260,10 +261,6 @@ export default function FullNightTimeline({
               <rect width="100%" height="100%" fill="url(#cb-hatch)" />
             </svg>
             Deferred, low signal quality
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="w-5 border-t-2 border-dashed border-primary" aria-hidden />
-            Decision cutoff
           </li>
           {basePath && (
             <li className="flex items-center gap-2">

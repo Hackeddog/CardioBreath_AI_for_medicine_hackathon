@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Upload, Zap } from "lucide-react";
+import { Upload } from "lucide-react";
 import Navbar, { type Tab } from "@/components/Navbar";
 import Hero, { Evidence } from "@/components/Hero";
 import TriageSummaryPanel from "@/components/TriageSummaryPanel";
@@ -39,6 +39,7 @@ export default function HomePage() {
   const [analysis, setAnalysis] = useState<FullNightAnalysis | null>(null);
   const [selectedMinute, setSelectedMinute] = useState<number>(0);
   const [windowData, setWindowData] = useState<WindowInspectorData | null>(null);
+  const [heroEcg, setHeroEcg] = useState<WindowInspectorData | null>(null);
   const [evaluation, setEvaluation] = useState<EvaluationPayload | null>(null);
 
   const [loadingNight, setLoadingNight] = useState<boolean>(true);
@@ -110,7 +111,11 @@ export default function HomePage() {
     const t = setTimeout(() => {
       setLoadingWindow(true);
       inspectWindow(caseId, selectedMinute, noiseSnr)
-        .then((w) => !cancelled && setWindowData(w))
+        .then((w) => {
+          if (cancelled) return;
+          setWindowData(w);
+          if (!caseId.startsWith("upload_")) setHeroEcg((h) => h ?? w); // hero keeps the first sample strip
+        })
         .catch((err) => !cancelled && setNotice(friendlyError(err, "window", caseId)))
         .finally(() => !cancelled && setLoadingWindow(false));
     }, 150);
@@ -191,10 +196,12 @@ export default function HomePage() {
       <main id="main" className="mx-auto w-full max-w-[1280px] flex-1 px-4 sm:px-6">
         {activeTab === "workbench" ? (
           <>
-            <Hero analysis={analysis} onTrySample={goToWorkbench} onUpload={pickFile} />
+            <Hero analysis={analysis} ecg={heroEcg} onTrySample={goToWorkbench} onUpload={pickFile} />
 
-            <section id="workbench" aria-label="Screening workbench" className="scroll-mt-20 space-y-6 pb-12">
-              <div className="card flex flex-col gap-4 p-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+            <section id="workbench" aria-label="Screening workbench" className="scroll-mt-20 space-y-6 border-t border-line pb-16 pt-10">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <h2 className="font-serif text-3xl font-semibold tracking-tight">Screen a night</h2>
+                <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="case-select" className="text-sm font-medium">
                     Recording
@@ -218,15 +225,9 @@ export default function HomePage() {
                   </select>
                 </div>
 
-                <fieldset className="flex flex-col gap-1.5" aria-describedby="noise-hint">
-                  <legend className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
-                    <Zap className="h-4 w-4 text-muted" aria-hidden />
-                    Noise stress test
-                  </legend>
-                  <p id="noise-hint" className="-mt-1 mb-1 text-xs text-muted">
-                    Adds electrode noise to show how the quality gate defers minutes.
-                  </p>
-                  <div className="flex flex-wrap gap-1 rounded-xl bg-surface-2 p-1">
+                <fieldset className="flex flex-col gap-1.5">
+                  <legend className="mb-1.5 text-sm font-medium">Simulated electrode noise</legend>
+                  <div className="flex flex-wrap gap-1 rounded-lg bg-surface-2 p-1">
                     {NOISE_OPTIONS.map((opt) => (
                       <button
                         key={opt.label}
@@ -234,7 +235,7 @@ export default function HomePage() {
                         disabled={loadingNight}
                         aria-pressed={noiseSnr === opt.value}
                         onClick={() => setNoiseSnr(opt.value)}
-                        className={`min-h-10 rounded-lg px-3 text-sm font-semibold tabular-nums transition-colors ${
+                        className={`min-h-11 rounded-md px-3 text-sm font-semibold tabular-nums transition-colors ${
                           noiseSnr === opt.value ? "bg-surface text-ink shadow-sm" : "text-muted hover:text-ink"
                         }`}
                       >
@@ -255,9 +256,10 @@ export default function HomePage() {
                     <Upload className="h-4 w-4" aria-hidden />
                     Upload ECG (CSV)
                   </button>
-                  <p id="upload-hint" className="text-xs text-muted">
-                    Columns <code>time,ecg</code> or just <code>ecg</code> (mV). At least 60 s.
+                  <p id="upload-hint" className="sr-only">
+                    CSV with an ecg column in millivolts and an optional time column in seconds, at least 60 seconds long.
                   </p>
+                </div>
                 </div>
               </div>
 
@@ -307,7 +309,13 @@ export default function HomePage() {
               )}
             </section>
 
-            <Evidence evaluation={evaluation} />
+            <Evidence
+              evaluation={evaluation}
+              onOpenResearch={() => {
+                setActiveTab("research");
+                window.scrollTo({ top: 0 });
+              }}
+            />
           </>
         ) : (
           <ResearchBenchmarkView evaluation={evaluation} health={health} />

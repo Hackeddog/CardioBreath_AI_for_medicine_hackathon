@@ -34,8 +34,11 @@
   --severe-soft: #f3e3ea;
   --severe-fg: #6a1f41;
 
-  --shadow: 0 1px 2px rgb(27 36 32 / 0.05), 0 4px 16px rgb(27 36 32 / 0.04);
+  --shadow: 0 1px 2px rgb(27 36 32 / 0.06), 0 12px 32px -12px rgb(27 36 32 / 0.18);
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --grain: 0.035;
+  --paper-minor: rgb(125 42 79 / 0.06);
+  --paper-major: rgb(125 42 79 / 0.13);
 }
 
 [data-theme="dark"] {
@@ -69,7 +72,10 @@
   --severe-soft: #2c1a23;
   --severe-fg: #e8aec8;
 
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px -12px rgb(0 0 0 / 0.6);
+  --grain: 0.06;
+  --paper-minor: rgb(217 138 174 / 0.06);
+  --paper-major: rgb(217 138 174 / 0.12);
 }
 
 @layer base {
@@ -77,6 +83,35 @@
     @apply bg-bg text-ink antialiased;
     font-size: 16px;
     line-height: 1.55;
+  }
+  /* Paper grain: a quiet print texture so the warm base reads as paper, not a flat screen fill. */
+  body {
+    position: relative;
+  }
+  body::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: var(--grain);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  body > * {
+    position: relative;
+    z-index: 1;
+  }
+  a,
+  button,
+  summary,
+  select,
+  label[for],
+  input[type="checkbox"],
+  input[type="range"] {
+    cursor: pointer;
+  }
+  :disabled {
+    cursor: not-allowed;
   }
   :focus-visible {
     outline: 2px solid var(--primary);
@@ -86,9 +121,40 @@
 }
 
 @layer components {
+  /* Cards sit flat; only .card-raised (the screening result, the page's focal point) is elevated. */
   .card {
-    @apply rounded-2xl border border-line bg-surface;
+    @apply rounded-xl border border-line bg-surface;
+  }
+  .card-raised {
+    @apply card;
     box-shadow: var(--shadow);
+  }
+  /* Identity motif: ECG chart paper (1 mm / 5 mm grid), used only where a signal is drawn. */
+  .ecg-paper {
+    background-color: var(--surface);
+    background-image:
+      linear-gradient(var(--paper-major) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-major) 1px, transparent 1px),
+      linear-gradient(var(--paper-minor) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-minor) 1px, transparent 1px);
+    background-size: 40px 40px, 40px 40px, 8px 8px, 8px 8px;
+  }
+  /* Signal traces draw on left to right, like a recorder; needs pathLength="1" on the path. */
+  .draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw 1.8s var(--ease) forwards;
+  }
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 500ms var(--ease),
+      transform 500ms var(--ease);
+  }
+  [data-reveal][data-shown] {
+    opacity: 1;
+    transform: none;
   }
   .btn {
     @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50;
@@ -100,7 +166,7 @@
     @apply btn border border-line bg-surface text-ink hover:bg-surface-2;
   }
   .eyebrow {
-    @apply text-xs font-semibold uppercase tracking-[0.08em] text-muted;
+    @apply text-sm font-medium text-muted;
   }
   .skeleton {
     @apply rounded-lg bg-surface-2;
@@ -114,6 +180,12 @@
   }
 }
 
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -122,5 +194,9 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
   }
 }

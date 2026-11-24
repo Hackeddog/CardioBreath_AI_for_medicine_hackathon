@@ -58,7 +58,7 @@ export default function SignalInspector({ data, loading, threshold }: SignalInsp
   if (!data) {
     return (
       <section className="card p-6" aria-labelledby="inspector-title">
-        <h2 id="inspector-title" className="text-lg font-semibold tracking-tight">
+        <h2 id="inspector-title" className="font-serif text-2xl font-semibold tracking-tight">
           Signal inspector
         </h2>
         {loading ? (
@@ -111,13 +111,13 @@ export default function SignalInspector({ data, loading, threshold }: SignalInsp
   const verdict = !data.sqi_pass ? "Deferred, low signal quality" : isApnea ? "Apnea" : "Normal";
 
   return (
-    <section aria-labelledby="inspector-title" aria-busy={loading} className="card relative p-6">
+    <section aria-labelledby="inspector-title" aria-busy={loading} className="card relative p-6 sm:p-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 id="inspector-title" className="text-lg font-semibold tracking-tight">
-            Signal inspector · <span className="tabular-nums">{data.time_window_label}</span>
+          <h2 id="inspector-title" className="font-serif text-2xl font-semibold tracking-tight">
+            Signal inspector · <span className="font-sans text-xl tabular-nums">{data.time_window_label}</span>
           </h2>
-          <p className="text-sm text-muted">Five minutes around the selected minute (outlined, 120 to 180 s).</p>
+          <p className="text-sm text-muted">Five minutes around the selected minute, which is outlined.</p>
         </div>
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold tabular-nums ${
