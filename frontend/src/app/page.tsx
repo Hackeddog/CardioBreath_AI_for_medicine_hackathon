@@ -2,13 +2,15 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Upload } from "lucide-react";
-import Navbar, { type Tab } from "@/components/Navbar";
+import Navbar, { PAGES } from "@/components/Navbar";
 import Hero, { Evidence } from "@/components/Hero";
+import NightDrive from "@/components/NightDrive";
+import Tour from "@/components/Tour";
 import TriageSummaryPanel from "@/components/TriageSummaryPanel";
 import FullNightTimeline from "@/components/FullNightTimeline";
 import SignalInspector from "@/components/SignalInspector";
 import ResearchBenchmarkView from "@/components/ResearchBenchmarkView";
-import { AnalysisProgress, NoticeBanner, WorkbenchSkeleton, friendlyError, type Notice } from "@/components/ui";
+import { AnalysisProgress, NoticeBanner, friendlyError, type Notice } from "@/components/ui";
 import { analyzeCase, fetchCases, fetchEvaluation, fetchHealth, inspectWindow, uploadCsvEcg } from "@/lib/api";
 import type { DemoCaseInfo, EvaluationPayload, FullNightAnalysis, HealthStatus, WindowInspectorData } from "@/lib/types";
 
@@ -20,12 +22,22 @@ const NOISE_OPTIONS: { label: string; value: number | null }[] = [
 ];
 
 const SLIDER_DEBOUNCE_MS = 300;
+const P = Object.fromEntries(PAGES.map((p, i) => [p.id, i])) as Record<(typeof PAGES)[number]["id"], number>;
 
 const keyOf = (caseId: string, thr: number | null, snr: number | null, base: boolean) =>
   JSON.stringify([caseId, thr, snr, base]);
 
+const pageFromHash = () => {
+  const id = window.location.hash.replace(/^#\/?/, "");
+  const i = PAGES.findIndex((p) => p.id === id);
+  return i < 0 ? 0 : i;
+};
+
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState<Tab>("workbench");
+  const [page, setPage] = useState(0);
+  const [tourOpen, setTourOpen] = useState(false);
+  const [scenePaused, setScenePaused] = useState(false);
+
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [cases, setCases] = useState<DemoCaseInfo[]>([]);
   const [selectedCase, setSelectedCase] = useState<string>("");
@@ -50,6 +62,57 @@ export default function HomePage() {
   const loadedKey = useRef("");
   const shownCase = useRef<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const pageRefs = useRef<(HTMLElement | null)[]>([]);
+  const swipe = useRef<{ x: number; y: number } | null>(null);
+
+  /* ---------- sideways navigation ---------- */
+
+  // Each stage has its own URL (#/night), so links, reloads and the back button work.
+  const go = useCallback((i: number) => {
+    const n = Math.min(PAGES.length - 1, Math.max(0, i));
+    window.location.hash = `/${PAGES[n].id}`;
+  }, []);
+
+  useEffect(() => {
+    const sync = () => setPage(pageFromHash());
+    sync();
+    window.addEventListener("hashchange", sync);
+    const saved = localStorage.getItem("cb-scene");
+    setScenePaused(saved ? saved === "paused" : matchMedia("(prefers-reduced-motion: reduce)").matches);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
+
+  // If focus was inside the page that just slid away (now inert), hand it to the new page.
+  useEffect(() => {
+    const active = document.activeElement;
+    const current = pageRefs.current[page];
+    if (current && active && active !== document.body && !current.contains(active) && active.closest("[data-page]")) {
+      current.focus({ preventScroll: true });
+    }
+  }, [page]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (tourOpen || e.altKey || e.ctrlKey || e.metaKey) return;
+      const t = e.target as HTMLElement;
+      if (t.closest("input, select, textarea, [role='slider'], [contenteditable='true']")) return;
+      if (e.key === "ArrowRight") go(pageFromHash() + 1);
+      else if (e.key === "ArrowLeft") go(pageFromHash() - 1);
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [go, tourOpen]);
+
+  const toggleScene = () => {
+    setScenePaused((p) => {
+      localStorage.setItem("cb-scene", p ? "playing" : "paused");
+      return !p;
+    });
+  };
+
+  /* ---------- data (unchanged behaviour) ---------- */
 
   useEffect(() => {
     Promise.all([fetchHealth(), fetchCases(), fetchEvaluation()])
@@ -127,7 +190,7 @@ export default function HomePage() {
 
   const handleUploadCsv = async (file: File) => {
     const requestId = ++nightRequestId.current; // an in-flight case analysis must not overwrite the upload result
-    setActiveTab("workbench");
+    go(P.result);
     setLoadingNight(true);
     setUploading(true);
     setNotice(null);
@@ -151,33 +214,228 @@ export default function HomePage() {
     }
   };
 
-  const goToWorkbench = () => {
-    setActiveTab("workbench");
+  const trySample = () => {
     if (cases[0] && selectedCase !== cases[0].case_id) {
       setSelectedCase(cases[0].case_id);
       setNoiseSnr(null);
     } else if (cases[0] && !analysis && !loadingNight && appliedThreshold !== null) {
       runNightAnalysis(cases[0].case_id, appliedThreshold, noiseSnr, compareBaseline); // retry after a failed load
     }
-    requestAnimationFrame(() => {
-      const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      document.getElementById("workbench")?.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
-      document.getElementById("triage-title")?.focus({ preventScroll: true });
-    });
+    go(P.result);
   };
 
   const pickFile = () => fileRef.current?.click();
   const showProgress = loadingNight && (analysis === null || uploading);
+  const sel = analysis?.timeline[selectedMinute];
+
+  const needNight = (
+    <div className="card mx-auto max-w-lg p-8 text-center">
+      <p className="font-pixel text-lg font-bold">No night loaded yet</p>
+      <p className="mt-2 text-muted">{loadingNight ? "The sample night is still being analyzed." : "Load the sample night or upload an ECG first."}</p>
+      <button type="button" onClick={() => go(P.result)} className="btn-primary mt-5">
+        Go to the result
+      </button>
+    </div>
+  );
+
+  const pageBody: React.ReactNode[] = [
+    /* start */
+    <Hero
+      key="start"
+      analysis={analysis}
+      ecg={heroEcg}
+      onTrySample={trySample}
+      onUpload={pickFile}
+      onTour={() => setTourOpen(true)}
+      onSeeNight={() => go(P.night)}
+    />,
+
+    /* result */
+    <div key="result" className="grid items-start gap-8 lg:grid-cols-12">
+      <div className="lg:col-span-5">
+        {showProgress && <AnalysisProgress />}
+        {analysis && threshold !== null ? (
+          <div className={showProgress ? "mt-6" : ""}>
+            <TriageSummaryPanel
+              analysis={analysis}
+              threshold={threshold}
+              defaultThreshold={defaultThreshold}
+              onThresholdChange={setThreshold}
+              compareBaseline={compareBaseline}
+              onToggleBaseline={setCompareBaseline}
+              updating={loadingNight}
+            />
+          </div>
+        ) : (
+          !loadingNight && (
+            <div className="card p-8 text-center">
+              <p className="font-pixel text-lg font-bold">No recording loaded</p>
+              <p className="mt-2 text-muted">Load the sample night or upload a single-lead ECG as CSV.</p>
+              <div className="mt-5 flex flex-wrap justify-center gap-3">
+                {cases.length > 0 && (
+                  <button type="button" onClick={trySample} className="btn-primary">
+                    Try a sample night
+                  </button>
+                )}
+                <button type="button" onClick={pickFile} className="btn-secondary">
+                  Upload ECG
+                </button>
+              </div>
+            </div>
+          )
+        )}
+      </div>
+
+      <div className="space-y-8 lg:col-span-7">
+        <div>
+          <h2 className="font-pixel text-2xl font-bold">Screen a night</h2>
+          <p className="mt-2 max-w-[56ch] text-muted">
+            Pick a held-out test night or upload your own recording. The result updates for whatever is loaded here.
+          </p>
+          <p className="mt-2 text-sm">
+            <strong className="font-semibold">Screening aid, not a diagnosis.</strong>{" "}
+            <span className="text-muted">Confirm with polysomnography.</span>
+          </p>
+        </div>
+        <div id="toolbar" className="card space-y-5 p-6">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="case-select" className="text-sm font-medium">
+              Recording
+            </label>
+            <select
+              id="case-select"
+              value={selectedCase}
+              disabled={loadingNight}
+              onChange={(e) => {
+                setSelectedCase(e.target.value);
+                setNoiseSnr(null);
+              }}
+              className="min-h-11 px-3 text-sm"
+            >
+              {cases.map((c) => (
+                <option key={c.case_id} value={c.case_id}>
+                  {c.case_id}, sleep-lab tier {c.clinical_tier} ({c.duration_hours} h)
+                </option>
+              ))}
+              {selectedCase.startsWith("upload_") && <option value={selectedCase}>Uploaded ECG</option>}
+            </select>
+          </div>
+
+          <fieldset className="flex flex-col gap-1.5">
+            <legend className="mb-1.5 text-sm font-medium">Simulated electrode noise</legend>
+            <div className="flex flex-wrap gap-1 bg-surface-2 p-1">
+              {NOISE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.label}
+                  type="button"
+                  disabled={loadingNight}
+                  aria-pressed={noiseSnr === opt.value}
+                  onClick={() => setNoiseSnr(opt.value)}
+                  className={`min-h-11 flex-1 px-3 font-hud text-xl leading-none ${
+                    noiseSnr === opt.value ? "bg-primary text-primary-ink" : "text-muted hover:text-ink"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <div className="flex flex-col gap-1.5">
+            <button type="button" onClick={pickFile} disabled={uploading} aria-describedby="upload-hint" className="btn-secondary w-full">
+              <Upload className="h-4 w-4" aria-hidden />
+              Upload ECG (CSV)
+            </button>
+            <p id="upload-hint" className="text-sm text-muted">
+              An <code>ecg</code> column in mV, optional <code>time</code> in seconds, at least 60 s.
+            </p>
+          </div>
+        </div>
+
+        {analysis && (
+          <div className="flex flex-wrap gap-3">
+            <button type="button" onClick={() => go(P.night)} className="btn-primary">
+              See the night ▶
+            </button>
+            <button type="button" onClick={() => go(P.signals)} className="btn-secondary">
+              Inspect the signals
+            </button>
+          </div>
+        )}
+      </div>
+    </div>,
+
+    /* night */
+    analysis ? (
+      <div key="night" className="space-y-6">
+        <FullNightTimeline analysis={analysis} selectedMinute={selectedMinute} onSelectMinute={setSelectedMinute} showBaseline={compareBaseline} />
+        <div className="flex flex-wrap items-center gap-3">
+          <button type="button" onClick={() => go(P.signals)} className="btn-primary">
+            Inspect {sel?.time_label ?? "this minute"} ▶
+          </button>
+          <p className="text-sm text-muted">Opens the ECG, breathing and heart rate around the selected minute.</p>
+        </div>
+      </div>
+    ) : (
+      <div key="night">{needNight}</div>
+    ),
+
+    /* signals */
+    analysis ? (
+      <div key="signals" className="space-y-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => setSelectedMinute((m) => Math.max(0, m - 1))} className="btn-secondary px-3" aria-label="Previous minute">
+            ◀ 1 min
+          </button>
+          <span className="min-w-[7rem] text-center font-hud text-2xl leading-none" aria-live="polite">
+            {sel?.time_label ?? "…"}
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelectedMinute((m) => Math.min(analysis.duration_minutes - 1, m + 1))}
+            className="btn-secondary px-3"
+            aria-label="Next minute"
+          >
+            1 min ▶
+          </button>
+          <button type="button" onClick={() => go(P.night)} className="ml-auto min-h-11 font-hud text-xl leading-none text-primary hover:underline">
+            Back to the night
+          </button>
+        </div>
+        <SignalInspector data={windowData} loading={loadingWindow || loadingNight} threshold={analysis.threshold_used} />
+      </div>
+    ) : (
+      <div key="signals">{needNight}</div>
+    ),
+
+    /* how */
+    <Evidence key="how" evaluation={evaluation} onOpenResearch={() => go(P.research)} />,
+
+    /* research */
+    <ResearchBenchmarkView key="research" evaluation={evaluation} health={health} />,
+  ];
 
   return (
-    <div id="top" className="flex min-h-screen flex-col">
+    <div id="top" className="flex h-dvh flex-col overflow-hidden">
       <a
         href="#main"
-        className="sr-only z-50 rounded-lg bg-surface px-4 py-3 font-semibold focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        onClick={(e) => {
+          e.preventDefault();
+          pageRefs.current[page]?.focus();
+        }}
+        className="sr-only z-[80] bg-surface px-4 py-3 font-semibold focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
       >
         Skip to content
       </a>
-      <Navbar activeTab={activeTab} onTabChange={setActiveTab} health={health} />
+      <Navbar
+        page={page}
+        onPage={go}
+        health={health}
+        onTour={() => setTourOpen(true)}
+        scenePaused={scenePaused}
+        onToggleScene={toggleScene}
+      />
+      <NightDrive page={page} paused={scenePaused} dim={page > 0} />
 
       <input
         ref={fileRef}
@@ -193,144 +451,91 @@ export default function HomePage() {
         }}
       />
 
-      <main id="main" className="mx-auto w-full max-w-[1280px] flex-1 px-4 sm:px-6">
-        {activeTab === "workbench" ? (
-          <>
-            <Hero analysis={analysis} ecg={heroEcg} onTrySample={goToWorkbench} onUpload={pickFile} />
+      {notice && (
+        <div className="fixed inset-x-4 top-[calc(var(--header-h)+12px)] z-50 mx-auto max-w-xl">
+          <NoticeBanner notice={notice} onDismiss={() => setNotice(null)} />
+        </div>
+      )}
 
-            <section id="workbench" aria-label="Screening workbench" className="scroll-mt-20 space-y-6 border-t border-line pb-16 pt-10">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                <h2 className="font-pixel text-2xl font-bold">Screen a night</h2>
-                <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="case-select" className="text-sm font-medium">
-                    Recording
-                  </label>
-                  <select
-                    id="case-select"
-                    value={selectedCase}
-                    disabled={loadingNight}
-                    onChange={(e) => {
-                      setSelectedCase(e.target.value);
-                      setNoiseSnr(null);
-                    }}
-                    className="min-h-11 rounded-xl border border-line bg-surface px-3 text-sm"
-                  >
-                    {cases.map((c) => (
-                      <option key={c.case_id} value={c.case_id}>
-                        {c.case_id}, sleep-lab tier {c.clinical_tier} ({c.duration_hours} h)
-                      </option>
-                    ))}
-                    {selectedCase.startsWith("upload_") && <option value={selectedCase}>Uploaded ECG</option>}
-                  </select>
-                </div>
-
-                <fieldset className="flex flex-col gap-1.5">
-                  <legend className="mb-1.5 text-sm font-medium">Simulated electrode noise</legend>
-                  <div className="flex flex-wrap gap-1 rounded-lg bg-surface-2 p-1">
-                    {NOISE_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.label}
-                        type="button"
-                        disabled={loadingNight}
-                        aria-pressed={noiseSnr === opt.value}
-                        onClick={() => setNoiseSnr(opt.value)}
-                        className={`min-h-11 px-3 font-hud text-xl leading-none ${
-                          noiseSnr === opt.value ? "bg-primary text-primary-ink" : "text-muted hover:text-ink"
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </fieldset>
-
-                <div className="flex flex-col gap-1.5">
-                  <button
-                    type="button"
-                    onClick={pickFile}
-                    disabled={uploading}
-                    aria-describedby="upload-hint"
-                    className="btn-secondary"
-                  >
-                    <Upload className="h-4 w-4" aria-hidden />
-                    Upload ECG (CSV)
-                  </button>
-                  <p id="upload-hint" className="sr-only">
-                    CSV with an ecg column in millivolts and an optional time column in seconds, at least 60 seconds long.
-                  </p>
-                </div>
-                </div>
-              </div>
-
-              {notice && <NoticeBanner notice={notice} onDismiss={() => setNotice(null)} />}
-              {showProgress && <AnalysisProgress />}
-
-              {analysis && threshold !== null ? (
-                <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-                  <div className="lg:col-span-4">
-                    <TriageSummaryPanel
-                      analysis={analysis}
-                      threshold={threshold}
-                      defaultThreshold={defaultThreshold}
-                      onThresholdChange={setThreshold}
-                      compareBaseline={compareBaseline}
-                      onToggleBaseline={setCompareBaseline}
-                      updating={loadingNight}
-                    />
-                  </div>
-                  <div className="space-y-6 lg:col-span-8">
-                    <FullNightTimeline
-                      analysis={analysis}
-                      selectedMinute={selectedMinute}
-                      onSelectMinute={setSelectedMinute}
-                      showBaseline={compareBaseline}
-                    />
-                    <SignalInspector data={windowData} loading={loadingWindow || loadingNight} threshold={analysis.threshold_used} />
-                  </div>
-                </div>
-              ) : loadingNight ? (
-                <WorkbenchSkeleton />
-              ) : (
-                <div className="card p-10 text-center">
-                  <p className="text-lg font-semibold">No recording loaded</p>
-                  <p className="mt-1 text-muted">Load the sample night or upload a single-lead ECG as CSV.</p>
-                  <div className="mt-5 flex flex-wrap justify-center gap-3">
-                    {cases.length > 0 && (
-                      <button type="button" onClick={goToWorkbench} className="btn-primary">
-                        Try a sample night
-                      </button>
-                    )}
-                    <button type="button" onClick={pickFile} className="btn-secondary">
-                      Upload ECG
-                    </button>
-                  </div>
-                </div>
-              )}
-            </section>
-
-            <Evidence
-              evaluation={evaluation}
-              onOpenResearch={() => {
-                setActiveTab("research");
-                window.scrollTo({ top: 0 });
+      <main
+        id="main"
+        className="relative z-10 min-h-0 flex-1 overflow-hidden"
+        style={{ touchAction: "pan-y" }}
+        onPointerDown={(e) => {
+          const t = e.target as HTMLElement;
+          swipe.current = e.pointerType === "touch" && !t.closest("[data-hscroll], input, [role='slider']") ? { x: e.clientX, y: e.clientY } : null;
+        }}
+        onPointerUp={(e) => {
+          const s = swipe.current;
+          swipe.current = null;
+          if (!s) return;
+          const dx = e.clientX - s.x;
+          const dy = e.clientY - s.y;
+          if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) go(page + (dx < 0 ? 1 : -1));
+        }}
+      >
+        <div className="stage-track flex h-full" style={{ transform: `translateX(${-page * 100}%)` }}>
+          {PAGES.map((p, i) => (
+            <section
+              key={p.id}
+              ref={(el) => {
+                pageRefs.current[i] = el;
               }}
-            />
-          </>
-        ) : (
-          <ResearchBenchmarkView evaluation={evaluation} health={health} />
-        )}
+              data-page={p.id}
+              aria-label={`${p.label}, stage ${i + 1} of ${PAGES.length}`}
+              tabIndex={0} // a scrolling stage must be reachable by keyboard so it can be scrolled
+              inert={i !== page}
+              className="h-full w-full shrink-0 overflow-y-auto focus-visible:[outline-offset:-3px]"
+            >
+              <div className="mx-auto flex min-h-full max-w-[1280px] flex-col justify-center px-4 py-8 sm:px-6 sm:py-10">
+                {pageBody[i]}
+              </div>
+            </section>
+          ))}
+        </div>
       </main>
 
-      <footer className="border-t border-line py-6 text-sm text-muted">
-        <div className="mx-auto flex max-w-[1280px] flex-col gap-2 px-4 sm:flex-row sm:justify-between sm:px-6">
-          <p>
-            <strong className="font-semibold text-ink">Screening aid, not a diagnosis.</strong> CardioBreath, AI for
-            Medicine Hackathon 2026.
-          </p>
-          <p>Data: PhysioNet Apnea-ECG v1.0.0 (Penzel et al., 2000)</p>
+      <nav
+        aria-label="Stage navigation"
+        className="fixed inset-x-0 bottom-0 z-40 h-[var(--bar-h)] border-t-[3px] border-line bg-[rgb(13_10_38/0.94)]"
+      >
+        <div className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-3 px-4 sm:px-6">
+          <button type="button" onClick={() => go(page - 1)} disabled={page === 0} className="btn-secondary min-w-[6.5rem] px-3">
+            ◀ <span className="hidden sm:inline">{page > 0 ? PAGES[page - 1].label : "Back"}</span>
+            <span className="sm:hidden">Back</span>
+          </button>
+          <div className="flex flex-col items-center gap-1">
+            <p className="font-hud text-xl leading-none text-gold" aria-live="polite">
+              Stage {page + 1} of {PAGES.length} · {PAGES[page].label}
+            </p>
+            <div className="hidden gap-1 sm:flex">
+              {PAGES.map((p, i) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => go(i)}
+                  aria-label={`Go to ${p.label}`}
+                  aria-current={i === page ? "step" : undefined}
+                  className="grid h-11 w-11 place-items-center"
+                >
+                  <span className={`block h-2.5 w-5 ${i === page ? "bg-primary" : i < page ? "bg-line-strong" : "bg-line"}`} />
+                </button>
+              ))}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => go(page + 1)}
+            disabled={page === PAGES.length - 1}
+            className="btn-primary min-w-[6.5rem] px-3"
+          >
+            <span className="hidden sm:inline">{page < PAGES.length - 1 ? PAGES[page + 1].label : "Done"}</span>
+            <span className="sm:hidden">Next</span> ▶
+          </button>
         </div>
-      </footer>
+      </nav>
+
+      <Tour open={tourOpen} onClose={() => setTourOpen(false)} onPage={go} />
     </div>
   );
 }

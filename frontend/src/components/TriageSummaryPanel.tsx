@@ -50,7 +50,7 @@ export default function TriageSummaryPanel({
           </span>
         </div>
 
-        <div className={`mt-4 transition-opacity duration-200 ${updating ? "opacity-50" : ""}`}>
+        <div id="triage-title-block" className={`mt-4 transition-opacity duration-200 ${updating ? "opacity-50" : ""}`}>
           <SeverityBadge tier={tier} size="lg" />
           <p className="mt-3 flex items-baseline gap-2">
             <span className="font-hud text-8xl leading-[0.8] text-ink">{analysis.eahi_pred.toFixed(1)}</span>

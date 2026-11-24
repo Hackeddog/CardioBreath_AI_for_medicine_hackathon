@@ -129,8 +129,8 @@ export default function SignalInspector({ data, loading, threshold }: SignalInsp
         </span>
       </div>
 
-      <figure className="mt-4">
-        <div className={`-mx-6 overflow-x-auto px-6 transition-opacity duration-200 ${loading ? "opacity-50" : ""}`}>
+      <figure id="inspector-figure" className="mt-4">
+        <div data-hscroll className={`-mx-6 overflow-x-auto px-6 transition-opacity duration-200 ${loading ? "opacity-50" : ""}`}>
           <svg viewBox={`0 0 ${width} ${totalH}`} className="h-auto w-full min-w-[640px] select-none" aria-hidden>
             <Track y={t1Y} h={t1H} x0={padL} w={plotW} title={`ECG, mV (centre 30 s: ${ecgT0.toFixed(0)} to ${ecgT1.toFixed(0)} s)`} top={ecgMax.toFixed(1)} bottom={ecgMin.toFixed(1)}>
               <path d={ecgPath} fill="none" strokeWidth="1" className="stroke-trace" />

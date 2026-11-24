@@ -71,7 +71,9 @@ export default function ResearchBenchmarkView({ evaluation, health }: ResearchBe
   return (
     <div className="space-y-10 py-8">
       <header className="max-w-[70ch]">
-        <h1 className="font-pixel text-3xl font-bold sm:text-4xl">Validation and limitations</h1>
+        <h2 id="research-title" className="font-pixel text-3xl font-bold sm:text-4xl">
+          Validation and limitations
+        </h2>
         <p className="mt-3 text-lg text-muted">
           All numbers come from a locked held-out test set of 35 nights (x01 to x35) from the PhysioNet Apnea-ECG
           database, never seen in training or tuning. Confidence intervals are 95% subject-clustered bootstrap (1,000

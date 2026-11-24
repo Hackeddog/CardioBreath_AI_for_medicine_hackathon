@@ -41,6 +41,8 @@
   --severe-fg: #ff7a99;
 
   --px: 3px; /* one "pixel" of the UI chrome */
+  --header-h: 64px;
+  --bar-h: 76px;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --paper-minor: rgb(92 242 176 / 0.07);
   --paper-major: rgb(92 242 176 / 0.16);
@@ -180,6 +182,91 @@
   [data-reveal][data-shown] {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Stages slide sideways like the next stretch of road. */
+.stage-track {
+  transition: transform 550ms var(--ease);
+}
+
+/* ---------- Night-drive scene ---------- */
+.night-drive .neon {
+  filter: drop-shadow(0 0 4px currentColor) drop-shadow(0 0 12px currentColor);
+}
+.night-drive .parallax {
+  transition: transform 900ms var(--ease);
+}
+.night-drive .lamps {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='96' shape-rendering='crispEdges'%3E%3Cpolygon points='31,14 41,14 70,96 2,96' fill='%23ffd9a0' opacity='.09'/%3E%3Crect x='34' y='12' width='3' height='84' fill='%23231c5e'/%3E%3Crect x='28' y='10' width='16' height='4' fill='%23ffd9a0'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: bottom left;
+}
+.night-drive .road {
+  background: linear-gradient(#1c1446 0 8px, #0c0824 8px 100%);
+  box-shadow: inset 0 3px 0 rgb(45 226 255 / 0.55);
+}
+.night-drive .road::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 52%;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, rgb(255 216 77 / 0.45) 0 26px, transparent 26px 56px);
+}
+.night-drive .car {
+  position: absolute;
+  left: var(--park, 0);
+  animation-name: drive;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.night-drive .car-near {
+  bottom: 10px;
+  width: 112px;
+  height: 42px;
+}
+.night-drive .car-far {
+  bottom: 58px;
+  width: 80px;
+  height: 30px;
+  scale: -1 1; /* oncoming lane faces left */
+  animation-direction: reverse;
+}
+@media (max-width: 639px) {
+  .night-drive .car-near {
+    width: 84px;
+    height: 32px;
+  }
+  .night-drive .car-far {
+    bottom: 46px;
+    width: 60px;
+    height: 22px;
+  }
+}
+.night-drive .beam {
+  position: absolute;
+  left: 96%;
+  top: 38%;
+  width: 150px;
+  height: 16px;
+  background: linear-gradient(to right, rgb(255 242 176 / 0.5), transparent);
+  filter: blur(3px);
+}
+.night-drive.paused * {
+  animation-play-state: paused !important;
+}
+@keyframes drive {
+  from {
+    translate: calc(-1 * var(--park, 0px) - 20vw) 0;
+  }
+  to {
+    translate: calc(115vw - var(--park, 0px)) 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .night-drive .car {
+    animation: none !important;
   }
 }
 
