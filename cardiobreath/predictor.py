@@ -177,6 +177,8 @@ class CardioBreathPredictor:
         x = np.asarray(ecg, dtype=np.float32).reshape(-1)
         if len(x) < round(60.0 * fs):
             raise ValueError("ECG recording must be at least 60 seconds (1 minute) long.")
+        if not np.all(np.isfinite(x)):
+            raise ValueError("ECG recording contains no numeric samples or infinite values.")
 
         thr = float(threshold if threshold is not None else self.default_threshold)
         t0 = time.perf_counter()
