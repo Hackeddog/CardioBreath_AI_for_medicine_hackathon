@@ -4,17 +4,17 @@
   "n_folds": 5,
   "in_channels": 2,
   "seq_len": 1200,
-  "temperature": 1.83459,
-  "threshold": 0.6,
-  "oof_auroc": 0.944,
-  "bench_500min_total_ms": 5994.5,
-  "bench_500min_per_fold_ms": 1198.9,
+  "temperature": 1.78887,
+  "threshold": 0.63,
+  "oof_auroc": 0.9631,
+  "bench_500min_total_ms": 4274.7,
+  "bench_500min_per_fold_ms": 854.9,
   "exports": [
     {
       "fold": "fold_0",
       "onnx_file": "cardiobreath_fold_0.onnx",
       "size_mb": 1.668,
-      "max_diff": 7e-07,
+      "max_diff": 2e-07,
       "int8_file": "cardiobreath_fold_0_int8.onnx",
       "int8_size_mb": 1.255
     },
@@ -30,7 +30,7 @@
       "fold": "fold_2",
       "onnx_file": "cardiobreath_fold_2.onnx",
       "size_mb": 1.668,
-      "max_diff": 5e-07,
+      "max_diff": 1.4e-06,
       "int8_file": "cardiobreath_fold_2_int8.onnx",
       "int8_size_mb": 1.255
     },
@@ -38,7 +38,7 @@
       "fold": "fold_3",
       "onnx_file": "cardiobreath_fold_3.onnx",
       "size_mb": 1.668,
-      "max_diff": 0.0,
+      "max_diff": 5e-07,
       "int8_file": "cardiobreath_fold_3_int8.onnx",
       "int8_size_mb": 1.255
     },
@@ -46,7 +46,7 @@
       "fold": "fold_4",
       "onnx_file": "cardiobreath_fold_4.onnx",
       "size_mb": 1.668,
-      "max_diff": 5e-07,
+      "max_diff": 2e-07,
       "int8_file": "cardiobreath_fold_4_int8.onnx",
       "int8_size_mb": 1.255
     }
