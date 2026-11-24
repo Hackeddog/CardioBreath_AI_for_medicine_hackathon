@@ -1,6 +1,12 @@
-# Python environments
+# Python environments & build outputs
 .venv/
 venv/
+build/
+dist/
+*.egg-info/
+cardiobreath/assets/*.onnx
+cardiobreath/assets/*.json
+cardiobreath/assets/*.yaml
 __pycache__/
 *.py[cod]
 *$py.class
