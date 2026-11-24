@@ -1,13 +1,3 @@
-# Stage 1: Build Next.js Static Clinical Dashboard
-FROM node:22-alpine AS frontend-builder
-WORKDIR /app/frontend
-COPY frontend/package.json frontend/package-lock.json* ./
-RUN npm ci || npm install
-COPY frontend/ ./
-ENV NEXT_PUBLIC_API_BASE=""
-RUN npm run build
-
-# Stage 2: Python 3.11 CPU Runtime (FastAPI + ONNX Runtime + LightGBM + Grad-CAM + Static UI)
 FROM python:3.11-slim
 WORKDIR /app
 
@@ -32,10 +22,8 @@ COPY artifacts/onnx/ ./artifacts/onnx/
 COPY artifacts/checkpoints/lgbm/ ./artifacts/checkpoints/lgbm/
 COPY artifacts/checkpoints/cardiobreath/cv_summary.json ./artifacts/checkpoints/cardiobreath/cv_summary.json
 COPY artifacts/checkpoints/cardiobreath/fold_0.pt ./artifacts/checkpoints/cardiobreath/fold_0.pt
-COPY --from=frontend-builder /app/frontend/out ./frontend/out
 
-# Ensure compatibility with Hugging Face Spaces non-root container user (uid 1000)
 RUN chmod -R a+rX /app
 
 EXPOSE 7860
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-7860}"]
