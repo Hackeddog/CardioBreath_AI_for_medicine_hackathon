@@ -1,152 +1,177 @@
 "use client";
 
 import React from "react";
-import { ArrowDown, ArrowRight, ShieldAlert, Upload } from "lucide-react";
-import type { EvaluationPayload, FullNightAnalysis } from "@/lib/types";
-import { SeverityBadge, SeverityScale, sentenceCase } from "./ui";
+import { ArrowDown, Upload } from "lucide-react";
+import type { EvaluationPayload, FullNightAnalysis, WindowInspectorData } from "@/lib/types";
+import { Reveal, SeverityBadge, sentenceCase } from "./ui";
 
 interface HeroProps {
   analysis: FullNightAnalysis | null;
+  ecg: WindowInspectorData | null;
   onTrySample: () => void;
   onUpload: () => void;
 }
 
-const STEPS = [
-  { title: "Single-lead ECG", body: "A night of ECG from a patch or Holter, the kind clinics already record." },
-  { title: "Breathing from the heart signal", body: "Respiration (EDR) and beat-to-beat heart rate (RRI) are derived from the ECG." },
-  { title: "Ensemble with a quality gate", body: "Five calibrated models score each minute. Noisy minutes are deferred, not guessed." },
-  { title: "Triage, with uncertainty", body: "An overnight apnea burden (eAHI), a 90% interval, and a referral recommendation." },
-];
+const STRIP_SECONDS = 10; // a classic rhythm-strip length; 30 s is too dense to read at hero size
 
-export default function Hero({ analysis, onTrySample, onUpload }: HeroProps) {
+function EcgStrip({ ecg }: { ecg: WindowInspectorData }) {
+  const t = ecg.ecg_time_sec;
+  const mid = (t[0] + t[t.length - 1]) / 2;
+  const t0 = mid - STRIP_SECONDS / 2;
+  const pts = ecg.ecg_mv.map((v, i) => [t[i], v] as const).filter(([s]) => s >= t0 && s <= t0 + STRIP_SECONDS);
+  const vs = pts.map(([, v]) => v);
+  const lo = Math.min(...vs);
+  const hi = Math.max(...vs);
+  const W = 1000;
+  const H = 300;
+  const d = pts
+    .map(([s, v], i) => `${i ? "L" : "M"}${(((s - t0) / STRIP_SECONDS) * W).toFixed(1)},${(H * 0.12 + (1 - (v - lo) / Math.max(hi - lo, 1e-6)) * H * 0.76).toFixed(1)}`)
+    .join(" ");
   return (
-    <section aria-labelledby="hero-title" className="pb-10 pt-8 sm:pt-14">
-      <div className="grid items-center gap-10 lg:grid-cols-12">
-        <div className="lg:col-span-7">
-          <p className="eyebrow">Sleep apnea screening aid</p>
-          <h1 id="hero-title" className="mt-3 text-[2.25rem] font-semibold leading-[1.1] tracking-tight sm:text-5xl">
-            Sleep apnea screening from a single-lead ECG
-          </h1>
-          <p className="mt-5 max-w-[60ch] text-lg text-muted">
-            CardioBreath estimates overnight apnea burden from an ordinary ECG recording and shows which patients
-            should be prioritized for a sleep study, with the evidence behind every minute.
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <button type="button" onClick={onTrySample} className="btn-primary px-5 text-base">
-              Try a sample night
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </button>
-            <button type="button" onClick={onUpload} className="btn-secondary px-5 text-base">
-              <Upload className="h-4 w-4" aria-hidden />
-              Upload ECG
-            </button>
-          </div>
-          <p className="mt-6 flex max-w-[60ch] items-start gap-2 text-sm text-muted">
-            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-ink" aria-hidden />
-            <span>
-              <strong className="font-semibold text-ink">Screening aid, not a diagnosis.</strong> Results support
-              referral decisions and must be confirmed by polysomnography (PSG).
-            </span>
-          </p>
-        </div>
+    <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" aria-hidden>
+      <path d={d} pathLength={1} fill="none" strokeWidth="2" strokeLinejoin="round" className="draw stroke-trace" style={{ animationDuration: "2.6s" }} />
+    </svg>
+  );
+}
 
-        <div className="lg:col-span-5">
-          <div className="card p-6">
-            <p className="eyebrow">
-              {analysis?.case_id.startsWith("upload_") ? "Your upload" : `Sample night${analysis ? ` · ${analysis.case_id}` : ""}`}
-            </p>
-            {analysis ? (
-              <>
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <span className="text-5xl font-semibold tabular-nums tracking-tight">{analysis.eahi_pred.toFixed(1)}</span>
-                  <span className="text-sm text-muted">
-                    eAHI
-                    <br />
-                    apnea-min/hr
-                  </span>
-                  <span className="ml-auto">
-                    <SeverityBadge tier={analysis.severity_tier} />
-                  </span>
-                </div>
-                <SeverityScale value={analysis.eahi_pred} low={analysis.eahi_ci90_low} high={analysis.eahi_ci90_high} />
-                <p className="mt-3 text-sm tabular-nums">
-                  90% interval {analysis.eahi_ci90_low.toFixed(1)} to {analysis.eahi_ci90_high.toFixed(1)}
-                  {analysis.true_eahi !== null && (
-                    <span className="text-muted"> · Sleep-lab reference {analysis.true_eahi.toFixed(1)}</span>
-                  )}
-                </p>
-                <p className="mt-3 text-sm font-medium">{sentenceCase(analysis.triage_action)}</p>
-                <button
-                  type="button"
-                  onClick={onTrySample}
-                  className="-ml-2 mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-semibold text-primary hover:underline"
-                >
-                  See the full night
-                  <ArrowDown className="h-4 w-4" aria-hidden />
-                </button>
-              </>
-            ) : (
-              <div className="mt-3 space-y-3" aria-hidden>
-                <div className="skeleton h-12 w-40" />
-                <div className="skeleton h-16 w-full" />
-              </div>
-            )}
-          </div>
+export default function Hero({ analysis, ecg, onTrySample, onUpload }: HeroProps) {
+  return (
+    <section aria-labelledby="hero-title" className="grid items-center gap-10 pb-14 pt-10 sm:pt-16 lg:grid-cols-12">
+      <div className="lg:col-span-6">
+        <h1 id="hero-title" className="font-serif text-[2.6rem] font-semibold leading-[1.04] tracking-tight sm:text-6xl">
+          Sleep apnea screening from a single-lead ECG
+        </h1>
+        <p className="mt-6 max-w-[52ch] text-lg text-muted">
+          CardioBreath reads breathing out of an ordinary overnight ECG, estimates apnea burden, and tells you who
+          should go to the sleep lab first.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <button type="button" onClick={onTrySample} className="btn-primary px-6 text-base">
+            Try a sample night
+          </button>
+          <button type="button" onClick={onUpload} className="btn-secondary px-5 text-base">
+            <Upload className="h-4 w-4" aria-hidden />
+            Upload ECG
+          </button>
         </div>
+        <p className="mt-6 max-w-[52ch] text-sm text-muted">
+          <strong className="font-semibold text-ink">Screening aid, not a diagnosis.</strong> Results support referral
+          decisions and must be confirmed by polysomnography.
+        </p>
       </div>
+
+      <figure className="lg:col-span-6">
+        <div className="ecg-paper overflow-hidden rounded-xl border border-line">
+          {ecg ? (
+            <EcgStrip ecg={ecg} />
+          ) : (
+            <div className="grid aspect-[10/3] place-items-center text-sm text-muted">Loading the sample night…</div>
+          )}
+        </div>
+        <figcaption className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
+          {analysis && !analysis.case_id.startsWith("upload_") ? (
+            <>
+              <span className="text-muted tabular-nums">
+                Night {analysis.case_id}, {STRIP_SECONDS} s of ECG around{" "}
+                {ecg?.time_window_label.match(/Center:\s*([\d:]+)/)?.[1] ?? "…"}
+              </span>
+              <span className="flex items-center gap-3">
+                <span className="font-semibold tabular-nums">eAHI {analysis.eahi_pred.toFixed(1)}</span>
+                <SeverityBadge tier={analysis.severity_tier} />
+              </span>
+              <span className="w-full font-medium">{sentenceCase(analysis.triage_action)}</span>
+              <button
+                type="button"
+                onClick={onTrySample}
+                className="-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 font-semibold text-primary hover:underline"
+              >
+                See the full night
+                <ArrowDown className="h-4 w-4" aria-hidden />
+              </button>
+            </>
+          ) : (
+            <span className="text-muted">Single-lead ECG from a held-out test night.</span>
+          )}
+        </figcaption>
+      </figure>
     </section>
   );
 }
 
-/** Evidence and method, placed after the tool so returning users reach the workbench first. */
-export function Evidence({ evaluation }: { evaluation: EvaluationPayload | null }) {
+const STEPS = [
+  {
+    title: "A night of single-lead ECG",
+    body: "From a patch or Holter, the recording many clinics already make. No belts, no sleep lab.",
+  },
+  {
+    title: "Breathing and heart rate, derived",
+    body: "Respiration (EDR) and beat-to-beat heart rate (RRI) are pulled out of the ECG for every minute.",
+  },
+  {
+    title: "Five models and a quality gate",
+    body: "Five calibrated models score each minute. Minutes with too much noise are deferred instead of guessed.",
+  },
+  {
+    title: "A triage call with its uncertainty",
+    body: "Overnight apnea burden (eAHI), a 90% interval, and whether to prioritize a sleep study.",
+  },
+];
+
+/** Method and evidence, after the tool, so returning users reach the workbench first. */
+export function Evidence({ evaluation, onOpenResearch }: { evaluation: EvaluationPayload | null; onOpenResearch: () => void }) {
   const cb = evaluation?.test?.models?.cardiobreath;
   const stats = cb
     ? [
-        { value: cb.minute_metrics.auroc.toFixed(3), label: "AUROC per minute", note: "35 held-out nights" },
-        { value: cb.recording_metrics.eahi_mae.toFixed(2), label: "eAHI mean abs. error", note: "apnea-min/hr" },
-        {
-          value: `${(cb.recording_metrics.screening_cutoff_5.sensitivity * 100).toFixed(0)}%`,
-          label: "Screening sensitivity",
-          note: "at eAHI ≥ 5",
-        },
+        { value: cb.minute_metrics.auroc.toFixed(3), label: "AUROC, per minute" },
+        { value: cb.recording_metrics.eahi_mae.toFixed(2), label: "eAHI mean absolute error, apnea-min/hr" },
+        { value: `${(cb.recording_metrics.screening_cutoff_5.sensitivity * 100).toFixed(0)}%`, label: "of apnea patients flagged at eAHI ≥ 5" },
       ]
     : null;
 
   return (
-    <section aria-labelledby="evidence-title" className="border-t border-line py-12">
-      <h2 id="evidence-title" className="text-xl font-semibold tracking-tight">
-        How it works, and how well
-      </h2>
-      <ol className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {STEPS.map((s, i) => (
-          <li key={s.title} className="card p-5">
-            <span className="text-sm font-semibold tabular-nums text-primary">0{i + 1}</span>
-            <p className="mt-2 font-semibold">{s.title}</p>
-            <p className="mt-1 text-sm text-muted">{s.body}</p>
-          </li>
-        ))}
-      </ol>
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {(stats ?? [null, null, null]).map((s, i) => (
-          <div key={i} className="border-t border-line pt-4">
-            {s ? (
-              <>
-                <p className="text-3xl font-semibold tabular-nums tracking-tight">{s.value}</p>
-                <p className="mt-1 text-sm">
-                  {s.label} <span className="text-muted">· {s.note}</span>
-                </p>
-              </>
+    <section aria-label="Method and evidence" className="grid gap-12 border-t border-line py-16 lg:grid-cols-12">
+      <Reveal className="lg:col-span-7">
+        <h2 className="font-serif text-3xl font-semibold tracking-tight">What it reads in one night</h2>
+        <ol className="mt-8 space-y-7">
+          {STEPS.map((s, i) => (
+            <li key={s.title} className="grid grid-cols-[2.5rem_1fr] gap-x-2">
+              <span className="font-serif text-2xl leading-none text-muted tabular-nums" aria-hidden>
+                {i + 1}
+              </span>
+              <div>
+                <p className="font-semibold">{s.title}</p>
+                <p className="mt-1 max-w-[56ch] text-muted">{s.body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </Reveal>
+
+      <Reveal className="lg:col-span-5">
+        <h2 className="font-serif text-3xl font-semibold tracking-tight">How well, on 35 nights it never saw</h2>
+        <div className="mt-8 space-y-6">
+          {(stats ?? [null, null, null]).map((s, i) =>
+            s ? (
+              <div key={i} className="border-t-2 border-ink pt-3">
+                <p className="text-5xl font-semibold tabular-nums tracking-tight">{s.value}</p>
+                <p className="mt-1 text-muted">{s.label}</p>
+              </div>
             ) : (
-              <div className="skeleton h-14 w-40" aria-hidden />
-            )}
-          </div>
-        ))}
-      </div>
-      <p className="mt-4 text-sm text-muted">
-        Trained and evaluated on the PhysioNet Apnea-ECG database (Penzel et al., 2000). Full benchmark, calibration
-        and limitations are on the Research tab.
-      </p>
+              <div key={i} className="skeleton h-20 w-48" aria-hidden />
+            )
+          )}
+        </div>
+        <p className="mt-6 text-sm text-muted">
+          Locked held-out test set x01 to x35, PhysioNet Apnea-ECG (Penzel et al., 2000).{" "}
+          <button
+            type="button"
+            onClick={onOpenResearch}
+            className="inline-flex min-h-11 items-center font-semibold text-primary underline-offset-2 hover:underline"
+          >
+            Full benchmark and limitations
+          </button>
+        </p>
+      </Reveal>
     </section>
   );
 }

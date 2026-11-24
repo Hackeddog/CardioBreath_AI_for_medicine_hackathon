@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AlertOctagon, AlertTriangle, Check, CheckCircle2, Info, X } from "lucide-react";
 import { ApiError } from "@/lib/api";
 
@@ -83,8 +83,36 @@ export function SeverityScale({ value, low, high }: { value: number; low: number
 
 /** Backend triage strings are ALL CAPS; sentence case reads faster. Keeps clinical acronyms. */
 export function sentenceCase(s: string): string {
-  const lower = s.toLowerCase().replace(/\b(psg|ecg|ahi|afib)\b/g, (m) => m.toUpperCase());
+  const lower = s
+    .toLowerCase()
+    .replace(/\s+[—–]\s+/g, ": ") // backend uses an em dash as a separator; a colon reads as plain text
+    .replace(/\b(psg|ecg|ahi|afib)\b/g, (m) => m.toUpperCase());
   return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
+/** Fades a below-the-fold block in once, so a long page arrives in steps instead of all at once. */
+export function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          el.dataset.shown = "";
+          io.disconnect();
+        }
+      },
+      { rootMargin: "0px 0px -8% 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div ref={ref} data-reveal className={className}>
+      {children}
+    </div>
+  );
 }
 
 /* ---------- Plain-language errors ---------- */

@@ -8,6 +8,12 @@ const SAMPLES = path.resolve(__dirname, "../../sample_uploads");
 const notice = (page: Page) => page.getByRole("region", { name: "Screening workbench" }).getByRole("alert");
 const triage = (page: Page) => page.getByRole("region", { name: "Screening result" });
 
+// The cutoff slider lives in a disclosure under the result.
+async function openCutoff(page: Page) {
+  await page.getByText("Adjust cutoff, compare baseline").click();
+  await expect(page.locator("#threshold")).toBeVisible();
+}
+
 async function loadSample(page: Page) {
   await page.goto("/");
   await page.getByRole("button", { name: "Try a sample night" }).first().click();
@@ -72,6 +78,7 @@ test("server errors never show internals", async ({ page }) => {
 
 test("dragging the cutoff: the last value wins", async ({ page }) => {
   await loadSample(page);
+  await openCutoff(page);
   const slider = page.locator("#threshold");
   await slider.focus();
   // Pauses longer than the debounce, so several requests overlap in flight.
@@ -90,9 +97,10 @@ test("dragging the cutoff: the last value wins", async ({ page }) => {
 
 test("keyboard reaches every control, including both sliders", async ({ page }) => {
   await loadSample(page);
+  await openCutoff(page);
   await page.locator("body").focus();
   const seen = new Set<string>();
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 50; i++) {
     await page.keyboard.press("Tab");
     seen.add(
       await page.evaluate(() => {
