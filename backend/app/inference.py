@@ -431,6 +431,8 @@ class CardioBreathInferenceEngine:
         case_id = f"upload_{uuid.uuid4().hex[:8]}"
         with self._lock:
             self._uploads[case_id] = (ecg, fs)
+            # shortcut: only the last 6 uploads stay in RAM (older ones 404 on re-analysis),
+            # persist them to disk once real users upload
             if len(self._uploads) > 6:
                 self._uploads.popitem(last=False)
         return case_id

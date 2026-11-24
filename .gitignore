@@ -51,3 +51,6 @@ cardiobreath_trained_artifacts/
 Thumbs.db
 
 docs/
+
+# Local code-graph tool output (paths exceed Windows MAX_PATH)
+graphify-out/
