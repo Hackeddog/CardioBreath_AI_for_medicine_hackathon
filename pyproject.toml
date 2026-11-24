@@ -1,3 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cardiobreath"
+version = "0.1.0"
+description = "Single-Lead ECG Sleep Apnea Pre-Screening via Cardiopulmonary Coupling & 5-Fold ONNX Deep Ensemble"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "pandas>=2.0",
+    "onnxruntime>=1.16",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+cardiobreath = "cardiobreath.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cardiobreath*"]
+
+[tool.setuptools.package-data]
+"cardiobreath.assets" = ["*.onnx", "*.json", "*.yaml"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
