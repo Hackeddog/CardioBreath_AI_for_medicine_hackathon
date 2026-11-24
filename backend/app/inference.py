@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import threading
 import time
 import uuid
@@ -27,6 +28,8 @@ from src.dsp import (
 )
 from src.metrics import classify_severity_tier, compute_eahi
 from src.models import build_model, compute_gradcam_1d
+
+_CASE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
 
 @dataclass
@@ -119,7 +122,8 @@ class CardioBreathInferenceEngine:
         self.demo_manifest: list[dict[str, Any]] = (
             json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else []
         )
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
+        self._gradcam_lock = threading.Lock()
         self._cache: OrderedDict[tuple[str, float | None], CachedNightBundle] = OrderedDict()
         self._uploads: OrderedDict[str, tuple[np.ndarray, float]] = OrderedDict()
         self._max_cache = 16
@@ -141,10 +145,16 @@ class CardioBreathInferenceEngine:
         return self.demo_manifest
 
     def _load_raw_case(self, case_id: str) -> tuple[np.ndarray, float, np.ndarray | None]:
-        if case_id in self._uploads:
-            ecg, fs = self._uploads[case_id]
-            return ecg, fs, None
-        npz_path = self.demo_dir / f"{case_id}.npz"
+        if not _CASE_ID_RE.fullmatch(case_id):
+            raise ValueError(f"Invalid case_id: {case_id}")
+        with self._lock:
+            if case_id in self._uploads:
+                ecg, fs = self._uploads[case_id]
+                return ecg, fs, None
+        demo_root = self.demo_dir.resolve()
+        npz_path = (demo_root / f"{case_id}.npz").resolve()
+        if not npz_path.is_relative_to(demo_root):
+            raise ValueError(f"Invalid case_id path: {case_id}")
         if not npz_path.exists():
             raise FileNotFoundError(f"Unknown case_id: {case_id}")
         with np.load(npz_path, allow_pickle=False) as d:
@@ -355,7 +365,8 @@ class CardioBreathInferenceEngine:
         win_dual = bundle.dual_windows[m]  # (2, 1200)
         if self.gradcam_model is not None:
             x_t = torch.from_numpy(win_dual).unsqueeze(0)
-            saliency_1200 = compute_gradcam_1d(self.gradcam_model, x_t)
+            with self._gradcam_lock:
+                saliency_1200 = compute_gradcam_1d(self.gradcam_model, x_t)
         else:
             saliency_1200 = np.zeros(1200, dtype=np.float32)
 
@@ -413,9 +424,10 @@ class CardioBreathInferenceEngine:
         if len(ecg) < round(60 * fs):
             raise ValueError("Uploaded ECG must contain at least 60 seconds (1 minute) of samples.")
         case_id = f"upload_{uuid.uuid4().hex[:8]}"
-        self._uploads[case_id] = (ecg, fs)
-        if len(self._uploads) > 6:
-            self._uploads.popitem(last=False)
+        with self._lock:
+            self._uploads[case_id] = (ecg, fs)
+            if len(self._uploads) > 6:
+                self._uploads.popitem(last=False)
         return case_id
 
     def get_evaluation_report(self) -> dict[str, Any]:

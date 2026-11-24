@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -30,12 +31,19 @@ app = FastAPI(
     version="1.0.0",
 )
 
+MAX_UPLOAD_BYTES = int(os.getenv("CARDIOBREATH_MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))
+UPLOAD_CHUNK_BYTES = 1024 * 1024
+
+_raw_origins = os.getenv("CORS_ALLOW_ORIGINS", "*").strip()
+_allow_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()] or ["*"]
+_allow_credentials = "*" not in _allow_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_allow_origins,
+    allow_credentials=_allow_credentials,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
 )
 
 engine = CardioBreathInferenceEngine()
@@ -62,6 +70,8 @@ def analyze_case(case_id: str, req: AnalyzeCaseRequest) -> dict:
         )
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
@@ -76,16 +86,34 @@ def inspect_window(req: WindowInspectorRequest) -> dict:
         )
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.post("/api/analyze/upload", response_model=FullNightAnalysisResponse)
-async def upload_ecg(file: Annotated[UploadFile, File(...)], threshold: float | None = None) -> dict:
+async def upload_ecg(
+    file: Annotated[UploadFile, File(...)],
+    threshold: Annotated[float | None, Query(ge=0.1, le=0.9)] = None,
+) -> dict:
     try:
-        content = await file.read()
+        buf = bytearray()
+        while True:
+            chunk = await file.read(UPLOAD_CHUNK_BYTES)
+            if not chunk:
+                break
+            buf.extend(chunk)
+            if len(buf) > MAX_UPLOAD_BYTES:
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"Uploaded file exceeds maximum allowed size of {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.",
+                )
+        content = bytes(buf)
         case_id = engine.register_uploaded_csv(content, file.filename or "upload.csv")
         return engine.analyze_case(case_id=case_id, threshold=threshold, compare_baseline=True)
+    except HTTPException:
+        raise
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
