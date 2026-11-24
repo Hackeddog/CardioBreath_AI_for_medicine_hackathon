@@ -1,293 +1,176 @@
 "use client";
 
 import React from "react";
-import { AlertTriangle, Eye, Sparkles } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import type { WindowInspectorData } from "@/lib/types";
 
 interface SignalInspectorProps {
   data: WindowInspectorData | null;
   loading: boolean;
   threshold: number;
+  controls?: React.ReactNode; // e.g. the minute stepper, shown in the header row
 }
 
-function buildPolyline(
-  times: number[],
-  values: number[],
-  tMin: number,
-  tMax: number,
-  vMin: number,
-  vMax: number,
-  x0: number,
-  plotW: number,
-  y0: number,
-  plotH: number
-): string {
+// Viridis: perceptually uniform and colorblind-safe, readable in both themes.
+const VIRIDIS = ["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"];
+function viridis(t: number): string {
+  const x = Math.min(1, Math.max(0, t)) * (VIRIDIS.length - 1);
+  const i = Math.min(VIRIDIS.length - 2, Math.floor(x));
+  const f = x - i;
+  const a = VIRIDIS[i].match(/\w\w/g)!.map((h) => parseInt(h, 16));
+  const b = VIRIDIS[i + 1].match(/\w\w/g)!.map((h) => parseInt(h, 16));
+  return `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(",")})`;
+}
+
+function polyline(times: number[], values: number[], tMin: number, tMax: number, vMin: number, vMax: number, x0: number, w: number, y0: number, h: number) {
   const spanT = Math.max(tMax - tMin, 1e-6);
   const spanV = Math.max(vMax - vMin, 1e-6);
   return values
-    .map((v, i) => {
-      const x = x0 + ((times[i] - tMin) / spanT) * plotW;
-      const y = y0 + (1 - (v - vMin) / spanV) * plotH;
-      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
-    })
+    .map((v, i) => `${i === 0 ? "M" : "L"}${(x0 + ((times[i] - tMin) / spanT) * w).toFixed(1)},${(y0 + (1 - (v - vMin) / spanV) * h).toFixed(1)}`)
     .join(" ");
 }
 
-export default function SignalInspector({ data, loading, threshold }: SignalInspectorProps) {
+function Track({ y, h, x0, w, title, top, bottom, children }: { y: number; h: number; x0: number; w: number; title: string; top: string; bottom: string; children: React.ReactNode }) {
+  const gridYs = [0.25, 0.5, 0.75].map((f) => y + f * h);
+  return (
+    <g>
+      <rect x={x0} y={y} width={w} height={h} rx="4" className="fill-surface stroke-grid" />
+      {gridYs.map((gy) => (
+        <line key={gy} x1={x0} x2={x0 + w} y1={gy} y2={gy} className="stroke-grid" strokeWidth="1" />
+      ))}
+      {Array.from({ length: 9 }, (_, k) => x0 + ((k + 1) / 10) * w).map((gx) => (
+        <line key={gx} y1={y} y2={y + h} x1={gx} x2={gx} className="stroke-grid" strokeWidth="1" />
+      ))}
+      <text x={x0} y={y - 8} fontSize="13" fontWeight="600" className="fill-ink">
+        {title}
+      </text>
+      <text x={x0 - 8} y={y + 12} textAnchor="end" fontSize="12" className="fill-muted tabular-nums">
+        {top}
+      </text>
+      <text x={x0 - 8} y={y + h - 2} textAnchor="end" fontSize="12" className="fill-muted tabular-nums">
+        {bottom}
+      </text>
+      {children}
+    </g>
+  );
+}
+
+export default function SignalInspector({ data, loading, threshold, controls }: SignalInspectorProps) {
   if (!data) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-500 shadow-sm">
-        Select a minute on the overnight timeline to inspect cardiopulmonary waveforms and 1D Grad-CAM.
-      </div>
+      <section className="card p-6" aria-labelledby="inspector-title">
+        <h2 id="inspector-title" className="font-pixel text-xl font-bold">
+          Signal inspector
+        </h2>
+        {loading ? (
+          <div className="skeleton mt-4 h-64 w-full" aria-hidden />
+        ) : (
+          <p className="mt-2 text-muted">Select a minute on the timeline to see its ECG, breathing and heart-rate signals.</p>
+        )}
+      </section>
     );
   }
 
   const width = 920;
   const padL = 56;
-  const padR = 16;
+  const padR = 12;
   const plotW = width - padL - padR;
+  const t1Y = 26, t1H = 64;
+  const t2Y = t1Y + t1H + 34, t2H = 64;
+  const t3Y = t2Y + t2H + 34, t3H = 64;
+  const salY = t3Y + t3H + 30, salH = 14;
+  const totalH = salY + salH + 26;
 
-  // Track Y offsets
-  const t1Y = 20;
-  const t1H = 74; // Center 30s high-res ECG
-  const t2Y = 122;
-  const t2H = 82; // 5-min EDR breathing envelope + Grad-CAM
-  const t3Y = 232;
-  const t3H = 82; // 5-min RRI heart-rate BPM + Grad-CAM
-  const totalH = 338;
-
-  // Compute safe ranges
   const ecgMin = Math.min(...data.ecg_mv, -0.5);
   const ecgMax = Math.max(...data.ecg_mv, 0.5);
   const edrMin = Math.min(...data.edr_z, -2.5);
   const edrMax = Math.max(...data.edr_z, 2.5);
   const bpmMin = Math.max(35, Math.min(...data.rri_bpm, 50) - 4);
   const bpmMax = Math.min(150, Math.max(...data.rri_bpm, 85) + 4);
+  const ecgT0 = data.ecg_time_sec[0] ?? 135;
+  const ecgT1 = data.ecg_time_sec[data.ecg_time_sec.length - 1] ?? 165;
 
-  const ecgPath = buildPolyline(
-    data.ecg_time_sec,
-    data.ecg_mv,
-    data.ecg_time_sec[0] ?? 135,
-    data.ecg_time_sec[data.ecg_time_sec.length - 1] ?? 165,
-    ecgMin,
-    ecgMax,
-    padL,
-    plotW,
-    t1Y,
-    t1H
-  );
+  const ecgPath = polyline(data.ecg_time_sec, data.ecg_mv, ecgT0, ecgT1, ecgMin, ecgMax, padL, plotW, t1Y, t1H);
+  const edrPath = polyline(data.edr_time_sec, data.edr_z, 0, 300, edrMin, edrMax, padL, plotW, t2Y, t2H);
+  const rriPath = polyline(data.edr_time_sec, data.rri_bpm, 0, 300, bpmMin, bpmMax, padL, plotW, t3Y, t3H);
 
-  const edrPath = buildPolyline(
-    data.edr_time_sec,
-    data.edr_z,
-    0,
-    300,
-    edrMin,
-    edrMax,
-    padL,
-    plotW,
-    t2Y,
-    t2H
-  );
-
-  const rriPath = buildPolyline(
-    data.edr_time_sec,
-    data.rri_bpm,
-    0,
-    300,
-    bpmMin,
-    bpmMax,
-    padL,
-    plotW,
-    t3Y,
-    t3H
-  );
-
-  // Downsample Grad-CAM into 60 crisp 5-second vertical heat bands across the 5-min window
   const heatBins = 60;
   const binSize = Math.max(1, Math.floor(data.gradcam_saliency.length / heatBins));
-  const heatCols = Array.from({ length: heatBins }, (_, b) => {
-    const slice = data.gradcam_saliency.slice(b * binSize, (b + 1) * binSize);
-    const avg = slice.length ? slice.reduce((a, c) => a + c, 0) / slice.length : 0;
-    return avg;
+  const heat = Array.from({ length: heatBins }, (_, b) => {
+    const s = data.gradcam_saliency.slice(b * binSize, (b + 1) * binSize);
+    return s.length ? s.reduce((a, c) => a + c, 0) / s.length : 0;
   });
+  const hMax = Math.max(...heat, 1e-6);
+  const peakBin = heat.indexOf(Math.max(...heat));
   const colW = plotW / heatBins;
+  const targetX = padL + (120 / 300) * plotW;
+  const targetW = (60 / 300) * plotW;
 
   const isApnea = data.sqi_pass && data.apnea_prob >= threshold;
+  const hrMin = Math.round(Math.min(...data.rri_bpm));
+  const hrMax = Math.round(Math.max(...data.rri_bpm));
+  const verdict = !data.sqi_pass ? "Deferred, low signal quality" : isApnea ? "Apnea" : "Normal";
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm relative">
-      {loading && (
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
-          <span className="px-3 py-1.5 rounded-lg bg-[#0F2942] text-white text-xs font-semibold shadow">
-            Computing 1D Grad-CAM saliency...
-          </span>
-        </div>
-      )}
-
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+    <section aria-labelledby="inspector-title" aria-busy={loading} className="card relative p-5 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-extrabold text-[#0F2942] flex items-center gap-1.5">
-            <Eye className="h-4 w-4 text-teal-600" />
-            Explainable 3-Track Cardiopulmonary Inspector — {data.time_window_label}
+          <h2 id="inspector-title" className="font-pixel text-xl font-bold">
+            Signal inspector · <span className="font-sans text-xl tabular-nums">{data.time_window_label}</span>
           </h2>
-          <p className="text-[11px] text-slate-500">
-            Coral heatmap bands highlight the exact seconds where the Multi-Scale 1D-CNN + BiGRU
-            focused (1D Grad-CAM).
-          </p>
+          <p className="text-sm text-muted">Five minutes around the selected minute, which is outlined.</p>
         </div>
-
-        <div className="flex items-center gap-2">
-          {!data.sqi_pass ? (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              DEFERRED · Low SQI ({data.sqi_score.toFixed(2)})
-            </span>
-          ) : (
-            <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
-                isApnea
-                  ? "bg-rose-100 border border-rose-300 text-rose-800"
-                  : "bg-emerald-100 border border-emerald-300 text-emerald-800"
-              }`}
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              {isApnea ? "APNEA DETECTED" : "NORMAL EPOCH"} · p={data.apnea_prob.toFixed(2)} · SQI=
-              {data.sqi_score.toFixed(2)}
-            </span>
-          )}
-        </div>
+        {controls}
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 font-hud text-xl leading-none ${
+            !data.sqi_pass ? "bg-mild-soft text-mild-fg" : isApnea ? "bg-severe-soft text-severe-fg" : "bg-normal-soft text-normal-fg"
+          }`}
+        >
+          {!data.sqi_pass && <AlertTriangle className="h-4 w-4" aria-hidden />}
+          {verdict} · p {data.apnea_prob.toFixed(2)} · quality {data.sqi_score.toFixed(2)}
+        </span>
       </div>
 
-      <svg viewBox={`0 0 ${width} ${totalH}`} className="w-full h-auto select-none">
-        {/* === TRACK 1: Center 30-Second Raw Filtered ECG (Peak-Preserved QRS) === */}
-        <rect
-          x={padL}
-          y={t1Y}
-          width={plotW}
-          height={t1H}
-          rx="4"
-          fill="#F8FAFC"
-          stroke="#E2E8F0"
-        />
-        <text x={padL + 8} y={t1Y + 13} fontSize="9.5" fontWeight="700" fill="#0F2942">
-          1. FILTERED SINGLE-LEAD ECG (Center 30s QRS Morphology, mV)
-        </text>
-        <text x={padL - 8} y={t1Y + 14} textAnchor="end" fontSize="8.5" fill="#64748B" fontFamily="monospace">
-          {ecgMax.toFixed(1)}
-        </text>
-        <text x={padL - 8} y={t1Y + t1H - 3} textAnchor="end" fontSize="8.5" fill="#64748B" fontFamily="monospace">
-          {ecgMin.toFixed(1)}
-        </text>
-        <path d={ecgPath} fill="none" stroke="#1E293B" strokeWidth="1.25" />
+      <figure id="inspector-figure" className="mt-3">
+        <div data-hscroll className={`-mx-5 overflow-x-auto px-5 transition-opacity duration-200 sm:-mx-6 sm:px-6 ${loading ? "opacity-50" : ""}`}>
+          <svg viewBox={`0 0 ${width} ${totalH}`} className="h-auto w-full min-w-[640px] select-none" aria-hidden>
+            <Track y={t1Y} h={t1H} x0={padL} w={plotW} title={`ECG, mV (centre 30 s: ${ecgT0.toFixed(0)} to ${ecgT1.toFixed(0)} s)`} top={ecgMax.toFixed(1)} bottom={ecgMin.toFixed(1)}>
+              <path d={ecgPath} fill="none" strokeWidth="1" className="stroke-trace" />
+            </Track>
+            <Track y={t2Y} h={t2H} x0={padL} w={plotW} title="Breathing derived from ECG (EDR), z-score" top={`+${edrMax.toFixed(1)}`} bottom={edrMin.toFixed(1)}>
+              <rect x={targetX} y={t2Y} width={targetW} height={t2H} fill="none" strokeWidth="1.5" strokeDasharray="4 3" className="stroke-muted" />
+              <path d={edrPath} fill="none" strokeWidth="1.25" className="stroke-trace" />
+            </Track>
+            <Track y={t3Y} h={t3H} x0={padL} w={plotW} title="Heart rate from beat intervals (RRI), bpm" top={String(Math.round(bpmMax))} bottom={String(Math.round(bpmMin))}>
+              <rect x={targetX} y={t3Y} width={targetW} height={t3H} fill="none" strokeWidth="1.5" strokeDasharray="4 3" className="stroke-muted" />
+              <path d={rriPath} fill="none" strokeWidth="1.25" className="stroke-trace" />
+            </Track>
 
-        {/* === TRACK 2: 5-Minute ECG-Derived Respiration (EDR) + Grad-CAM === */}
-        <rect
-          x={padL}
-          y={t2Y}
-          width={plotW}
-          height={t2H}
-          rx="4"
-          fill="#FFFFFF"
-          stroke="#CBD5E1"
-        />
-        {/* Grad-CAM Saliency Heat Bands on EDR */}
-        {heatCols.map((val, idx) => (
-          <rect
-            key={`h2-${idx}`}
-            x={padL + idx * colW}
-            y={t2Y}
-            width={colW + 0.5}
-            height={t2H}
-            fill="#E11D48"
-            opacity={val > 0.25 ? (val - 0.2) * 0.45 : 0}
-          />
-        ))}
-        {/* Center Target Minute Highlight */}
-        <rect
-          x={padL + (120 / 300) * plotW}
-          y={t2Y}
-          width={(60 / 300) * plotW}
-          height={t2H}
-          fill="none"
-          stroke="#0F2942"
-          strokeWidth="1.2"
-          strokeDasharray="4 3"
-        />
-        <text x={padL + 8} y={t2Y + 13} fontSize="9.5" fontWeight="700" fill="#0F766E">
-          2. ECG-DERIVED RESPIRATION — EDR (5-Min Breathing Wave @ 4 Hz, z-score)
-        </text>
-        <text x={padL - 8} y={t2Y + 14} textAnchor="end" fontSize="8.5" fill="#64748B" fontFamily="monospace">
-          +{edrMax.toFixed(1)}
-        </text>
-        <text x={padL - 8} y={t2Y + t2H - 3} textAnchor="end" fontSize="8.5" fill="#64748B" fontFamily="monospace">
-          {edrMin.toFixed(1)}
-        </text>
-        <path d={edrPath} fill="none" stroke="#0D9488" strokeWidth="1.75" />
-
-        {/* === TRACK 3: 5-Minute Beat-to-Beat Heart Rate (CVHR) + Grad-CAM === */}
-        <rect
-          x={padL}
-          y={t3Y}
-          width={plotW}
-          height={t3H}
-          rx="4"
-          fill="#FFFFFF"
-          stroke="#CBD5E1"
-        />
-        {/* Grad-CAM Saliency Heat Bands on RRI */}
-        {heatCols.map((val, idx) => (
-          <rect
-            key={`h3-${idx}`}
-            x={padL + idx * colW}
-            y={t3Y}
-            width={colW + 0.5}
-            height={t3H}
-            fill="#E11D48"
-            opacity={val > 0.25 ? (val - 0.2) * 0.45 : 0}
-          />
-        ))}
-        <rect
-          x={padL + (120 / 300) * plotW}
-          y={t3Y}
-          width={(60 / 300) * plotW}
-          height={t3H}
-          fill="none"
-          stroke="#0F2942"
-          strokeWidth="1.2"
-          strokeDasharray="4 3"
-        />
-        <text x={padL + 8} y={t3Y + 13} fontSize="9.5" fontWeight="700" fill="#BE123C">
-          3. CYCLIC HEART RATE COUPLING — RRI TACHOGRAM (5-Min Heart Rate, BPM)
-        </text>
-        <text x={padL - 8} y={t3Y + 14} textAnchor="end" fontSize="8.5" fill="#64748B" fontFamily="monospace">
-          {Math.round(bpmMax)}
-        </text>
-        <text x={padL - 8} y={t3Y + t3H - 3} textAnchor="end" fontSize="8.5" fill="#64748B" fontFamily="monospace">
-          {Math.round(bpmMin)}
-        </text>
-        <path d={rriPath} fill="none" stroke="#E11D48" strokeWidth="1.75" />
-
-        {/* Shared 5-Minute Time Axis */}
-        {[0, 60, 120, 180, 240, 300].map((sec) => {
-          const x = padL + (sec / 300) * plotW;
-          const lbl = sec === 120 ? "120s (Target Start)" : sec === 180 ? "180s (Target End)" : `${sec}s`;
-          return (
-            <text
-              key={sec}
-              x={x}
-              y={totalH - 6}
-              textAnchor="middle"
-              fontSize="9"
-              fill={sec === 120 || sec === 180 ? "#0F2942" : "#64748B"}
-              fontWeight={sec === 120 || sec === 180 ? "700" : "400"}
-              fontFamily="monospace"
-            >
-              {lbl}
+            <text x={padL} y={salY - 8} fontSize="13" fontWeight="600" className="fill-ink">
+              Model attention (Grad-CAM)
             </text>
-          );
-        })}
-      </svg>
-    </div>
+            {heat.map((v, i) => (
+              <rect key={i} x={padL + i * colW} y={salY} width={colW + 0.5} height={salH} fill={viridis(v / hMax)} />
+            ))}
+            {[0, 60, 120, 180, 240, 300].map((sec) => (
+              <text key={sec} x={padL + (sec / 300) * plotW} y={totalH - 4} textAnchor={sec === 300 ? "end" : "middle"} fontSize="12" className="fill-muted tabular-nums">
+                {sec} s
+              </text>
+            ))}
+          </svg>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
+          <span className="flex items-center gap-2">
+            Low
+            <span className="h-3 w-28 rounded-sm" style={{ background: `linear-gradient(90deg, ${VIRIDIS.join(",")})` }} aria-hidden />
+            High attention
+          </span>
+        </div>
+        <figcaption className="mt-2 text-sm text-muted tabular-nums">
+          Summary: {verdict.toLowerCase()} at probability {data.apnea_prob.toFixed(2)} (cutoff {threshold.toFixed(2)}). Heart
+          rate ranged {hrMin} to {hrMax} bpm. The model attended most to {peakBin * 5} to {peakBin * 5 + 5} s of the window.
+        </figcaption>
+      </figure>
+    </section>
   );
 }

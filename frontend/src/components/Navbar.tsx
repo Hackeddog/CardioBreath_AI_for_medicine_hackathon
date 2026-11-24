@@ -1,178 +1,167 @@
 "use client";
 
-import React, { useRef } from "react";
-import { Activity, BarChart3, ShieldAlert, Upload, Zap } from "lucide-react";
-import type { DemoCaseInfo, HealthStatus } from "@/lib/types";
+import React, { useEffect, useRef, useState } from "react";
+import type { HealthStatus } from "@/lib/types";
+import { CityPop } from "@/lib/cityPop";
+
+export const PAGES = [
+  { id: "start", label: "Start" },
+  { id: "result", label: "Result" },
+  { id: "night", label: "Night" },
+  { id: "signals", label: "Signals" },
+  { id: "how", label: "How it works" },
+  { id: "research", label: "Research" },
+] as const;
+export type PageId = (typeof PAGES)[number]["id"];
 
 interface NavbarProps {
-  activeTab: "workbench" | "research";
-  onTabChange: (tab: "workbench" | "research") => void;
-  cases: DemoCaseInfo[];
-  selectedCase: string;
-  onSelectCase: (caseId: string) => void;
-  noiseSnr: number | null;
-  onNoiseChange: (snr: number | null) => void;
-  onUploadCsv: (file: File) => void;
+  page: number;
+  onPage: (i: number) => void;
   health: HealthStatus | null;
-  loading: boolean;
+  onTour: () => void;
+  scenePaused: boolean;
+  onToggleScene: () => void;
 }
 
-const NOISE_OPTIONS: { label: string; value: number | null }[] = [
-  { label: "Clean", value: null },
-  { label: "10 dB", value: 10 },
-  { label: "5 dB", value: 5 },
-  { label: "0 dB", value: 0 },
+/* Pixel heart, 13 x 11 on a 16 x 13 canvas. H = heart, S = shaded heart, W = glint. */
+const HEART = [
+  "................",
+  "...HHH...HHH....",
+  "..HWHHH.HHHHH...",
+  ".HHHHHHHHHHHHH..",
+  ".HHHHHHHHHHHHH..",
+  ".HHHHHHHHHHHHH..",
+  "..HHHHHHHHHHH...",
+  "...SSSSSSSSS....",
+  "....SSSSSSS.....",
+  ".....SSSSS......",
+  "......SSS.......",
+  ".......S........",
+  "................",
 ];
+// The ECG beat that becomes a breath wave: flat, spike, dip, then a slow rise and fall.
+const TRACE: [number, number][] = [
+  [0, 6], [1, 6], [2, 6], [3, 6], [4, 5], [5, 2], [5, 3], [5, 4], [5, 5],
+  [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], [6, 8], [7, 6], [8, 6], [9, 5], [10, 4], [11, 4], [12, 5], [13, 6], [14, 6], [15, 6],
+];
+const FILL: Record<string, string> = { H: "var(--coral)", S: "#c2405e", W: "#fff3f5" };
 
-export default function Navbar({
-  activeTab,
-  onTabChange,
-  cases,
-  selectedCase,
-  onSelectCase,
-  noiseSnr,
-  onNoiseChange,
-  onUploadCsv,
-  health,
-  loading,
-}: NavbarProps) {
-  const fileRef = useRef<HTMLInputElement | null>(null);
-
+export function BrandMark({ className = "h-8 w-8" }: { className?: string }) {
   return (
-    <header className="bg-[#0B1F36] text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
-        {/* Brand Logo + Subtitle */}
-        <div className="flex items-center gap-4">
-          <img
-            src="/logo-dark.svg"
-            alt="CardioBreath Logo"
-            className="h-10 w-auto select-none"
-          />
-          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-500/15 border border-teal-400/30 text-[11px] font-medium text-teal-200">
-            <span className="h-2 w-2 rounded-full bg-teal-400 animate-pulse" />
-            {health
-              ? `${health.n_onnx_folds}-Fold ONNX CPU · T=${health.temperature.toFixed(2)}`
-              : "Connecting API..."}
-          </div>
-        </div>
+    <svg viewBox="0 0 16 13" className={className} shapeRendering="crispEdges" aria-hidden>
+      {HEART.flatMap((row, y) =>
+        [...row].map((c, x) => (c in FILL ? <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill={FILL[c]} /> : null))
+      )}
+      {TRACE.map(([x, y]) => (
+        <rect key={`t${x}-${y}`} x={x} y={y} width="1" height="1" fill="var(--primary)" />
+      ))}
+    </svg>
+  );
+}
 
-        {/* Navigation Tabs */}
-        <nav className="flex items-center bg-slate-900/70 p-1 rounded-lg border border-slate-700/70">
-          <button
-            type="button"
-            onClick={() => onTabChange("workbench")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-              activeTab === "workbench"
-                ? "bg-teal-600 text-white shadow-sm"
-                : "text-slate-300 hover:text-white"
-            }`}
-          >
-            <Activity className="h-3.5 w-3.5" />
-            Screening Workbench
-          </button>
-          <button
-            type="button"
-            onClick={() => onTabChange("research")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-              activeTab === "research"
-                ? "bg-teal-600 text-white shadow-sm"
-                : "text-slate-300 hover:text-white"
-            }`}
-          >
-            <BarChart3 className="h-3.5 w-3.5" />
-            Locked x01–x35 Benchmark &amp; Honesty
-          </button>
+const chip = "min-h-11 shrink-0 px-2 font-hud text-xl leading-none hover:text-ink sm:px-3";
+const chipFrame = { boxShadow: "inset 0 0 0 2px var(--border-strong)" };
+
+/** Off until clicked: browsers block autoplay, and sound should never surprise someone in a clinic. */
+function MusicToggle() {
+  const engine = useRef<CityPop | null>(null);
+  const [on, setOn] = useState(false);
+  useEffect(() => () => engine.current?.stop(), []);
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      data-music={on ? "playing" : "off"}
+      onClick={async () => {
+        engine.current ??= new CityPop();
+        if (on) engine.current.stop();
+        else await engine.current.start();
+        setOn(!on);
+      }}
+      className={`${chip} ${on ? "text-coral" : "text-muted"}`}
+      style={chipFrame}
+    >
+      <span aria-hidden>♪ </span>Music
+    </button>
+  );
+}
+
+function CrtToggle() {
+  const [on, setOn] = useState(true);
+  useEffect(() => setOn(document.documentElement.dataset.crt !== "off"), []);
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      aria-label="CRT scanlines"
+      onClick={() => {
+        const next = !on;
+        if (next) delete document.documentElement.dataset.crt;
+        else document.documentElement.dataset.crt = "off";
+        localStorage.setItem("cb-crt", next ? "on" : "off");
+        setOn(next);
+      }}
+      className={`${chip} hidden sm:inline-flex sm:items-center ${on ? "text-primary" : "text-muted"}`}
+      style={chipFrame}
+    >
+      CRT {on ? "ON" : "OFF"}
+    </button>
+  );
+}
+
+export default function Navbar({ page, onPage, health, onTour, scenePaused, onToggleScene }: NavbarProps) {
+  return (
+    <header className="relative z-40 h-[var(--header-h)] border-b-[3px] border-line bg-bg">
+      <div className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-2 px-4 sm:px-6">
+        <button
+          type="button"
+          onClick={() => onPage(0)}
+          aria-label="CardioBreath, go to start"
+          className="flex min-h-11 shrink-0 items-center gap-3"
+        >
+          <BrandMark className="h-8 w-10" />
+          <span className="hidden font-pixel text-lg font-bold sm:inline" aria-hidden>
+            <span className="text-coral">Cardio</span>
+            <span className="text-primary">Breath</span>
+          </span>
+        </button>
+
+        <nav aria-label="Stages" className="hidden items-center gap-1 lg:flex">
+          {PAGES.map((p, i) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => onPage(i)}
+              aria-current={page === i ? "page" : undefined}
+              className={`min-h-11 px-3 font-hud text-2xl leading-none ${page === i ? "bg-surface-2 text-ink" : "text-muted hover:text-ink"}`}
+              style={page === i ? { boxShadow: "inset 0 -3px 0 0 var(--primary)" } : undefined}
+            >
+              {p.label}
+            </button>
+          ))}
         </nav>
 
-        {/* Controls (Case selector, Upload CSV, Motion Noise Stress Test) */}
-        {activeTab === "workbench" && (
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Held-Out Case Switcher */}
-            <div className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-700 rounded-lg px-2.5 py-1.5">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                Held-Out:
-              </span>
-              <select
-                aria-label="Select held-out test night"
-                value={selectedCase}
-                disabled={loading}
-                onChange={(e) => onSelectCase(e.target.value)}
-                className="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer"
-              >
-                {cases.map((c) => (
-                  <option key={c.case_id} value={c.case_id} className="bg-slate-900 text-white">
-                    {c.case_id} — {c.clinical_tier} ({c.duration_hours}h)
-                  </option>
-                ))}
-                {selectedCase.startsWith("upload_") && (
-                  <option value={selectedCase} className="bg-slate-900 text-teal-300">
-                    Uploaded ECG ({selectedCase})
-                  </option>
-                )}
-              </select>
-            </div>
-
-            {/* Upload CSV */}
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) onUploadCsv(file);
-                e.target.value = "";
-              }}
-            />
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => fileRef.current?.click()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-semibold text-slate-100 transition disabled:opacity-50"
-            >
-              <Upload className="h-3.5 w-3.5 text-teal-300" />
-              Upload CSV
-            </button>
-
-            {/* Motion Noise Stress-Test Selector */}
-            <div className="flex items-center gap-1 bg-slate-900/80 border border-slate-700 rounded-lg p-1">
-              <span className="flex items-center gap-1 px-1.5 text-[11px] font-semibold text-amber-300">
-                <Zap className="h-3 w-3" />
-                Noise:
-              </span>
-              {NOISE_OPTIONS.map((opt) => {
-                const active = noiseSnr === opt.value;
-                return (
-                  <button
-                    key={opt.label}
-                    type="button"
-                    disabled={loading}
-                    onClick={() => onNoiseChange(opt.value)}
-                    className={`px-2 py-1 rounded text-[11px] font-bold transition ${
-                      active
-                        ? opt.value === null
-                          ? "bg-teal-600 text-white"
-                          : "bg-amber-500 text-slate-950"
-                        : "text-slate-300 hover:bg-slate-800"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Persistent Non-Diagnostic Clinical Honesty Ribbon */}
-      <div className="bg-slate-900/90 border-t border-slate-800/80 px-4 py-1 text-[11px] text-slate-300 flex items-center justify-center gap-2 text-center">
-        <ShieldAlert className="h-3.5 w-3.5 text-teal-400 shrink-0" />
-        <span>
-          <strong className="text-teal-300">Clinical Pre-Screening Prototype:</strong> Estimates
-          minute-level apnea burden (<code className="text-teal-200">eAHI</code>) from single-lead
-          ECG to prioritize PSG referrals — not a standalone diagnostic device.
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="mr-1 hidden items-center gap-2 font-hud text-lg leading-none text-muted xl:inline-flex" role="status">
+            <span className={`h-2 w-2 ${health ? "bg-primary" : "bg-gold"}`} aria-hidden />
+            {health ? "Model ready" : "Connecting…"}
+          </span>
+          <button type="button" onClick={onTour} className={`${chip} text-gold`} style={chipFrame}>
+            Tour
+          </button>
+          <MusicToggle />
+          <button
+            type="button"
+            title={scenePaused ? "Play scene" : "Pause scene"}
+            onClick={onToggleScene}
+            className={`${chip} ${scenePaused ? "text-muted" : "text-primary"}`}
+            style={chipFrame}
+          >
+            <span aria-hidden>{scenePaused ? "▶" : "❚❚"}</span>
+            <span className="sr-only">{scenePaused ? "Play scene" : "Pause scene"}</span>
+          </button>
+          <CrtToggle />
+        </div>
       </div>
     </header>
   );

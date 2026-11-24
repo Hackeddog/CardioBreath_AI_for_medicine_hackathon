@@ -17,16 +17,36 @@ export function apiUrl(path: string): string {
   return `${API_BASE}${path}`;
 }
 
-export async function fetchHealth(): Promise<HealthStatus> {
-  const res = await fetch(apiUrl("/api/health"));
-  if (!res.ok) throw new Error(`Health check failed: ${res.status}`);
+/** HTTP failure; `detail` is FastAPI's message (only 4xx carry user-facing text). */
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public detail: string
+  ) {
+    super(`HTTP ${status}`);
+  }
+}
+
+async function json<T>(res: Response): Promise<T> {
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const body = await res.json();
+      if (typeof body?.detail === "string") detail = body.detail;
+    } catch {
+      // non-JSON body: keep detail empty rather than echo server internals
+    }
+    throw new ApiError(res.status, detail);
+  }
   return res.json();
 }
 
+export async function fetchHealth(): Promise<HealthStatus> {
+  return json(await fetch(apiUrl("/api/health")));
+}
+
 export async function fetchCases(): Promise<DemoCaseInfo[]> {
-  const res = await fetch(apiUrl("/api/cases"));
-  if (!res.ok) throw new Error(`Failed to fetch cases: ${res.status}`);
-  return res.json();
+  return json(await fetch(apiUrl("/api/cases")));
 }
 
 export async function analyzeCase(
@@ -46,11 +66,7 @@ export async function analyzeCase(
       compare_baseline: options.compare_baseline ?? true,
     }),
   });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Analysis failed (${res.status}): ${err}`);
-  }
-  return res.json();
+  return json(res);
 }
 
 export async function inspectWindow(
@@ -67,27 +83,16 @@ export async function inspectWindow(
       inject_noise_snr_db: injectNoiseSnrDb ?? null,
     }),
   });
-  if (!res.ok) throw new Error(`Window inspect failed: ${res.status}`);
-  return res.json();
+  return json(res);
 }
 
 export async function uploadCsvEcg(file: File, threshold?: number): Promise<FullNightAnalysis> {
   const form = new FormData();
   form.append("file", file);
   const query = threshold !== undefined ? `?threshold=${encodeURIComponent(String(threshold))}` : "";
-  const res = await fetch(apiUrl(`/api/analyze/upload${query}`), {
-    method: "POST",
-    body: form,
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Upload failed (${res.status}): ${err}`);
-  }
-  return res.json();
+  return json(await fetch(apiUrl(`/api/analyze/upload${query}`), { method: "POST", body: form }));
 }
 
 export async function fetchEvaluation(): Promise<EvaluationPayload> {
-  const res = await fetch(apiUrl("/api/evaluation"));
-  if (!res.ok) throw new Error(`Evaluation fetch failed: ${res.status}`);
-  return res.json();
+  return json(await fetch(apiUrl("/api/evaluation")));
 }
