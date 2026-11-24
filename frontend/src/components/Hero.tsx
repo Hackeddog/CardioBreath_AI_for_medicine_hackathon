@@ -1,12 +1,11 @@
 "use client";
 
 import React from "react";
-import { ArrowRight, ShieldAlert, Upload } from "lucide-react";
+import { ArrowDown, ArrowRight, ShieldAlert, Upload } from "lucide-react";
 import type { EvaluationPayload, FullNightAnalysis } from "@/lib/types";
-import { SeverityBadge, sentenceCase } from "./ui";
+import { SeverityBadge, SeverityScale, sentenceCase } from "./ui";
 
 interface HeroProps {
-  evaluation: EvaluationPayload | null;
   analysis: FullNightAnalysis | null;
   onTrySample: () => void;
   onUpload: () => void;
@@ -19,20 +18,7 @@ const STEPS = [
   { title: "Triage, with uncertainty", body: "An overnight apnea burden (eAHI), a 90% interval, and a referral recommendation." },
 ];
 
-export default function Hero({ evaluation, analysis, onTrySample, onUpload }: HeroProps) {
-  const cb = evaluation?.test?.models?.cardiobreath;
-  const stats = cb
-    ? [
-        { value: cb.minute_metrics.auroc.toFixed(3), label: "AUROC per minute", note: "35 held-out nights" },
-        { value: cb.recording_metrics.eahi_mae.toFixed(2), label: "eAHI mean abs. error", note: "apnea-min/hr" },
-        {
-          value: `${(cb.recording_metrics.screening_cutoff_5.sensitivity * 100).toFixed(0)}%`,
-          label: "Screening sensitivity",
-          note: "at eAHI ≥ 5",
-        },
-      ]
-    : null;
-
+export default function Hero({ analysis, onTrySample, onUpload }: HeroProps) {
   return (
     <section aria-labelledby="hero-title" className="pb-10 pt-8 sm:pt-14">
       <div className="grid items-center gap-10 lg:grid-cols-12">
@@ -82,21 +68,22 @@ export default function Hero({ evaluation, analysis, onTrySample, onUpload }: He
                     <SeverityBadge tier={analysis.severity_tier} />
                   </span>
                 </div>
-                <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-xl bg-surface-2 p-3">
-                    <dt className="text-muted">90% interval</dt>
-                    <dd className="font-semibold tabular-nums">
-                      {analysis.eahi_ci90_low.toFixed(1)} to {analysis.eahi_ci90_high.toFixed(1)}
-                    </dd>
-                  </div>
-                  <div className="rounded-xl bg-surface-2 p-3">
-                    <dt className="text-muted">Sleep-lab reference</dt>
-                    <dd className="font-semibold tabular-nums">
-                      {analysis.true_eahi !== null ? analysis.true_eahi.toFixed(1) : "Not available"}
-                    </dd>
-                  </div>
-                </dl>
-                <p className="mt-4 text-sm font-medium">{sentenceCase(analysis.triage_action)}</p>
+                <SeverityScale value={analysis.eahi_pred} low={analysis.eahi_ci90_low} high={analysis.eahi_ci90_high} />
+                <p className="mt-3 text-sm tabular-nums">
+                  90% interval {analysis.eahi_ci90_low.toFixed(1)} to {analysis.eahi_ci90_high.toFixed(1)}
+                  {analysis.true_eahi !== null && (
+                    <span className="text-muted"> · Sleep-lab reference {analysis.true_eahi.toFixed(1)}</span>
+                  )}
+                </p>
+                <p className="mt-3 text-sm font-medium">{sentenceCase(analysis.triage_action)}</p>
+                <button
+                  type="button"
+                  onClick={onTrySample}
+                  className="-ml-2 mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-semibold text-primary hover:underline"
+                >
+                  See the full night
+                  <ArrowDown className="h-4 w-4" aria-hidden />
+                </button>
               </>
             ) : (
               <div className="mt-3 space-y-3" aria-hidden>
@@ -107,8 +94,40 @@ export default function Hero({ evaluation, analysis, onTrySample, onUpload }: He
           </div>
         </div>
       </div>
+    </section>
+  );
+}
 
-      <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3">
+/** Evidence and method, placed after the tool so returning users reach the workbench first. */
+export function Evidence({ evaluation }: { evaluation: EvaluationPayload | null }) {
+  const cb = evaluation?.test?.models?.cardiobreath;
+  const stats = cb
+    ? [
+        { value: cb.minute_metrics.auroc.toFixed(3), label: "AUROC per minute", note: "35 held-out nights" },
+        { value: cb.recording_metrics.eahi_mae.toFixed(2), label: "eAHI mean abs. error", note: "apnea-min/hr" },
+        {
+          value: `${(cb.recording_metrics.screening_cutoff_5.sensitivity * 100).toFixed(0)}%`,
+          label: "Screening sensitivity",
+          note: "at eAHI ≥ 5",
+        },
+      ]
+    : null;
+
+  return (
+    <section aria-labelledby="evidence-title" className="border-t border-line py-12">
+      <h2 id="evidence-title" className="text-xl font-semibold tracking-tight">
+        How it works, and how well
+      </h2>
+      <ol className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {STEPS.map((s, i) => (
+          <li key={s.title} className="card p-5">
+            <span className="text-sm font-semibold tabular-nums text-primary">0{i + 1}</span>
+            <p className="mt-2 font-semibold">{s.title}</p>
+            <p className="mt-1 text-sm text-muted">{s.body}</p>
+          </li>
+        ))}
+      </ol>
+      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {(stats ?? [null, null, null]).map((s, i) => (
           <div key={i} className="border-t border-line pt-4">
             {s ? (
@@ -124,23 +143,10 @@ export default function Hero({ evaluation, analysis, onTrySample, onUpload }: He
           </div>
         ))}
       </div>
-
-      <div className="mt-12">
-        <h2 className="text-xl font-semibold tracking-tight">How it works</h2>
-        <ol className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map((s, i) => (
-            <li key={s.title} className="card p-5">
-              <span className="text-sm font-semibold tabular-nums text-primary">0{i + 1}</span>
-              <p className="mt-2 font-semibold">{s.title}</p>
-              <p className="mt-1 text-sm text-muted">{s.body}</p>
-            </li>
-          ))}
-        </ol>
-        <p className="mt-4 text-sm text-muted">
-          Trained and evaluated on the PhysioNet Apnea-ECG database (Penzel et al., 2000). Full benchmark, calibration
-          and limitations are on the Research tab.
-        </p>
-      </div>
+      <p className="mt-4 text-sm text-muted">
+        Trained and evaluated on the PhysioNet Apnea-ECG database (Penzel et al., 2000). Full benchmark, calibration
+        and limitations are on the Research tab.
+      </p>
     </section>
   );
 }
