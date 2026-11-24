@@ -183,79 +183,76 @@ class CardioBreathInferenceEngine:
                 self._cache.move_to_end(cache_key)
                 return self._cache[cache_key]
 
-        ecg_raw, fs, labels = self._load_raw_case(case_id)
-        if snr_key is not None:
-            ecg_proc_in = inject_motion_artifact(ecg_raw, snr_db=snr_key, fs=fs, seed=42, burst_fraction=0.65)
-        else:
-            ecg_proc_in = ecg_raw
+            ecg_raw, fs, labels = self._load_raw_case(case_id)
+            if snr_key is not None:
+                ecg_proc_in = inject_motion_artifact(ecg_raw, snr_db=snr_key, fs=fs, seed=42, burst_fraction=0.65)
+            else:
+                ecg_proc_in = ecg_raw
 
-        n_minutes = len(labels) if labels is not None else max(1, len(ecg_proc_in) // round(60.0 * fs))
+            n_minutes = len(labels) if labels is not None else max(1, len(ecg_proc_in) // round(60.0 * fs))
 
-        t0 = time.perf_counter()
-        dsp_res = run_dsp_pipeline(
-            ecg_proc_in,
-            fs=fs,
-            n_minutes=n_minutes,
-            dsp_cfg=self.dsp_cfg,
-            prefer_neurokit=False,  # Fast deterministic Pan-Tompkins (<200 ms for 8 hrs!)
-        )
-        dual_windows, _ = slice_windows(
-            dsp_res.edr_4hz,
-            dsp_res.rri_4hz,
-            dsp_res.ecg_clean,
-            n_minutes=n_minutes,
-            context_minutes=int(self.dsp_cfg.get("context_minutes", 5)),
-            target_fs=float(self.dsp_cfg.get("sampling_rate_dsp", 4.0)),
-            raw_fs=100.0,  # run_dsp_pipeline resamples ecg_clean to 100 Hz
-        )
-        hrv_feats = extract_hrv_features_per_minute(
-            dsp_res.rri_raw_4hz,
-            dsp_res.edr_raw_4hz,
-            dsp_res.sqi_score,
-            n_minutes=n_minutes,
-            context_minutes=int(self.dsp_cfg.get("context_minutes", 5)),
-            target_fs=float(self.dsp_cfg.get("sampling_rate_dsp", 4.0)),
-        )
-        fold_probs = self._run_onnx_ensemble(dual_windows)
-        inference_ms = (time.perf_counter() - t0) * 1000.0
+            t0 = time.perf_counter()
+            dsp_res = run_dsp_pipeline(
+                ecg_proc_in,
+                fs=fs,
+                n_minutes=n_minutes,
+                dsp_cfg=self.dsp_cfg,
+                prefer_neurokit=False,  # Fast deterministic Pan-Tompkins (<200 ms for 8 hrs!)
+            )
+            dual_windows, _ = slice_windows(
+                dsp_res.edr_4hz,
+                dsp_res.rri_4hz,
+                dsp_res.ecg_clean,
+                n_minutes=n_minutes,
+                context_minutes=int(self.dsp_cfg.get("context_minutes", 5)),
+                target_fs=float(self.dsp_cfg.get("sampling_rate_dsp", 4.0)),
+                raw_fs=100.0,  # run_dsp_pipeline resamples ecg_clean to 100 Hz
+            )
+            hrv_feats = extract_hrv_features_per_minute(
+                dsp_res.rri_raw_4hz,
+                dsp_res.edr_raw_4hz,
+                dsp_res.sqi_score,
+                n_minutes=n_minutes,
+                context_minutes=int(self.dsp_cfg.get("context_minutes", 5)),
+                target_fs=float(self.dsp_cfg.get("sampling_rate_dsp", 4.0)),
+            )
+            fold_probs = self._run_onnx_ensemble(dual_windows)
+            inference_ms = (time.perf_counter() - t0) * 1000.0
 
-        p_mean = np.mean(fold_probs, axis=0).astype(np.float32)
-        p_std = (
-            np.std(fold_probs, axis=0, ddof=1).astype(np.float32)
-            if fold_probs.shape[0] > 1
-            else np.zeros(n_minutes, dtype=np.float32)
-        )
-
-        baseline_probs = None
-        if self.lgbm_available and self.lgbm_boosters is not None:
-            baseline_probs, _ = predict_lgbm_ensemble(
-                self.lgbm_dir,
-                hrv_feats,
-                boosters=self.lgbm_boosters,
-                temperature=self.lgbm_temperature,
+            p_mean = np.mean(fold_probs, axis=0).astype(np.float32)
+            p_std = (
+                np.std(fold_probs, axis=0, ddof=1).astype(np.float32)
+                if fold_probs.shape[0] > 1
+                else np.zeros(n_minutes, dtype=np.float32)
             )
 
-        bundle = CachedNightBundle(
-            case_id=case_id,
-            ecg_raw=ecg_proc_in,
-            fs=fs,
-            labels=labels,
-            dsp=dsp_res,
-            dual_windows=dual_windows,
-            hrv_features=hrv_feats,
-            fold_probs=fold_probs,
-            p_mean=p_mean,
-            p_std=p_std,
-            baseline_probs=baseline_probs,
-            inference_ms=inference_ms,
-        )
-        # Heavy DSP/ONNX work runs outside the lock so one cache miss does not block every request;
-        # two simultaneous misses on the same key just compute twice and the last write wins.
-        with self._lock:
+            baseline_probs = None
+            if self.lgbm_available and self.lgbm_boosters is not None:
+                baseline_probs, _ = predict_lgbm_ensemble(
+                    self.lgbm_dir,
+                    hrv_feats,
+                    boosters=self.lgbm_boosters,
+                    temperature=self.lgbm_temperature,
+                )
+
+            bundle = CachedNightBundle(
+                case_id=case_id,
+                ecg_raw=ecg_proc_in,
+                fs=fs,
+                labels=labels,
+                dsp=dsp_res,
+                dual_windows=dual_windows,
+                hrv_features=hrv_feats,
+                fold_probs=fold_probs,
+                p_mean=p_mean,
+                p_std=p_std,
+                baseline_probs=baseline_probs,
+                inference_ms=inference_ms,
+            )
             self._cache[cache_key] = bundle
             if len(self._cache) > self._max_cache:
                 self._cache.popitem(last=False)
-        return bundle
+            return bundle
 
     def analyze_case(
         self,
