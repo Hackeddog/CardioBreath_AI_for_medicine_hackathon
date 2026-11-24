@@ -3,18 +3,24 @@
 import React, { useEffect, useState } from "react";
 import type { HealthStatus } from "@/lib/types";
 
-export type Tab = "workbench" | "research";
+export const PAGES = [
+  { id: "start", label: "Start" },
+  { id: "result", label: "Result" },
+  { id: "night", label: "Night" },
+  { id: "signals", label: "Signals" },
+  { id: "how", label: "How it works" },
+  { id: "research", label: "Research" },
+] as const;
+export type PageId = (typeof PAGES)[number]["id"];
 
 interface NavbarProps {
-  activeTab: Tab;
-  onTabChange: (tab: Tab) => void;
+  page: number;
+  onPage: (i: number) => void;
   health: HealthStatus | null;
+  onTour: () => void;
+  scenePaused: boolean;
+  onToggleScene: () => void;
 }
-
-const TABS: { id: Tab; label: string }[] = [
-  { id: "workbench", label: "Screening" },
-  { id: "research", label: "Research" },
-];
 
 /* Pixel heart, 13 x 11 on a 16 x 13 canvas. H = heart, S = shaded heart, W = glint. */
 const HEART = [
@@ -52,6 +58,9 @@ export function BrandMark({ className = "h-8 w-8" }: { className?: string }) {
   );
 }
 
+const chip = "min-h-11 shrink-0 px-2 font-hud text-xl leading-none hover:text-ink sm:px-3";
+const chipFrame = { boxShadow: "inset 0 0 0 2px var(--border-strong)" };
+
 function CrtToggle() {
   const [on, setOn] = useState(true);
   useEffect(() => setOn(document.documentElement.dataset.crt !== "off"), []);
@@ -67,47 +76,64 @@ function CrtToggle() {
         localStorage.setItem("cb-crt", next ? "on" : "off");
         setOn(next);
       }}
-      className={`min-h-11 shrink-0 px-2 font-hud text-xl leading-none sm:px-3 ${on ? "text-primary" : "text-muted"} hover:text-ink`}
-      style={{ boxShadow: "inset 0 0 0 2px var(--border-strong)" }}
+      className={`${chip} hidden sm:inline-flex sm:items-center ${on ? "text-primary" : "text-muted"}`}
+      style={chipFrame}
     >
       CRT {on ? "ON" : "OFF"}
     </button>
   );
 }
 
-export default function Navbar({ activeTab, onTabChange, health }: NavbarProps) {
+export default function Navbar({ page, onPage, health, onTour, scenePaused, onToggleScene }: NavbarProps) {
   return (
-    <header className="sticky top-0 z-40 border-b-[3px] border-line bg-bg">
-      <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-3 px-4 py-2 sm:px-6">
-        <a href="#top" aria-label="CardioBreath, back to top" className="flex min-h-11 shrink-0 items-center gap-3">
+    <header className="relative z-40 h-[var(--header-h)] border-b-[3px] border-line bg-bg">
+      <div className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-2 px-4 sm:px-6">
+        <button
+          type="button"
+          onClick={() => onPage(0)}
+          aria-label="CardioBreath, go to start"
+          className="flex min-h-11 shrink-0 items-center gap-3"
+        >
           <BrandMark className="h-8 w-10" />
           <span className="hidden font-pixel text-lg font-bold sm:inline" aria-hidden>
             <span className="text-coral">Cardio</span>
             <span className="text-primary">Breath</span>
           </span>
-        </a>
+        </button>
 
-        <nav aria-label="Main" className="flex items-center gap-1 sm:gap-2">
-          {TABS.map((t) => (
+        <nav aria-label="Stages" className="hidden items-center gap-1 lg:flex">
+          {PAGES.map((p, i) => (
             <button
-              key={t.id}
+              key={p.id}
               type="button"
-              onClick={() => onTabChange(t.id)}
-              aria-current={activeTab === t.id ? "page" : undefined}
-              className={`min-h-11 px-2 font-hud text-2xl leading-none sm:px-4 ${
-                activeTab === t.id ? "bg-surface-2 text-ink" : "text-muted hover:text-ink"
-              }`}
-              style={activeTab === t.id ? { boxShadow: "inset 0 -3px 0 0 var(--primary)" } : undefined}
+              onClick={() => onPage(i)}
+              aria-current={page === i ? "page" : undefined}
+              className={`min-h-11 px-3 font-hud text-2xl leading-none ${page === i ? "bg-surface-2 text-ink" : "text-muted hover:text-ink"}`}
+              style={page === i ? { boxShadow: "inset 0 -3px 0 0 var(--primary)" } : undefined}
             >
-              {t.label}
+              {p.label}
             </button>
           ))}
-          <span className="mx-2 hidden items-center gap-2 font-hud text-lg leading-none text-muted md:inline-flex" role="status">
-            <span className={`h-2 w-2 ${health ? "bg-primary" : "bg-gold"}`} aria-hidden />
-            {health ? `Model ready · ${health.n_onnx_folds} models` : "Connecting…"}
-          </span>
-          <CrtToggle />
         </nav>
+
+        <div className="flex items-center gap-2">
+          <span className="mr-1 hidden items-center gap-2 font-hud text-lg leading-none text-muted xl:inline-flex" role="status">
+            <span className={`h-2 w-2 ${health ? "bg-primary" : "bg-gold"}`} aria-hidden />
+            {health ? "Model ready" : "Connecting…"}
+          </span>
+          <button type="button" onClick={onTour} className={`${chip} text-gold`} style={chipFrame}>
+            Tour
+          </button>
+          <button
+            type="button"
+            onClick={onToggleScene}
+            className={`${chip} ${scenePaused ? "text-muted" : "text-primary"}`}
+            style={chipFrame}
+          >
+            {scenePaused ? "Play scene" : "Pause scene"}
+          </button>
+          <CrtToggle />
+        </div>
       </div>
     </header>
   );

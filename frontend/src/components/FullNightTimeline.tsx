@@ -125,8 +125,9 @@ export default function FullNightTimeline({
         </div>
       </div>
 
-      <div className="-mx-6 mt-4 overflow-x-auto px-6">
+      <div className="-mx-6 mt-4 overflow-x-auto px-6" data-hscroll>
         <div
+          id="timeline-chart"
           role="slider"
           tabIndex={0}
           aria-label="Selected minute of the night"

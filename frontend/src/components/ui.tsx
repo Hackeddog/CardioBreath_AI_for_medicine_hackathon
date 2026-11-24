@@ -51,6 +51,7 @@ export function SeverityScale({ value, low, high }: { value: number; low: number
   const pct = (v: number) => `${(Math.min(SCALE_MAX, Math.max(0, v)) / SCALE_MAX) * 100}%`;
   return (
     <div
+      id="severity-scale"
       role="img"
       aria-label={`eAHI ${value.toFixed(1)} on the severity scale; 90% interval ${low.toFixed(1)} to ${high.toFixed(1)}. Mild from 5, moderate from 15, severe from 30.`}
       className="pt-6"
@@ -223,25 +224,3 @@ export function AnalysisProgress() {
   );
 }
 
-export function WorkbenchSkeleton() {
-  return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12" aria-hidden>
-      <div className="card space-y-4 p-6 lg:col-span-4">
-        <div className="skeleton h-5 w-40" />
-        <div className="skeleton h-14 w-32" />
-        <div className="skeleton h-4 w-56" />
-        <div className="skeleton h-16 w-full" />
-      </div>
-      <div className="space-y-6 lg:col-span-8">
-        <div className="card p-6">
-          <div className="skeleton h-5 w-64" />
-          <div className="skeleton mt-4 h-40 w-full" />
-        </div>
-        <div className="card p-6">
-          <div className="skeleton h-5 w-52" />
-          <div className="skeleton mt-4 h-64 w-full" />
-        </div>
-      </div>
-    </div>
-  );
-}

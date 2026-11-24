@@ -10,6 +10,8 @@ interface HeroProps {
   ecg: WindowInspectorData | null;
   onTrySample: () => void;
   onUpload: () => void;
+  onTour: () => void;
+  onSeeNight: () => void;
 }
 
 const STRIP_SECONDS = 10; // a classic rhythm-strip length; 30 s is too dense to read at hero size
@@ -54,29 +56,13 @@ function PixelMoon({ className }: { className?: string }) {
   );
 }
 
-/** Two stepped hill layers: the "ground" of the level. Heights are fixed so the skyline never shifts. */
-const FAR = [5, 6, 6, 7, 8, 8, 7, 6, 6, 5, 5, 6, 7, 9, 10, 10, 9, 8, 7, 7, 6, 6, 7, 8, 8, 9, 8, 7, 6, 5, 5, 6];
-const NEAR = [3, 3, 4, 4, 3, 2, 2, 3, 5, 6, 6, 5, 4, 3, 3, 4, 4, 5, 5, 4, 3, 2, 2, 3, 4, 6, 7, 6, 5, 4, 3, 3];
-function steps(h: number[], unit: number, total: number) {
-  const w = 1440 / h.length;
-  return `M0,${total} ` + h.map((v, i) => `L${i * w},${total - v * unit} L${(i + 1) * w},${total - v * unit}`).join(" ") + ` L1440,${total} Z`;
-}
-export function PixelHills() {
-  return (
-    <svg viewBox="0 0 1440 120" preserveAspectRatio="none" shapeRendering="crispEdges" className="block h-20 w-full sm:h-28" aria-hidden>
-      <path d={steps(FAR, 9, 120)} fill="#1b1650" />
-      <path d={steps(NEAR, 9, 120)} fill="#262062" />
-      <rect x="0" y="117" width="1440" height="3" fill="var(--primary)" opacity="0.5" />
-    </svg>
-  );
-}
-
-export default function Hero({ analysis, ecg, onTrySample, onUpload }: HeroProps) {
+export default function Hero({ analysis, ecg, onTrySample, onUpload, onTour, onSeeNight }: HeroProps) {
   const center = ecg?.time_window_label.match(/Center:\s*([\d:]+)/)?.[1];
   return (
     <section aria-labelledby="hero-title" className="relative">
-      <div className="grid items-center gap-12 pb-10 pt-12 sm:pt-20 lg:grid-cols-12">
-        <div className="lg:col-span-6">
+      <div className="grid items-center gap-12 lg:grid-cols-12">
+        {/* Dark dialog panel so the copy never sits directly on neon windows */}
+        <div className="card p-6 sm:p-8 lg:col-span-6" style={{ background: "rgb(13 10 38 / 0.86)" }}>
           <h1 id="hero-title" className="font-pixel text-[1.9rem] font-bold leading-[1.15] sm:text-5xl">
             Sleep apnea screening from a <span className="text-primary">single-lead ECG</span>
           </h1>
@@ -89,11 +75,18 @@ export default function Hero({ analysis, ecg, onTrySample, onUpload }: HeroProps
             <button type="button" onClick={onTrySample} className="btn-primary px-6 text-lg">
               <span aria-hidden>▶</span> Try a sample night
             </button>
-            <button type="button" onClick={onUpload} className="btn-secondary px-5 text-lg">
-              <Upload className="h-4 w-4" aria-hidden />
-              Upload ECG
+            <button type="button" onClick={onTour} className="btn-secondary px-5 text-lg text-gold">
+              Take the guided tour
             </button>
           </div>
+          <button
+            type="button"
+            onClick={onUpload}
+            className="mt-3 inline-flex min-h-11 items-center gap-2 font-hud text-xl leading-none text-muted hover:text-ink"
+          >
+            <Upload className="h-4 w-4" aria-hidden />
+            Or upload your own ECG (CSV)
+          </button>
           <p className="mt-7 max-w-[50ch] text-sm text-muted">
             <strong className="font-semibold text-ink">Screening aid, not a diagnosis.</strong> Results support referral
             decisions and must be confirmed by polysomnography.
@@ -125,19 +118,16 @@ export default function Hero({ analysis, ecg, onTrySample, onUpload }: HeroProps
                 </span>
                 <button
                   type="button"
-                  onClick={onTrySample}
+                  onClick={onSeeNight}
                   className="min-h-11 px-2 font-hud text-2xl leading-none text-primary underline-offset-4 hover:underline"
                 >
-                  See the full night ↓
+                  See the full night →
                 </button>
                 <span className="w-full text-sm font-medium">{sentenceCase(analysis.triage_action)}</span>
               </div>
             )}
           </div>
         </figure>
-      </div>
-      <div className="mx-[calc(50%-50vw)]">
-        <PixelHills />
       </div>
     </section>
   );
@@ -174,7 +164,7 @@ export function Evidence({ evaluation, onOpenResearch }: { evaluation: Evaluatio
     : null;
 
   return (
-    <section aria-label="Method and evidence" className="grid gap-12 py-16 lg:grid-cols-12">
+    <section id="evidence" aria-label="Method and evidence" className="grid gap-12 lg:grid-cols-12">
       <Reveal className="lg:col-span-7">
         <h2 className="font-pixel text-2xl font-bold">What it reads in one night</h2>
         <ol className="mt-8 space-y-7">
