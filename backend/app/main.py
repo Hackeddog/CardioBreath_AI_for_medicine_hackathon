@@ -73,8 +73,6 @@ def analyze_case(case_id: str, req: AnalyzeCaseRequest) -> dict:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.post("/api/analyze/window", response_model=WindowInspectorResponse)
@@ -89,8 +87,6 @@ def inspect_window(req: WindowInspectorRequest) -> dict:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.post("/api/analyze/upload", response_model=FullNightAnalysisResponse)
@@ -116,12 +112,8 @@ async def upload_ecg(
         return await run_in_threadpool(
             engine.analyze_case, case_id=case_id, threshold=threshold, compare_baseline=True
         )
-    except HTTPException:
-        raise
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.get("/api/evaluation")

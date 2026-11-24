@@ -224,3 +224,14 @@ def test_csv_fallback_column_never_picks_time() -> None:
     ecg, fs = load_uploaded_csv_ecg(b"mV,time\n0.5,0.00\n0.6,0.01\n0.7,0.02\n0.8,0.03\n")
     assert fs == 100.0
     assert np.allclose(ecg, [0.5, 0.6, 0.7, 0.8])
+
+
+def test_internal_errors_do_not_leak_exception_text(monkeypatch: pytest.MonkeyPatch) -> None:
+    def boom(**_: object) -> dict:
+        raise RuntimeError("secret /internal/path")
+
+    monkeypatch.setattr(engine, "analyze_case", boom)
+    client = TestClient(app, raise_server_exceptions=False)
+    resp = client.post("/api/analyze/case/x08", json={})
+    assert resp.status_code == 500
+    assert "secret" not in resp.text
