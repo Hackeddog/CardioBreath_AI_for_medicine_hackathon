@@ -4,8 +4,13 @@
 
 from __future__ import annotations
 
-import numpy as np
+from concurrent.futures import ThreadPoolExecutor
 
+import numpy as np
+import pytest
+from fastapi.testclient import TestClient
+
+import backend.app.main as main_mod
 from backend.app.main import (
     analyze_case,
     app,
@@ -116,3 +121,62 @@ def test_evaluation_endpoint_exposes_locked_test_results() -> None:
     body = get_evaluation()
     assert body["test"]["models"]["cardiobreath"]["minute_metrics"]["auroc"] > 0.96
     assert len(body["figures"]) >= 5
+
+
+def test_path_traversal_case_id_rejected() -> None:
+    with pytest.raises(ValueError, match="Invalid case_id"):
+        engine._load_raw_case("../x08")
+
+    client = TestClient(app)
+    resp = client.post("/api/analyze/case/..%2F..%2Fconfigs%2Fdefault", json={})
+    assert resp.status_code in (400, 404, 405)
+
+    win_resp = client.post("/api/analyze/window", json={"case_id": "../x08", "minute_index": 0})
+    assert win_resp.status_code == 400
+
+
+def test_upload_exceeding_max_size_returns_413(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(main_mod, "MAX_UPLOAD_BYTES", 1024)
+    client = TestClient(app)
+    resp = client.post(
+        "/api/analyze/upload",
+        files={"file": ("big.csv", b"time,ecg\n" + b"0.00,0.1\n" * 200, "text/csv")},
+    )
+    assert resp.status_code == 413
+
+
+def test_upload_invalid_threshold_returns_422() -> None:
+    client = TestClient(app)
+    for bad_thr in (0.99, 0.01):
+        resp = client.post(
+            f"/api/analyze/upload?threshold={bad_thr}",
+            files={"file": ("small.csv", b"time,ecg\n0.00,0.1\n", "text/csv")},
+        )
+        assert resp.status_code == 422
+
+
+def test_concurrent_window_inspect_gradcam_thread_safe() -> None:
+    req = WindowInspectorRequest(case_id="x08", minute_index=120)
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        results = list(pool.map(lambda _: inspect_window(req), range(6)))
+
+    ref = np.asarray(results[0]["gradcam_saliency"], dtype=np.float32)
+    assert len(ref) == 600
+    assert np.all(np.isfinite(ref))
+    assert float(ref.min()) >= 0.0 and float(ref.max()) <= 1.0
+    for res in results[1:]:
+        cur = np.asarray(res["gradcam_saliency"], dtype=np.float32)
+        assert np.allclose(cur, ref, atol=1e-5)
+
+
+def test_cors_wildcard_disables_credentials() -> None:
+    client = TestClient(app)
+    resp = client.options(
+        "/api/health",
+        headers={
+            "Origin": "https://example.com",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert resp.headers.get("access-control-allow-origin") == "*"
+    assert resp.headers.get("access-control-allow-credentials") != "true"

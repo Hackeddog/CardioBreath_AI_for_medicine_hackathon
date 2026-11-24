@@ -88,6 +88,39 @@ uvicorn backend.app.main:app --host 0.0.0.0 --port 7860
 cd frontend && npm install && npm run dev
 ```
 
+### Automated Testing & Quality Checks (Backend & Frontend)
+
+#### Backend Testing & Code Quality
+```bash
+# Run full automated test suite (DSP, ML, calibration, ONNX parity, metrics, and FastAPI contracts)
+pytest tests/ -v
+
+# Run Python static analysis and lint checks
+ruff check src scripts backend tests train.py evaluate.py
+```
+
+#### Frontend Testing & Build Verification
+```bash
+cd frontend
+
+# Verify TypeScript types, React linting, and Next.js rules
+npm run lint
+
+# Test production static build and exports
+npm run build
+```
+
+#### Live Railway Backend Verification (Direct Endpoint Health Test)
+```bash
+# Test the deployed Railway backend health check
+curl https://cardiobreathaiformedicinehackathon-production.up.railway.app/api/health
+
+# Test case evaluation on the deployed backend
+curl -X POST https://cardiobreathaiformedicinehackathon-production.up.railway.app/api/analyze/case/x08 \
+  -H "Content-Type: application/json" \
+  -d '{"compare_baseline": true}'
+```
+
 ### Reproduce Full Training & Locked Held-Out Evaluation From Scratch
 ```bash
 python scripts/download_data.py              # Downloads PhysioNet Apnea-ECG + event-2-answers
