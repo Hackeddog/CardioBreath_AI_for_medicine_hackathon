@@ -6,7 +6,7 @@ colorTo: blue
 sdk: docker
 app_port: 7860
 pinned: false
-short_description: Single-Lead ECG Sleep Apnea Screening (AUROC 0.973)
+short_description: Single-Lead ECG Sleep Apnea Screening (AUROC 0.972)
 ---
 
 # CardioBreath
@@ -34,7 +34,7 @@ Nearly **80% of Obstructive Sleep Apnea (OSA)** goes undiagnosed because gold-st
    * **Signal Quality Index (SQI) Gate + Rhythm Check:** Rejects flatlines, saturation spikes, and severe EMG/motion noise (`5–30 Hz` QRS vs. `32–48 Hz` EMG gating) so degraded epochs abstain cleanly rather than hallucinating apnea, plus flags suspected non-sinus/AFib rhythm.
 2. **Deep Learning Core (`src/models.py`):**
    * **CardioBreathNet:** Dual modality stems (`EDR` + `RRI`, 5-min window = `2 × 1200` @ 4 Hz) → **Multi-Scale 1D-CNN** (`5s / 15s / 31s` parallel kernels + Squeeze-and-Excitation) → **2-Layer Bidirectional GRU** → **Temporal Attention Pooling**.
-   * **Uncertainty & Calibration (`src/calibration.py`):** Trained across **5 strict subject-disjoint folds** (`configs/folds.json`, `seed=42`). Out-of-fold L-BFGS-B **Temperature Scaling** (`T = 1.835`, CV-locked threshold `0.60`) + 5-fold Deep Ensemble yielding 90% `eAHI` confidence intervals.
+   * **Uncertainty & Calibration (`src/calibration.py`):** Trained across **5 strict subject-disjoint folds** (`configs/folds.json`, `seed=42`). Out-of-fold L-BFGS-B **Temperature Scaling** (`T = 1.789`, CV-locked threshold `0.63`) + 5-fold Deep Ensemble yielding 90% `eAHI` confidence intervals.
    * **Explainability & Edge Deployment:** Live **1D Grad-CAM** saliency overlays + 5-fold **ONNX Runtime CPU** export (`1.67 MB`/fold, `max_diff <= 7e-7` vs. PyTorch).
 
 ---
@@ -46,13 +46,15 @@ All hyperparameters, thresholds, and calibration temperatures were selected stri
 | Model | AUROC (95% CI) | AUPRC | Accuracy | Sens | Spec | F1 | eAHI MAE (events/hr) | eAHI Pearson *r* | Screen Sens (`>=5`) | ECE |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Baseline 1: HRV + LightGBM** | 0.909 [0.879, 0.936] | 0.853 | 0.790 | 0.914 | 0.712 | 0.770 | 10.33 [7.70, 13.39] | 0.863 | 1.000 | 0.089 |
-| **Baseline 2: Raw 1-min ECG CNN** | 0.777 [0.663, 0.869] | 0.727 | 0.685 | 0.718 | 0.664 | 0.637 | 17.81 [12.87, 23.19] | 0.372 | 0.957 | 0.144 |
-| **Ablation A: RRI-Only (5-min)** | 0.965 [0.947, 0.978] | 0.951 | 0.902 | 0.904 | 0.901 | 0.876 | 3.97 [2.81, 5.33] | 0.963 | 1.000 | 0.064 |
-| **Ablation B: EDR-Only (5-min)** | 0.900 [0.850, 0.938] | 0.878 | 0.832 | 0.774 | 0.868 | 0.779 | 6.53 [4.24, 8.88] | 0.876 | 0.957 | 0.048 |
-| **Ablation C: Dual-Stream (1-min)** | 0.931 [0.905, 0.955] | 0.894 | 0.851 | 0.869 | 0.839 | 0.817 | 5.61 [3.92, 7.51] | 0.933 | 1.000 | 0.100 |
-| **CardioBreath (Dual-Stream 5-Fold)** | **0.973 [0.961, 0.982]** | **0.958** | **0.909** | 0.832 | **0.958** | **0.876** | **3.27 [1.75, 5.01]** | **0.965** | **1.000** | **0.052** |
+| **Baseline 2: Raw 1-min ECG CNN** | 0.785 [0.680, 0.874] | 0.705 | 0.591 | 0.932 | 0.378 | 0.637 | 23.54 [17.30, 30.11] | 0.426 | 1.000 | 0.130 |
+| **Ablation A: RRI-Only (5-min)** | 0.965 [0.947, 0.978] | 0.949 | 0.903 | 0.885 | 0.914 | 0.875 | 3.93 [2.70, 5.33] | 0.958 | 1.000 | 0.043 |
+| **Ablation B: EDR-Only (5-min)** | 0.894 [0.837, 0.936] | 0.874 | 0.838 | 0.727 | 0.908 | 0.775 | 6.65 [4.37, 9.04] | 0.882 | 0.913 | 0.113 |
+| **Ablation C: Dual-Stream (1-min)** | 0.933 [0.907, 0.956] | 0.896 | 0.850 | 0.868 | 0.839 | 0.817 | 5.48 [3.74, 7.42] | 0.932 | 1.000 | 0.068 |
+| **CardioBreath (Dual-Stream 5-Fold)** | 0.972 [0.960, 0.982] | 0.956 | 0.906 | 0.820 | 0.960 | 0.870 | 3.52 [2.03, 5.17] | 0.965 | 1.000 | 0.034 |
 
-* **Key Takeaways:** Physics-guided Dual-Stream cardiopulmonary modeling beats end-to-end raw ECG CNN by **+0.196 AUROC** (`-81.6%` `eAHI` MAE) and beats classical HRV+LightGBM by **+11.9 points accuracy** (`-68.3%` `eAHI` MAE), achieving **100% patient-level screening sensitivity** (`eAHI >= 5`) with **95.8% per-minute specificity**.
+Numbers above are copied from `reports/benchmark_table_test.md`, generated from `reports/metrics_summary_test.json` (the same file the app reads). Validation-split numbers are in `reports/benchmark_table_val.md`.
+
+* **Key Takeaways:** Physics-guided Dual-Stream cardiopulmonary modeling beats end-to-end raw ECG CNN by **+0.187 AUROC** (`-85.0%` `eAHI` MAE) and beats classical HRV+LightGBM by **+11.6 points accuracy** (`-65.9%` `eAHI` MAE), achieving **100% patient-level screening sensitivity** (`eAHI >= 5`) with **96.0% per-minute specificity**.
 
 ---
 
@@ -63,7 +65,7 @@ All hyperparameters, thresholds, and calibration temperatures were selected stri
   1. **Arrhythmia / AFib Patients:** Atrial fibrillation or frequent ectopy disrupts RRI independent of breathing. *Mitigation:* Built-in non-sinus rhythm screen warns clinicians to bypass ECG screening for full PSG.
   2. **Minute-Level `eAHI` vs. True PSG Event-Count AHI:** PhysioNet Apnea-ECG provides 1-minute labels (`A`/`N`), so `eAHI` estimates apnea-minutes/hr rather than exact discrete hypopnea/apnea event counts. *Mitigation:* Explicitly labeled as **Estimated Apnea Burden (`eAHI`)** and scoped strictly as pre-screening triage—never autonomous diagnosis.
   3. **False Negatives vs. False Positives (Honest Held-Out Error Analysis — `reports/figures/failure_cases_test.png`):**
-     * *Under-predicted night (`x25`, True `eAHI=34.2` vs. Pred `12.0`):* CardioBreath visibly detected all 4 overnight apnea clusters (`p` rose from `~0.08` to `0.45–0.75`), but the CV-locked F1 cutoff (`0.60`) sliced through mid-confidence epochs. Crucially, `x25` was still triaged positive (`12.0 >= 5`) for PSG referral, and our UI provides a clinician sensitivity slider.
+     * *Under-predicted night (`x25`, True `eAHI=34.2` vs. Pred `15.1`):* CardioBreath visibly detected all 4 overnight apnea clusters (`p` rose from `~0.08` to `0.45–0.75`), but the CV-locked F1 cutoff (`0.63`) sliced through mid-confidence epochs. Crucially, `x25` was still triaged positive (`15.1 >= 5`) for PSG referral, and our UI provides a clinician sensitivity slider.
      * *High-confidence false positive (`x30 @ min 244`, `p=0.98`):* Pronounced cyclic RRI swings occurred in a transitional minute immediately flanking severe apnea episodes.
   4. **Cohort & Hardware Shift:** Trained on hospital-grade 100 Hz ECGs (adult German sleep-lab cohort); noisy consumer wrist wearables and pediatric/elderly cohorts require external validation.
 

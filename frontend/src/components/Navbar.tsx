@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import type { HealthStatus } from "@/lib/types";
-import { CityPop } from "@/lib/cityPop";
+import { Lullaby } from "@/lib/lullaby";
 
 export const PAGES = [
   { id: "start", label: "Start" },
@@ -21,6 +21,8 @@ interface NavbarProps {
   onTour: () => void;
   scenePaused: boolean;
   onToggleScene: () => void;
+  clinical: boolean;
+  onToggleClinical: () => void;
 }
 
 /* Pixel heart, 13 x 11 on a 16 x 13 canvas. H = heart, S = shaded heart, W = glint. */
@@ -44,7 +46,7 @@ const TRACE: [number, number][] = [
   [0, 6], [1, 6], [2, 6], [3, 6], [4, 5], [5, 2], [5, 3], [5, 4], [5, 5],
   [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], [6, 8], [7, 6], [8, 6], [9, 5], [10, 4], [11, 4], [12, 5], [13, 6], [14, 6], [15, 6],
 ];
-const FILL: Record<string, string> = { H: "var(--coral)", S: "#c2405e", W: "#fff3f5" };
+const FILL: Record<string, string> = { H: "var(--coral)", S: "#b07f78", W: "#fbf2ea" };
 
 export function BrandMark({ className = "h-8 w-8" }: { className?: string }) {
   return (
@@ -59,12 +61,13 @@ export function BrandMark({ className = "h-8 w-8" }: { className?: string }) {
   );
 }
 
-const chip = "min-h-11 shrink-0 px-2 font-hud text-xl leading-none hover:text-ink sm:px-3";
+const chip = "min-h-11 shrink-0 px-2 text-sm font-medium leading-none hover:text-ink sm:px-3";
 const chipFrame = { boxShadow: "inset 0 0 0 2px var(--border-strong)" };
 
-/** Off until clicked: browsers block autoplay, and sound should never surprise someone in a clinic. */
+/** Off until clicked: browsers block autoplay, and sound should never surprise someone in a clinic.
+ * Unmounting (Clinical mode) stops it. */
 function MusicToggle() {
-  const engine = useRef<CityPop | null>(null);
+  const engine = useRef<Lullaby | null>(null);
   const [on, setOn] = useState(false);
   useEffect(() => () => engine.current?.stop(), []);
   return (
@@ -73,7 +76,7 @@ function MusicToggle() {
       aria-pressed={on}
       data-music={on ? "playing" : "off"}
       onClick={async () => {
-        engine.current ??= new CityPop();
+        engine.current ??= new Lullaby();
         if (on) engine.current.stop();
         else await engine.current.start();
         setOn(!on);
@@ -86,30 +89,7 @@ function MusicToggle() {
   );
 }
 
-function CrtToggle() {
-  const [on, setOn] = useState(true);
-  useEffect(() => setOn(document.documentElement.dataset.crt !== "off"), []);
-  return (
-    <button
-      type="button"
-      aria-pressed={on}
-      aria-label="CRT scanlines"
-      onClick={() => {
-        const next = !on;
-        if (next) delete document.documentElement.dataset.crt;
-        else document.documentElement.dataset.crt = "off";
-        localStorage.setItem("cb-crt", next ? "on" : "off");
-        setOn(next);
-      }}
-      className={`${chip} hidden sm:inline-flex sm:items-center ${on ? "text-primary" : "text-muted"}`}
-      style={chipFrame}
-    >
-      CRT {on ? "ON" : "OFF"}
-    </button>
-  );
-}
-
-export default function Navbar({ page, onPage, health, onTour, scenePaused, onToggleScene }: NavbarProps) {
+export default function Navbar({ page, onPage, health, onTour, scenePaused, onToggleScene, clinical, onToggleClinical }: NavbarProps) {
   return (
     <header className="relative z-40 h-[var(--header-h)] border-b-[3px] border-line bg-bg">
       <div className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-2 px-4 sm:px-6">
@@ -133,7 +113,7 @@ export default function Navbar({ page, onPage, health, onTour, scenePaused, onTo
               type="button"
               onClick={() => onPage(i)}
               aria-current={page === i ? "page" : undefined}
-              className={`min-h-11 px-3 font-hud text-2xl leading-none ${page === i ? "bg-surface-2 text-ink" : "text-muted hover:text-ink"}`}
+              className={`min-h-11 px-3 text-base font-semibold leading-none ${page === i ? "bg-surface-2 text-ink" : "text-muted hover:text-ink"}`}
               style={page === i ? { boxShadow: "inset 0 -3px 0 0 var(--primary)" } : undefined}
             >
               {p.label}
@@ -142,25 +122,39 @@ export default function Navbar({ page, onPage, health, onTour, scenePaused, onTo
         </nav>
 
         <div className="flex items-center gap-2">
-          <span className="mr-1 hidden items-center gap-2 font-hud text-lg leading-none text-muted xl:inline-flex" role="status">
+          <span className="mr-1 hidden items-center gap-2 text-sm font-medium leading-none text-muted xl:inline-flex" role="status">
             <span className={`h-2 w-2 ${health ? "bg-primary" : "bg-gold"}`} aria-hidden />
             {health ? "Model ready" : "Connecting…"}
           </span>
           <button type="button" onClick={onTour} className={`${chip} text-gold`} style={chipFrame}>
             Tour
           </button>
-          <MusicToggle />
+          {!clinical && (
+            <>
+              <MusicToggle />
+              <button
+                type="button"
+                title={scenePaused ? "Play scene" : "Pause scene"}
+                onClick={onToggleScene}
+                className={`${chip} ${scenePaused ? "text-muted" : "text-primary"}`}
+                style={chipFrame}
+              >
+                <span aria-hidden>{scenePaused ? "▶" : "❚❚"}</span>
+                <span className="sr-only">{scenePaused ? "Play scene" : "Pause scene"}</span>
+              </button>
+            </>
+          )}
+          {/* Plain view for clinical review: no scene, no music, plain type. */}
           <button
             type="button"
-            title={scenePaused ? "Play scene" : "Pause scene"}
-            onClick={onToggleScene}
-            className={`${chip} ${scenePaused ? "text-muted" : "text-primary"}`}
+            aria-pressed={clinical}
+            aria-label="Clinical mode"
+            onClick={onToggleClinical}
+            className={`${chip} ${clinical ? "bg-primary text-primary-ink hover:text-primary-ink" : "text-muted"}`}
             style={chipFrame}
           >
-            <span aria-hidden>{scenePaused ? "▶" : "❚❚"}</span>
-            <span className="sr-only">{scenePaused ? "Play scene" : "Pause scene"}</span>
+            Clinical<span className="hidden sm:inline"> mode</span>
           </button>
-          <CrtToggle />
         </div>
       </div>
     </header>

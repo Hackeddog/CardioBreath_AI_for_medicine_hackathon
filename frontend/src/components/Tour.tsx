@@ -101,11 +101,11 @@ export default function Tour({ open, onClose, onPage }: TourProps) {
             left: rect.left - pad,
             width: rect.width + pad * 2,
             height: rect.height + pad * 2,
-            boxShadow: "0 0 0 3px var(--gold), 0 0 0 9999px rgb(5 3 20 / 0.72)",
+            boxShadow: "0 0 0 3px var(--gold), 0 0 0 9999px rgb(8 10 20 / 0.72)",
           }}
         />
       ) : (
-        <div className="fixed inset-0 bg-[rgb(5_3_20/0.72)]" />
+        <div className="fixed inset-0 bg-[rgb(8_10_20/0.72)]" />
       )}
       <div
         ref={dialogRef}
@@ -116,17 +116,17 @@ export default function Tour({ open, onClose, onPage }: TourProps) {
         className="card-raised fixed p-5"
         style={{ top, left, width: boxW }}
       >
-        <p className="font-hud text-xl leading-none text-gold">
+        <p className="text-sm font-medium leading-none text-gold">
           Step {step + 1} of {TOUR_STEPS.length} · {PAGES.find((p) => p.id === s.page)?.label}
         </p>
-        <h2 id="tour-title" ref={headingRef} tabIndex={-1} className="mt-2 font-pixel text-lg font-bold">
+        <h2 id="tour-title" ref={headingRef} tabIndex={-1} className="mt-2 text-lg font-semibold tracking-tight">
           {s.title}
         </h2>
         <p id="tour-body" className="mt-2 text-sm text-muted">
           {s.body}
         </p>
         <div className="mt-4 flex items-center justify-between gap-2">
-          <button type="button" onClick={onClose} className="min-h-11 px-2 font-hud text-xl leading-none text-muted hover:text-ink">
+          <button type="button" onClick={onClose} className="min-h-11 px-2 text-sm font-medium leading-none text-muted hover:text-ink">
             Skip tour
           </button>
           <div className="flex gap-2">

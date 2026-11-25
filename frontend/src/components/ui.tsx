@@ -24,8 +24,8 @@ export function SeverityBadge({ tier, size = "md" }: { tier: string; size?: "md"
   const Icon = t.icon;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-hud leading-none ${t.cls} ${
-        size === "lg" ? "px-3 py-1.5 text-2xl" : "px-2 py-1 text-xl"
+      className={`inline-flex items-center gap-1.5 font-semibold leading-none ${t.cls} ${
+        size === "lg" ? "px-3 py-1.5 text-base" : "px-2 py-1 text-sm"
       }`}
       style={{ boxShadow: "inset 0 0 0 2px currentColor" }}
     >

@@ -3,49 +3,49 @@
 @tailwind utilities;
 
 /*
- * "Night shift" 16-bit theme. One theme on purpose: the product is about the night, and sleep clinicians
- * read in dim rooms. Every text pair checked for WCAG AA (lowest: severe tier text on its tint, 6.5:1).
+ * "Calm night" theme: muted blue-grey night, moon cream text, one sage accent for actions. No neon, no glow.
+ * Body text and clinical numbers are at least 7:1 on every surface they sit on.
  */
 :root {
   color-scheme: dark;
-  --bg: #0d0a26;
-  --surface: #17133d;
-  --surface-2: #221c55;
-  --border: #3a3380;
-  --border-strong: #8a82e0; /* controls: >= 3:1 against panels */
-  --text: #f4efdc;
-  --muted: #aaa3d6;
-  --primary: #5cf2b0; /* phosphor mint: the one action colour */
-  --primary-hover: #8af7c8;
-  --primary-ink: #0d0a26;
-  --primary-soft: #143a3a;
-  --gold: #ffc94d;
-  --coral: #ff6b8b;
+  --bg: #151a2c;
+  --surface: #1d2338;
+  --surface-2: #272e47;
+  --border: #3a4262;
+  --border-strong: #7d87ab; /* controls: >= 3:1 against panels */
+  --text: #ece5d3;
+  --muted: #bdc2d5;
+  --primary: #a6d9c0; /* soft sage: the one action colour */
+  --primary-hover: #c0e6d2;
+  --primary-ink: #151a2c;
+  --primary-soft: #233a36;
+  --gold: #e3c98a;
+  --coral: #e8b0a2;
 
-  --grid: #2a2463;
-  --trace: #f4efdc;
-  --strip-normal: #2f2a6b;
-  --strip-deferred: #ffc94d;
+  --grid: #2a3150;
+  --trace: #ece5d3;
+  --strip-normal: #323a5c;
+  --strip-deferred: #e3c98a;
 
-  --normal: #6fd8ff;
-  --normal-soft: #132a45;
-  --normal-fg: #6fd8ff;
-  --mild: #ffd84d;
-  --mild-soft: #2f2a12;
-  --mild-fg: #ffd84d;
-  --moderate: #ffa04d;
-  --moderate-soft: #33200f;
-  --moderate-fg: #ffa04d;
-  --severe: #ff7a99;
-  --severe-soft: #3a1426;
-  --severe-fg: #ff7a99;
+  --normal: #9ccbe6;
+  --normal-soft: #1f3040;
+  --normal-fg: #9ccbe6;
+  --mild: #e6d38a;
+  --mild-soft: #33301f;
+  --mild-fg: #e6d38a;
+  --moderate: #eab286;
+  --moderate-soft: #382a1e;
+  --moderate-fg: #eab286;
+  --severe: #f2adb9;
+  --severe-soft: #3b2430;
+  --severe-fg: #f2adb9;
 
   --px: 3px; /* one "pixel" of the UI chrome */
   --header-h: 64px;
   --bar-h: 64px;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --paper-minor: rgb(92 242 176 / 0.07);
-  --paper-major: rgb(92 242 176 / 0.16);
+  --paper-minor: rgb(166 217 192 / 0.06);
+  --paper-major: rgb(166 217 192 / 0.14);
 }
 
 @media (max-height: 760px) {
@@ -59,35 +59,16 @@
   html {
     background: var(--bg);
   }
-  /* Two star layers: a dense far field that scrolls with the page and a sparse near field fixed to the
-     viewport, which gives a cheap parallax without a scroll listener. */
   body {
     @apply text-ink antialiased;
-    position: relative;
-    overflow-x: clip; /* full-bleed hills use 100vw, which counts the scrollbar */
     font-size: 16px;
     line-height: 1.6;
+    font-variant-numeric: tabular-nums; /* digits line up in every metric and table */
     background-color: var(--bg);
-    background-image:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320' shape-rendering='crispEdges'%3E%3Cg fill='%23f4efdc'%3E%3Crect x='40' y='60' width='3' height='3'/%3E%3Crect x='210' y='30' width='3' height='3' opacity='.7'/%3E%3Crect x='280' y='190' width='3' height='3'/%3E%3Crect x='120' y='250' width='3' height='3' opacity='.6'/%3E%3C/g%3E%3Crect x='170' y='140' width='3' height='3' fill='%235cf2b0'/%3E%3Crect x='20' y='290' width='3' height='3' fill='%23ffc94d'/%3E%3C/svg%3E"),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' shape-rendering='crispEdges'%3E%3Cg fill='%23aaa3d6'%3E%3Crect x='14' y='22' width='2' height='2' opacity='.5'/%3E%3Crect x='78' y='9' width='2' height='2' opacity='.35'/%3E%3Crect x='101' y='71' width='2' height='2' opacity='.45'/%3E%3Crect x='43' y='96' width='2' height='2' opacity='.3'/%3E%3Crect x='63' y='54' width='2' height='2' opacity='.25'/%3E%3C/g%3E%3C/svg%3E"),
-      radial-gradient(120% 60% at 50% 0%, #221a63 0%, var(--bg) 60%);
-    background-attachment: fixed, scroll, scroll;
-    background-repeat: repeat, repeat, no-repeat;
   }
-  /* CRT scanlines over the whole document; switchable from the header (data-crt="off"). */
-  body::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 50;
-    pointer-events: none;
-    background: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.16) 0 1px, transparent 1px 3px);
-    /* own GPU layer and no blend mode: a blended full-page overlay halved the scene's frame rate */
-    transform: translateZ(0);
-  }
-  html[data-crt="off"] body::after {
-    display: none;
+  /* Clinical mode: the wordmark drops its pixel face too. */
+  html[data-clinical] .font-pixel {
+    font-family: var(--font-inter), system-ui, sans-serif;
   }
   a,
   button,
@@ -134,7 +115,7 @@
       calc(var(--px) * 3) calc(var(--px) * 3) 0 0 rgb(0 0 0 / 0.45);
   }
   .btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 px-4 font-hud text-2xl leading-none transition-transform duration-100 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 px-4 text-base font-semibold leading-none transition-transform duration-100 disabled:cursor-not-allowed disabled:opacity-50;
   }
   /* Chunky "arcade" button: a darker lip underneath that collapses when pressed. */
   .btn-primary {
@@ -148,14 +129,14 @@
     box-shadow: inset 0 calc(var(--px) * -1) 0 0 rgb(0 0 0 / 0.28);
   }
   .btn-secondary {
-    @apply btn bg-surface-2 text-ink hover:bg-[#2c2570];
+    @apply btn bg-surface-2 text-ink hover:bg-[#323a58];
     box-shadow: inset 0 0 0 2px var(--border-strong);
   }
   .btn-secondary:active:not(:disabled) {
     transform: translateY(2px);
   }
   .eyebrow {
-    @apply font-hud text-lg leading-none text-muted;
+    @apply text-sm font-semibold leading-none text-muted;
   }
   .skeleton {
     background: var(--surface-2);
@@ -163,7 +144,7 @@
   }
   /* Identity motif: a green monitor grid (ECG paper read on a CRT), used only where a signal is drawn. */
   .ecg-paper {
-    background-color: #0a1f1c;
+    background-color: #161c2e;
     background-image:
       linear-gradient(var(--paper-major) 1px, transparent 1px),
       linear-gradient(90deg, var(--paper-major) 1px, transparent 1px),
@@ -175,10 +156,6 @@
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
     animation: draw 1.8s var(--ease) forwards;
-  }
-  /* Phosphor glow, used on the hero monitor trace only. */
-  .phosphor {
-    filter: drop-shadow(0 0 3px rgb(92 242 176 / 0.8)) drop-shadow(0 0 10px rgb(92 242 176 / 0.35));
   }
   [data-reveal] {
     opacity: 0;

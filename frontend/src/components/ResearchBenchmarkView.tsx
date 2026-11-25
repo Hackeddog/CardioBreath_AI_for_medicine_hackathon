@@ -62,7 +62,7 @@ const FIGURE_CARDS = [
 function Metric({ value, label, note }: { value: string; label: string; note: string }) {
   return (
     <div className="card p-4">
-      <p className="font-hud text-5xl leading-none text-primary">{value}</p>
+      <p className="text-3xl font-semibold leading-none tracking-tight text-primary">{value}</p>
       <p className="mt-1 text-sm font-medium">{label}</p>
       <p className="text-sm text-muted tabular-nums">{note}</p>
     </div>
@@ -80,7 +80,7 @@ export default function ResearchBenchmarkView({ evaluation, health }: ResearchBe
     <div className="space-y-6 short:space-y-4">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-[70ch]">
-          <h2 id="research-title" className="font-pixel text-2xl font-bold sm:text-3xl">
+          <h2 id="research-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Validation and limitations
           </h2>
           <p className="mt-2 text-muted short:text-sm">
@@ -95,7 +95,7 @@ export default function ResearchBenchmarkView({ evaluation, health }: ResearchBe
               type="button"
               aria-pressed={section === s.id}
               onClick={() => setSection(s.id)}
-              className={`min-h-11 px-3 font-hud text-xl leading-none ${section === s.id ? "bg-primary text-primary-ink" : "text-muted hover:text-ink"}`}
+              className={`min-h-11 px-3 text-sm font-medium leading-none ${section === s.id ? "bg-primary text-primary-ink" : "text-muted hover:text-ink"}`}
             >
               {s.label}
             </button>
