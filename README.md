@@ -146,3 +146,25 @@ docker run -p 7860:7860 cardiobreath
 * **Dataset Attribution:** Penzel T, Moody GB, Mark RG, Goldberger AL, Peter JH. *The Apnea-ECG Database.* Computers in Cardiology 2000; 27:255–258. Goldberger AL et al. *PhysioBank, PhysioToolkit, and PhysioNet.* Circulation 2000; 101(23):e215–e220.
 * **Open-Source Libraries:** PyTorch, ONNX Runtime, WFDB, NeuroKit2, SciPy, LightGBM, scikit-learn, FastAPI, Next.js, Tailwind CSS, Recharts.
 * **AI Tool Disclosure:** AI coding assistants (Antigravity / Gemini) were used to assist with code scaffolding, DSP/PyTorch implementation, UI components, documentation drafting, and automated test authoring; all modeling choices, training runs, and held-out evaluations were executed and verified by the team.
+
+---
+
+## 7. Local Full-Stack & E2E Verification
+
+```bash
+# 1. Backend tests & lint (from repo root)
+pytest tests/ -v
+ruff check src scripts backend tests train.py evaluate.py
+
+# 2. Frontend clean install & production static build
+cd frontend
+npm ci && npm run build
+
+# 3. Full-stack E2E tests (Playwright starts uvicorn on 127.0.0.1:7860 automatically)
+npx playwright install chromium   # first time only
+npm run test:e2e                  # or: npx playwright test --headed / --ui
+
+# 4. Browse the built app manually (from repo root)
+uvicorn backend.app.main:app --host 0.0.0.0 --port 7860
+# Open http://localhost:7860
+```

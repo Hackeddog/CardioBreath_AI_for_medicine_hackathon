@@ -55,6 +55,7 @@ export async function analyzeCase(
     threshold?: number | null;
     inject_noise_snr_db?: number | null;
     compare_baseline?: boolean;
+    signal?: AbortSignal;
   } = {}
 ): Promise<FullNightAnalysis> {
   const res = await fetch(apiUrl(`/api/analyze/case/${encodeURIComponent(caseId)}`), {
@@ -65,6 +66,7 @@ export async function analyzeCase(
       inject_noise_snr_db: options.inject_noise_snr_db ?? null,
       compare_baseline: options.compare_baseline ?? true,
     }),
+    signal: options.signal,
   });
   return json(res);
 }
@@ -72,7 +74,8 @@ export async function analyzeCase(
 export async function inspectWindow(
   caseId: string,
   minuteIndex: number,
-  injectNoiseSnrDb?: number | null
+  injectNoiseSnrDb?: number | null,
+  signal?: AbortSignal
 ): Promise<WindowInspectorData> {
   const res = await fetch(apiUrl("/api/analyze/window"), {
     method: "POST",
@@ -82,15 +85,16 @@ export async function inspectWindow(
       minute_index: minuteIndex,
       inject_noise_snr_db: injectNoiseSnrDb ?? null,
     }),
+    signal,
   });
   return json(res);
 }
 
-export async function uploadCsvEcg(file: File, threshold?: number): Promise<FullNightAnalysis> {
+export async function uploadCsvEcg(file: File, threshold?: number, signal?: AbortSignal): Promise<FullNightAnalysis> {
   const form = new FormData();
   form.append("file", file);
   const query = threshold !== undefined ? `?threshold=${encodeURIComponent(String(threshold))}` : "";
-  return json(await fetch(apiUrl(`/api/analyze/upload${query}`), { method: "POST", body: form }));
+  return json(await fetch(apiUrl(`/api/analyze/upload${query}`), { method: "POST", body: form, signal }));
 }
 
 export async function fetchEvaluation(): Promise<EvaluationPayload> {
