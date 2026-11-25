@@ -27,6 +27,8 @@ const P = Object.fromEntries(PAGES.map((p, i) => [p.id, i])) as Record<(typeof P
 const keyOf = (caseId: string, thr: number | null, snr: number | null, base: boolean) =>
   JSON.stringify([caseId, thr, snr, base]);
 
+const isAbortError = (err: unknown) => (err as { name?: string } | null)?.name === "AbortError";
+
 const pageFromHash = () => {
   const id = window.location.hash.replace(/^#\/?/, "");
   const i = PAGES.findIndex((p) => p.id === id);
@@ -60,7 +62,8 @@ export default function HomePage() {
   const [uploading, setUploading] = useState<boolean>(false);
   const [loadingWindow, setLoadingWindow] = useState<boolean>(false);
   const [notice, setNotice] = useState<Notice | null>(null);
-  const nightRequestId = useRef(0);
+  const nightAbort = useRef<AbortController | null>(null);
+  const uploadAbort = useRef<AbortController | null>(null);
   const loadedKey = useRef("");
   const shownCase = useRef<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -150,24 +153,32 @@ export default function HomePage() {
     return () => clearTimeout(t);
   }, [threshold]);
 
+  useEffect(() => () => nightAbort.current?.abort(), []);
+
   const runNightAnalysis = useCallback(async (caseId: string, thr: number, snr: number | null, compBase: boolean) => {
-    const requestId = ++nightRequestId.current;
+    nightAbort.current?.abort();
+    const controller = new AbortController();
+    nightAbort.current = controller;
     setLoadingNight(true);
     setNotice(null);
     try {
-      const res = await analyzeCase(caseId, { threshold: thr, inject_noise_snr_db: snr, compare_baseline: compBase });
-      // A newer request (slider, case switch, upload) superseded this one: drop the late answer.
-      if (requestId !== nightRequestId.current) return;
+      const res = await analyzeCase(caseId, {
+        threshold: thr,
+        inject_noise_snr_db: snr,
+        compare_baseline: compBase,
+        signal: controller.signal,
+      });
+      if (nightAbort.current !== controller) return;
       loadedKey.current = keyOf(caseId, thr, snr, compBase);
       const newCase = res.case_id !== shownCase.current; // read before the ref moves; the updater runs later
       shownCase.current = res.case_id;
       setAnalysis(res);
       setSelectedMinute((prev) => (newCase || prev >= res.duration_minutes ? res.default_inspect_minute : prev));
     } catch (err) {
-      if (requestId !== nightRequestId.current) return;
+      if (nightAbort.current !== controller || isAbortError(err)) return;
       setNotice(friendlyError(err, "analysis", caseId));
     } finally {
-      if (requestId === nightRequestId.current) setLoadingNight(false);
+      if (nightAbort.current === controller) setLoadingNight(false);
     }
   }, []);
 
@@ -179,49 +190,58 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!analysis) return;
-    let cancelled = false;
+    const controller = new AbortController();
     const caseId = analysis.case_id;
     // Short delay so stepping the timeline with arrow keys doesn't fire a request per key press.
     const t = setTimeout(() => {
       setLoadingWindow(true);
-      inspectWindow(caseId, selectedMinute, noiseSnr)
+      inspectWindow(caseId, selectedMinute, noiseSnr, controller.signal)
         .then((w) => {
-          if (cancelled) return;
+          if (controller.signal.aborted) return;
           setWindowData(w);
           if (!caseId.startsWith("upload_")) setHeroEcg((h) => h ?? w); // hero keeps the first sample strip
         })
-        .catch((err) => !cancelled && setNotice(friendlyError(err, "window", caseId)))
-        .finally(() => !cancelled && setLoadingWindow(false));
+        .catch((err) => {
+          if (!controller.signal.aborted && !isAbortError(err)) setNotice(friendlyError(err, "window", caseId));
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setLoadingWindow(false);
+        });
     }, 150);
     return () => {
-      cancelled = true;
+      controller.abort();
       clearTimeout(t);
     };
   }, [analysis?.case_id, selectedMinute, noiseSnr]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUploadCsv = async (file: File) => {
-    const requestId = ++nightRequestId.current; // an in-flight case analysis must not overwrite the upload result
+    nightAbort.current?.abort();
+    const controller = new AbortController();
+    nightAbort.current = controller;
+    uploadAbort.current = controller;
     go(P.result);
     setLoadingNight(true);
     setUploading(true);
     setNotice(null);
     try {
-      const res = await uploadCsvEcg(file, appliedThreshold ?? undefined);
-      if (requestId !== nightRequestId.current) return;
-      // Mark this result as loaded so selecting the upload doesn't analyze it a second time.
-      loadedKey.current = keyOf(res.case_id, appliedThreshold, null, compareBaseline);
+      const uploadThreshold = threshold ?? appliedThreshold ?? undefined;
+      const res = await uploadCsvEcg(file, uploadThreshold, controller.signal);
+      if (nightAbort.current !== controller) return;
+      const usedThr = res.threshold_used;
+      // Mark this result as loaded and sync thresholds so pending debounces do not re-fetch.
+      loadedKey.current = keyOf(res.case_id, usedThr, null, compareBaseline);
       shownCase.current = res.case_id;
+      setThreshold(usedThr);
+      setAppliedThreshold(usedThr);
       setNoiseSnr(null);
       setAnalysis(res);
       setSelectedCase(res.case_id);
       setSelectedMinute(res.default_inspect_minute);
     } catch (err) {
-      if (requestId === nightRequestId.current) setNotice(friendlyError(err, "upload"));
+      if (nightAbort.current === controller && !isAbortError(err)) setNotice(friendlyError(err, "upload"));
     } finally {
-      if (requestId === nightRequestId.current) {
-        setLoadingNight(false);
-        setUploading(false);
-      }
+      if (nightAbort.current === controller) setLoadingNight(false);
+      if (uploadAbort.current === controller) setUploading(false);
     }
   };
 
