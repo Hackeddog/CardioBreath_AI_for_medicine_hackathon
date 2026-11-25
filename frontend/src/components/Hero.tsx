@@ -36,26 +36,6 @@ function EcgStrip({ ecg }: { ecg: WindowInspectorData }) {
   );
 }
 
-/** Pixel moon: a 12 x 12 disc with craters, drawn on a crisp grid. */
-function PixelMoon({ className }: { className?: string }) {
-  const r = 5.5;
-  const cells: React.ReactNode[] = [];
-  for (let y = 0; y < 12; y++)
-    for (let x = 0; x < 12; x++) {
-      const dx = x - r;
-      const dy = y - r;
-      if (dx * dx + dy * dy > r * r + 1) continue;
-      const crater = (x === 3 && y === 4) || (x === 4 && y === 4) || (x === 7 && y === 7) || (x === 8 && y === 3);
-      const shade = dx + dy > 4;
-      cells.push(<rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill={crater ? "#e0c98f" : shade ? "#ecd9a6" : "#fff4cf"} />);
-    }
-  return (
-    <svg viewBox="0 0 12 12" shapeRendering="crispEdges" className={className} aria-hidden>
-      {cells}
-    </svg>
-  );
-}
-
 export default function Hero({ analysis, ecg, onTrySample, onUpload, onTour, onSeeNight }: HeroProps) {
   const center = ecg?.time_window_label.match(/Center:\s*([\d:]+)/)?.[1];
   return (
@@ -63,14 +43,14 @@ export default function Hero({ analysis, ecg, onTrySample, onUpload, onTour, onS
       <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
         {/* Dark dialog panel so the copy never sits directly on neon windows */}
         <div className="card p-6 sm:p-8 lg:col-span-6" style={{ background: "rgb(13 10 38 / 0.86)" }}>
-          <h1 id="hero-title" className="font-pixel text-[1.9rem] font-bold leading-[1.15] sm:text-5xl">
+          <h1 id="hero-title" className="font-pixel text-[1.9rem] font-bold leading-[1.15] sm:text-5xl short:sm:text-4xl">
             Sleep apnea screening from a <span className="text-primary">single-lead ECG</span>
           </h1>
-          <p className="mt-6 max-w-[50ch] text-lg text-muted">
+          <p className="mt-6 max-w-[50ch] text-lg text-muted short:mt-4">
             CardioBreath reads breathing out of an ordinary overnight ECG, scores every minute of the night, and tells
             you who should go to the sleep lab first.
           </p>
-          <div className="mt-9 flex flex-wrap gap-4">
+          <div className="mt-9 flex flex-wrap gap-4 short:mt-5">
             {/* The play glyph is the one arrow-like mark: it starts the sample night. */}
             <button type="button" onClick={onTrySample} className="btn-primary px-6 text-lg">
               <span aria-hidden>▶</span> Try a sample night
@@ -87,14 +67,13 @@ export default function Hero({ analysis, ecg, onTrySample, onUpload, onTour, onS
             <Upload className="h-4 w-4" aria-hidden />
             Or upload your own ECG (CSV)
           </button>
-          <p className="mt-7 max-w-[50ch] text-sm text-muted">
+          <p className="mt-7 max-w-[50ch] text-sm text-muted short:mt-3">
             <strong className="font-semibold text-ink">Screening aid, not a diagnosis.</strong> Results support referral
             decisions and must be confirmed by polysomnography.
           </p>
         </div>
 
         <figure className="relative lg:col-span-6">
-          <PixelMoon className="absolute -top-14 right-2 h-12 w-12 sm:-top-16 sm:h-14 sm:w-14" />
           <div className="card-raised p-3">
             <div className="flex items-center justify-between px-1 pb-2 font-hud text-xl leading-none">
               <span className="text-coral">
@@ -167,7 +146,7 @@ export function Evidence({ evaluation, onOpenResearch }: { evaluation: Evaluatio
     <section id="evidence" aria-label="Method and evidence" className="grid gap-8 lg:grid-cols-12 lg:gap-12">
       <Reveal className="lg:col-span-7">
         <h2 className="font-pixel text-2xl font-bold">What it reads in one night</h2>
-        <ol className="mt-6 space-y-5">
+        <ol className="mt-6 space-y-5 short:mt-4 short:space-y-3">
           {STEPS.map((s, i) => (
             <li key={s.title} className="grid grid-cols-[5.5rem_1fr] gap-x-3">
               <span className="font-hud text-2xl leading-6 text-gold">Stage {i + 1}</span>
@@ -183,11 +162,11 @@ export function Evidence({ evaluation, onOpenResearch }: { evaluation: Evaluatio
       <Reveal className="lg:col-span-5">
         <div className="card p-6">
           <h2 className="font-pixel text-xl font-bold">How well, on 35 nights it never saw</h2>
-          <div className="mt-6 space-y-5">
+          <div className="mt-6 space-y-5 short:mt-3 short:space-y-3">
             {(stats ?? [null, null, null]).map((s, i) =>
               s ? (
                 <div key={i} className="border-t-[3px] border-dashed border-line pt-3">
-                  <p className="font-hud text-6xl leading-none text-primary">{s.value}</p>
+                  <p className="font-hud text-6xl leading-none text-primary short:text-5xl">{s.value}</p>
                   <p className="mt-1 text-muted">{s.label}</p>
                 </div>
               ) : (

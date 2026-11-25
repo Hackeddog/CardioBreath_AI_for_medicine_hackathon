@@ -105,7 +105,7 @@ export default function FullNightTimeline({
   });
 
   return (
-    <section aria-labelledby="timeline-title" className="card p-5 sm:p-6">
+    <section aria-labelledby="timeline-title" className="card p-5 sm:p-6 short:py-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 id="timeline-title" className="font-pixel text-xl font-bold">

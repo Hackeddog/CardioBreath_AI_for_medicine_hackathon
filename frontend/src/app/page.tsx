@@ -284,7 +284,7 @@ export default function HomePage() {
       <div className="space-y-5 lg:col-span-7">
         <div>
           <h2 className="font-pixel text-2xl font-bold">Screen a night</h2>
-          <p className="mt-2 max-w-[56ch] text-muted">
+          <p className="mt-2 max-w-[56ch] text-muted short:hidden">
             Pick a held-out test night or upload your own recording. The result updates for whatever is loaded here.
           </p>
           <p className="mt-2 text-sm">
@@ -362,7 +362,7 @@ export default function HomePage() {
 
     /* night */
     analysis ? (
-      <div key="night" className="space-y-4">
+      <div key="night" className="space-y-4 short:space-y-3">
         <FullNightTimeline analysis={analysis} selectedMinute={selectedMinute} onSelectMinute={setSelectedMinute} showBaseline={compareBaseline} />
         <div className="flex flex-wrap items-center gap-3">
           <button type="button" onClick={() => go(P.signals)} className="btn-primary">
@@ -458,7 +458,8 @@ export default function HomePage() {
 
       <main
         id="main"
-        className="relative z-10 min-h-0 flex-1 overflow-hidden"
+        // mb keeps the stage above the fixed stage bar, so its last rows can be scrolled into view
+        className="relative z-10 mb-[var(--bar-h)] min-h-0 flex-1 overflow-hidden"
         style={{ touchAction: "pan-y" }}
         onPointerDown={(e) => {
           const t = e.target as HTMLElement;
@@ -486,7 +487,7 @@ export default function HomePage() {
               inert={i !== page}
               className="h-full w-full shrink-0 overflow-y-auto focus-visible:[outline-offset:-3px]"
             >
-              <div className="mx-auto flex min-h-full max-w-[1280px] flex-col justify-center px-4 py-5 sm:px-6 sm:py-6">
+              <div className="mx-auto flex min-h-full max-w-[1280px] flex-col justify-center px-4 py-5 sm:px-6 sm:py-6 short:py-3">
                 {pageBody[i]}
               </div>
             </section>
@@ -503,7 +504,7 @@ export default function HomePage() {
             ◀ <span className="hidden sm:inline">{page > 0 ? PAGES[page - 1].label : "Back"}</span>
             <span className="sm:hidden">Back</span>
           </button>
-          <div className="flex flex-col items-center gap-1">
+          <div className="flex items-center gap-3">
             <p className="font-hud text-xl leading-none text-gold" aria-live="polite">
               Stage {page + 1} of {PAGES.length} · {PAGES[page].label}
             </p>

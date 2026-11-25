@@ -77,13 +77,13 @@ export default function ResearchBenchmarkView({ evaluation, health }: ResearchBe
   const [section, setSection] = useState<(typeof SECTIONS)[number]["id"]>("benchmark");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 short:space-y-4">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-[70ch]">
           <h2 id="research-title" className="font-pixel text-2xl font-bold sm:text-3xl">
             Validation and limitations
           </h2>
-          <p className="mt-2 text-muted">
+          <p className="mt-2 text-muted short:text-sm">
             Locked held-out test set: 35 PhysioNet Apnea-ECG nights (x01 to x35), never seen in training or tuning.
             95% subject-clustered bootstrap CIs (1,000 resamples).
           </p>

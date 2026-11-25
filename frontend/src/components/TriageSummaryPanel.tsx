@@ -39,7 +39,7 @@ export default function TriageSummaryPanel({
   return (
     <section aria-labelledby="triage-title" aria-busy={updating} className="card-raised overflow-hidden">
       <div className={`h-1.5 ${TIERS[tier].bar}`} aria-hidden />
-      <div className="p-6">
+      <div className="p-6 short:px-5 short:py-4">
         <div className="flex items-baseline justify-between gap-3">
           <h2 id="triage-title" tabIndex={-1} className="eyebrow">
             Screening result
@@ -50,10 +50,10 @@ export default function TriageSummaryPanel({
           </span>
         </div>
 
-        <div id="triage-title-block" className={`mt-4 transition-opacity duration-200 ${updating ? "opacity-50" : ""}`}>
+        <div id="triage-title-block" className={`mt-4 short:mt-2 transition-opacity duration-200 ${updating ? "opacity-50" : ""}`}>
           <SeverityBadge tier={tier} size="lg" />
           <p className="mt-3 flex items-baseline gap-2">
-            <span className="font-hud text-8xl leading-[0.8] text-ink">{analysis.eahi_pred.toFixed(1)}</span>
+            <span className="font-hud text-8xl leading-[0.8] text-ink short:text-7xl">{analysis.eahi_pred.toFixed(1)}</span>
             <span className="text-sm text-muted">eAHI, apnea-min/hr</span>
           </p>
           <p className="mt-1 text-sm tabular-nums">
@@ -63,7 +63,7 @@ export default function TriageSummaryPanel({
             )}
           </p>
           <SeverityScale value={analysis.eahi_pred} low={analysis.eahi_ci90_low} high={analysis.eahi_ci90_high} />
-          <p className={`mt-5 rounded-lg p-4 font-semibold ${TIERS[tier].cls}`}>{sentenceCase(analysis.triage_action)}</p>
+          <p className={`mt-5 rounded-lg p-4 font-semibold short:mt-3 short:p-3 ${TIERS[tier].cls}`}>{sentenceCase(analysis.triage_action)}</p>
         </div>
 
         <p className="mt-2 min-h-5 text-sm text-muted tabular-nums" role="status" aria-live="polite">

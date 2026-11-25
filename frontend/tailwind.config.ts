@@ -31,6 +31,8 @@ const config: Config = {
         hud: ["var(--font-hud)", "ui-monospace", "monospace"],
       },
       transitionTimingFunction: { DEFAULT: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
+      // short laptop windows: stages compact a step so they fit without scrolling
+      screens: { short: { raw: "(max-height: 760px)" } },
     },
     // Pixel art has no curves: every rounded-* utility renders square.
     borderRadius: {
