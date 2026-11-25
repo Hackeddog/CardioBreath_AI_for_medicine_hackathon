@@ -27,8 +27,6 @@ const C = {
   wood: "#6b5a48",
   woodLit: "#8a7660",
   woodShade: "#463b31",
-  barn: "#4a3a3c",
-  barnShade: "#3a2e32",
   roof: "#2a2733",
   window: "#e2b46a",
   wool: "#e6e0cf",
@@ -39,15 +37,20 @@ const C = {
   stone: ["#565964", "#5e616c", "#4f525c", "#666873"],
   mortar: "#3d3f48",
   quoin: "#73747d",
-  slate: "#33364a",
-  slateLine: "#282a3a",
-  slateLit: "#474b61",
+  plaster: "#857d6c",
+  beam: "#3b2f27",
+  thatch: "#6b5c43",
+  thatchDark: "#4a3f31",
+  thatchLit: "#857256",
+  bushDark: "#1f2c1c",
+  bush: "#2b3c26",
+  bushLit: "#3f5536",
   door: "#3e3128",
   doorLine: "#30261e",
   frame: "#2a2420",
   windowDim: "#c49b5c",
   pot: "#6a4c3e",
-  smoke: "#8d93a8",
+  smoke: "#a6acbe",
 };
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
 
@@ -179,9 +182,10 @@ function paintClouds(w: number, h: number, seed: number, count: number) {
 }
 
 /**
- * A stone farmhouse like the old cottages of rural England and Scotland: rubble-stone courses with
- * dressed corner quoins, a slate roof with a small dormer, a chimney stack at each gable end, and warm
- * windows (one dimmer, as if someone is heading to bed). Painted at art resolution onto `g`.
+ * A medieval farmhouse of rural England and Scotland: a rubble-stone ground floor with dressed corner
+ * quoins, a half-timbered upper band (dark oak beams and braces on limewash), a thick thatched roof with
+ * an eyebrow window, stone chimney stacks at the gable ends, and small leaded windows glowing warm (one
+ * dimmer, as if someone is heading to bed). Painted at art resolution onto `g`.
  * Returns the lit windows (for their glow) and the top of the smoking chimney.
  */
 function paintCottage(g: CanvasRenderingContext2D, hx: number, by: number, r: () => number) {
@@ -207,29 +211,42 @@ function paintCottage(g: CanvasRenderingContext2D, hx: number, by: number, r: ()
       }
     }
   };
-  // walls, plinth and corner quoins
-  stoneBlock(hx, top, W, wallH, 3);
+  // ground floor: rubble stone, plinth and corner quoins
+  const band = 8; // half-timbered rows above the stone
+  stoneBlock(hx, top + band, W, wallH - band, 3);
   g.fillStyle = C.mortar;
   g.fillRect(hx, by - 1, W, 1);
-  for (let c = 0, y = by - 1; y > top; c++, y -= 3) {
+  for (let c = 0, y = by - 1; y > top + band; c++, y -= 3) {
     g.fillStyle = C.quoin;
     const qw = c % 2 ? 2 : 3;
     g.fillRect(hx, y - 2, qw, 2);
     g.fillRect(hx + W - qw, y - 2, qw, 2);
   }
-  // slate roof: a trapezoid of slate courses with a moonlit ridge
-  const roofH = 12;
+  // upper band: limewash between oak posts, a wall plate, a sill beam and a pair of braces
+  g.fillStyle = C.plaster;
+  g.fillRect(hx, top, W, band);
+  g.fillStyle = C.beam;
+  g.fillRect(hx, top, W, 1);
+  g.fillRect(hx, top + band - 1, W, 1);
+  for (let x = hx; x < hx + W; x += 7) g.fillRect(x, top, 1, band);
+  g.fillRect(hx + W - 1, top, 1, band);
+  for (let k = 0; k < band - 2; k++) {
+    px(hx + 15 + k, top + 1 + k, C.beam); // braces lean in toward the middle bay
+    px(hx + W - 16 - k, top + 1 + k, C.beam);
+  }
+  // thick thatch: deep overhanging eaves with a shadowed lip, straw streaks, a rounded moonlit ridge
+  const roofH = 14;
   for (let k = 0; k < roofH; k++) {
     const y = top - 1 - k;
-    const x0 = hx - 2 + k, x1 = hx + W + 1 - k;
-    g.fillStyle = k === roofH - 1 ? C.slateLit : k % 2 ? C.slateLine : C.slate;
+    let x0 = hx - 4 + k, x1 = hx + W + 3 - k;
+    if (k >= roofH - 2) (x0 += 1), (x1 -= 1); // round off the ridge
+    g.fillStyle = k === 0 ? C.thatchDark : k === 1 || k === roofH - 1 ? C.thatchLit : C.thatch;
     g.fillRect(x0, y, x1 - x0, 1);
-    if (k % 2 === 0 && k < roofH - 1) for (let x = x0 + Math.floor(r() * 3); x < x1; x += 3 + Math.floor(r() * 3)) px(x, y, C.slateLit);
+    if (k > 1 && k < roofH - 1)
+      for (let x = x0 + Math.floor(r() * 2); x < x1; x += 2 + Math.floor(r() * 3)) px(x, y, r() < 0.6 ? C.thatchDark : C.thatchLit);
   }
-  // dormer with a small lit window
-  const dx = hx + 18, dw = 8, dTop = top - 9;
-  stoneBlock(dx, dTop, dw, 7, 2);
-  for (let k = 0; k <= dw / 2; k++) (g.fillStyle = C.slateLit), g.fillRect(dx - 1 + k, dTop - 1 - k, dw + 2 - k * 2, 1);
+  // eyebrow window: the thatch lifts over a small lit window
+  const dx = hx + 20, dTop = top - 8;
   // chimney stacks at both gable ends, each with a cap and a clay pot
   const stack = (x: number) => {
     stoneBlock(x, top - roofH - 6, 5, roofH + 6, 2);
@@ -241,17 +258,15 @@ function paintCottage(g: CanvasRenderingContext2D, hx: number, by: number, r: ()
   };
   stack(hx + 3);
   const chimney = stack(hx + W - 8);
-  // door: planked, round-headed, under a stone lintel
-  const doorX = hx + 19, doorW = 6, doorH = 10;
+  // door: planked and round-headed, set in the stone
+  const doorX = hx + 19, doorW = 6, doorH = 9;
   g.fillStyle = C.door;
   g.fillRect(doorX, by - doorH, doorW, doorH);
   g.fillStyle = C.doorLine;
   for (let x = doorX + 2; x < doorX + doorW; x += 2) g.fillRect(x, by - doorH + 1, 1, doorH - 1);
   px(doorX, by - doorH, C.mortar);
   px(doorX + doorW - 1, by - doorH, C.mortar);
-  g.fillStyle = C.quoin;
-  g.fillRect(doorX - 1, by - doorH - 1, doorW + 2, 1);
-  // windows: mullioned, warm; the right-hand one dimmer
+  // small leaded windows in the timber band, warm; the right-hand one dimmer
   const windows: [number, number, number, number][] = [];
   const win = (x: number, y: number, s: number, glass: string) => {
     g.fillStyle = C.frame;
@@ -265,13 +280,29 @@ function paintCottage(g: CanvasRenderingContext2D, hx: number, by: number, r: ()
     g.fillRect(x - 1, y + s + 1, s + 2, 1); // sill
     windows.push([x, y, s, s]);
   };
-  win(hx + 7, top + 5, 5, C.window);
-  win(hx + W - 12, top + 5, 5, C.windowDim);
-  win(dx + 3, dTop + 2, 3, C.window);
+  win(hx + 8, top + 2, 4, C.window);
+  win(hx + W - 12, top + 2, 4, C.windowDim);
+  win(dx, dTop, 3, C.window);
+  g.fillStyle = C.thatchLit; // the eyebrow hood over the dormer window
+  g.fillRect(dx - 2, dTop - 2, 7, 1);
+  g.fillRect(dx - 1, dTop - 3, 5, 1);
   return { windows, chimney };
 }
 
-function paintLand(lw: number, lh: number, hz: number, fieldTop: number, P: number) {
+/** A soft, round shrub: bumpy crown, moonlit on the upper left, shadowed at its foot. */
+function paintBush(g: CanvasRenderingContext2D, cx: number, by: number, w: number, h: number, seed: number) {
+  for (let y = by - h; y < by; y++)
+    for (let x = Math.floor(cx - w / 2); x <= cx + w / 2; x++) {
+      const nx = (x - cx) / (w / 2), ny = (by - 1 - y) / h;
+      const crown = Math.sqrt(Math.max(0, 1 - nx * nx)) * (0.82 + 0.18 * Math.sin(x * 1.7 + seed));
+      if (ny > crown) continue;
+      const lit = ny > crown - 0.3 && nx < 0.35 && (ny + nx * 0.3) * 0.9 > BAYER[(y % 4) * 4 + (((x % 4) + 4) % 4)];
+      g.fillStyle = ny < 0.18 ? C.bushDark : lit ? C.bushLit : C.bush;
+      g.fillRect(x, y, 1, 1);
+    }
+}
+
+function paintLand(lw: number, lh: number, hz: number, fieldTop: number, gy: number, P: number) {
   const art = cnv(lw, lh);
   const g = art.getContext("2d")!;
   const r = rng(17);
@@ -300,19 +331,6 @@ function paintLand(lw: number, lh: number, hz: number, fieldTop: number, P: numb
   // rolling mid hills, moonlit rim
   const mid = (x: number) => Math.round(hz + 4 - 6 * Math.sin(x * 0.011 + 2) - 2 * Math.sin(x * 0.05));
   for (let x = 0; x < lw; x++) col(x, mid(x), C.midHill, C.midRim);
-  // barn with one warm window, on the right-hand hill
-  const bx = Math.round(lw * 0.86), bw = 20, bh = 12;
-  const by = fieldTop + 2;
-  g.fillStyle = C.barn;
-  g.fillRect(bx, by - bh, bw, bh);
-  g.fillStyle = C.barnShade;
-  g.fillRect(bx + bw - 4, by - bh, 4, bh);
-  g.fillStyle = C.roof;
-  for (let k = 0; k <= bw / 2 + 1; k++) g.fillRect(bx - 1 + k, by - bh - k + Math.floor(k / 2), bw + 2 - k * 2, 1);
-  g.fillRect(bx + 7, by - 6, 6, 6); // door
-  const wx = bx + 4, wy = by - bh + 3;
-  g.fillStyle = C.window;
-  g.fillRect(wx, wy, 3, 3);
   // field in the foreground: dithered lit band at the top, sparse grass specks
   const ft = (x: number) => Math.round(fieldTop - 2 * Math.sin(x * 0.02 + 0.5));
   for (let x = 0; x < lw; x++) {
@@ -323,20 +341,54 @@ function paintLand(lw: number, lh: number, hz: number, fieldTop: number, P: numb
   }
   g.fillStyle = C.fieldLit;
   for (let i = 0; i < lw * 0.6; i++) g.fillRect(Math.floor(r() * lw), fieldTop + 6 + Math.floor(r() * (lh - fieldTop - 6)), 1, 1);
-  // the stone farmhouse sits on the near edge of the field, left of the fence
-  const house = paintCottage(g, Math.round(lw * 0.5), fieldTop + 9, r);
-  const out = crisp(art, P);
-  // warm window glows, baked at full resolution
-  const o = out.getContext("2d")!;
-  for (const [x, y, w, h] of [[wx, wy, 3, 3], ...house.windows]) {
-    const gx = (x + w / 2) * P, gy = (y + h / 2) * P, rad = P * (6 + w);
-    const glow = o.createRadialGradient(gx, gy, 0, gx, gy, rad);
-    glow.addColorStop(0, "rgba(226,180,106,0.2)");
-    glow.addColorStop(1, "rgba(226,180,106,0)");
-    o.fillStyle = glow;
-    o.fillRect(gx - rad, gy - rad, rad * 2, rad * 2);
+  // the farmhouse stands past the fence, in the open strip below the panels
+  const hx = Math.min(Math.round(lw * 0.8), lw - 48);
+  const house = paintCottage(g, hx, gy - 7, r); // a few rows behind the path, so passing sheep read as nearer
+  // bushes hugging the house, and a few along the field edge
+  paintBush(g, hx - 6, gy - 6, 14, 8, 1);
+  paintBush(g, hx + 51, gy - 6, 12, 7, 2);
+  paintBush(g, hx + 13, gy - 6, 7, 4, 3);
+  for (const [fx, w, h, s] of [[0.05, 18, 9, 4], [0.28, 14, 7, 5], [0.55, 16, 8, 6]]) paintBush(g, Math.round(lw * fx), fieldTop + 4, w, h, s);
+  return {
+    img: crisp(art, P),
+    chimney: [house.chimney[0] * P, house.chimney[1] * P] as [number, number],
+    warm: paintWarmth(house.windows, hx * P + 22 * P, (gy - 18) * P, P),
+  };
+}
+
+/**
+ * The farmhouse's light, added on top each frame with "lighter" blending: a wide amber halo, a pool of
+ * light on the grass at its feet and a bright glow at each window. Baked once; drawn as one image.
+ */
+function paintWarmth(windows: [number, number, number, number][], cx: number, cy: number, P: number) {
+  const R = P * 70;
+  const c = cnv(R * 2, R * 2);
+  const g = c.getContext("2d")!;
+  const ox = cx - R, oy = cy - R;
+  const halo = g.createRadialGradient(R, R, 0, R, R, R);
+  halo.addColorStop(0, "rgba(226,166,92,0.2)");
+  halo.addColorStop(0.5, "rgba(226,166,92,0.07)");
+  halo.addColorStop(1, "rgba(226,166,92,0)");
+  g.fillStyle = halo;
+  g.fillRect(0, 0, R * 2, R * 2);
+  g.save(); // light pooling on the grass: a flattened glow at the house's feet
+  g.translate(R, R + P * 12);
+  g.scale(1, 0.28);
+  const pool = g.createRadialGradient(0, 0, 0, 0, 0, R * 0.75);
+  pool.addColorStop(0, "rgba(232,176,100,0.3)");
+  pool.addColorStop(1, "rgba(232,176,100,0)");
+  g.fillStyle = pool;
+  g.fillRect(-R, -R, R * 2, R * 2);
+  g.restore();
+  for (const [x, y, w, h] of windows) {
+    const gx = (x + w / 2) * P - ox, gy = (y + h / 2) * P - oy, rad = P * (10 + w * 2);
+    const glow = g.createRadialGradient(gx, gy, 0, gx, gy, rad);
+    glow.addColorStop(0, "rgba(244,196,120,0.45)");
+    glow.addColorStop(1, "rgba(244,196,120,0)");
+    g.fillStyle = glow;
+    g.fillRect(gx - rad, gy - rad, rad * 2, rad * 2);
   }
-  return { img: out, chimney: [house.chimney[0] * P, house.chimney[1] * P] as [number, number] };
+  return { img: c, x: ox, y: oy };
 }
 
 /** The fence section the sheep hop: two posts, two rails. */
@@ -415,6 +467,7 @@ export default function NightFarm({ running, dim }: { running: boolean; dim: "no
     let built = false;
     let sky: HTMLCanvasElement, land: HTMLCanvasElement, fence: HTMLCanvasElement;
     let chimney: [number, number] = [0, 0];
+    let warm: { img: HTMLCanvasElement; x: number; y: number };
     let cloudsA: HTMLCanvasElement, cloudsB: HTMLCanvasElement;
     let sheep: Record<SheepPose["frame"], HTMLCanvasElement>;
     let twinkles: { x: number; y: number; period: number; ph: number }[] = [];
@@ -446,7 +499,7 @@ export default function NightFarm({ running, dim }: { running: boolean; dim: "no
       const tileW = Math.max(lw, 320);
       cloudsA = crisp(paintClouds(tileW, Math.round(hz * 0.5), 23, 5), P);
       cloudsB = crisp(paintClouds(tileW, Math.round(hz * 0.35), 41, 4), P);
-      ({ img: land, chimney } = paintLand(lw, lh, hz, fieldTop, P));
+      ({ img: land, chimney, warm } = paintLand(lw, lh, hz, fieldTop, gy, P));
       fence = paintFence(F);
       const map = { w: C.wool, s: C.woolShade, f: C.face, m: C.mouth };
       const yawnBody = BODY.map((row, y) => (y === 5 ? row.slice(0, 14) + "m" + row.slice(15) : row));
@@ -488,14 +541,20 @@ export default function NightFarm({ running, dim }: { running: boolean; dim: "no
       g.globalAlpha = 1;
       g.drawImage(land, 0, 0);
 
-      // chimney smoke: soft puffs that lift, lean away on a light breeze, swell and fade
+      // the farmhouse light breathes very slowly, like a hearth (a 6 s swell)
+      g.globalCompositeOperation = "lighter";
+      g.globalAlpha = 0.85 + 0.15 * Math.sin((t / 6) * Math.PI * 2);
+      g.drawImage(warm.img, warm.x, warm.y);
+      g.globalCompositeOperation = "source-over";
+
+      // chimney smoke: soft moonlit puffs that rise, lean away on a light breeze, swell and fade
       g.fillStyle = C.smoke;
-      for (let i = 0; i < 7; i++) {
-        const u = ((t / 7 + i / 7) % 1 + 1) % 1;
-        const x = chimney[0] + u * P * 40 + Math.sin(u * 5 + i) * P;
-        const y = chimney[1] - P * 9 * Math.sqrt(u);
-        const s = P * (1.5 + u * 3.5);
-        g.globalAlpha = 0.5 * (1 - u) * Math.min(1, u * 6);
+      for (let i = 0; i < 9; i++) {
+        const u = ((t / 8 + i / 9) % 1 + 1) % 1;
+        const x = chimney[0] + u * P * 36 + Math.sin(u * 5 + i) * P;
+        const y = chimney[1] - P * 18 * Math.sqrt(u);
+        const s = P * (1.5 + u * 4);
+        g.globalAlpha = 0.65 * (1 - u) * Math.min(1, u * 6);
         g.fillRect(x - s, y - s / 2, s * 2, s);
         g.fillRect(x - s / 2, y - s, s, s * 2);
       }
