@@ -112,15 +112,19 @@ npm run lint
 npm run build
 ```
 
-#### Live Railway Backend Verification (Direct Endpoint Health Test)
+#### Live Azure Backend Verification & Deployment
 ```bash
-# Test the deployed Railway backend health check
-curl https://cardiobreathaiformedicinehackathon-production.up.railway.app/api/health
+# Test the deployed Azure Container Apps backend health check
+curl https://cardiobreath-api.bravegrass-ba6ace58.eastasia.azurecontainerapps.io/api/health
 
 # Test case evaluation on the deployed backend
-curl -X POST https://cardiobreathaiformedicinehackathon-production.up.railway.app/api/analyze/case/x08 \
+curl -X POST https://cardiobreath-api.bravegrass-ba6ace58.eastasia.azurecontainerapps.io/api/analyze/case/x08 \
   -H "Content-Type: application/json" \
   -d '{"compare_baseline": true}'
+
+# Deploy / update on Azure Container Apps (from repo root)
+az containerapp up --name cardiobreath-api --resource-group cardiobreath-rg --location eastasia --source . --ingress external --target-port 7860
+az containerapp update --name cardiobreath-api --resource-group cardiobreath-rg --cpu 1.0 --memory 2.0Gi --min-replicas 0 --max-replicas 2
 ```
 
 ### Reproduce Full Training & Locked Held-Out Evaluation From Scratch
