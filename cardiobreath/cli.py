@@ -42,8 +42,8 @@ def main(argv: list[str] | None = None) -> int:
             "n_onnx_folds": len(predictor.sessions),
             "temperature": round(predictor.temperature, 4),
             "default_threshold": round(predictor.default_threshold, 4),
-            "held_out_test_auroc": 0.973,
-            "held_out_eahi_mae": 3.27,
+            "held_out_test_auroc": 0.972,  # reports/metrics_summary_test.json
+            "held_out_eahi_mae": 3.52,
         }
         print(json.dumps(payload, indent=2))
         return 0

@@ -34,7 +34,7 @@ flowchart LR
 
 1. **Strict Held-Out Test Lock (Tie-Breaker Rigor):**
    * The 35 official test nights (`x01–x35`, labels from Challenge 2000 `event-2-answers`) are isolated in `data/processed/test/`.
-   * All DSP calibration, model selection, decision thresholds (`0.60`), and Temperature Scaling (`T = 1.835`) are fit strictly inside **5-fold subject-disjoint cross-validation** on the 35 learning nights (`a01–a20`, `b01–b05`, `c01–c10`).
+   * All DSP calibration, model selection, decision thresholds (`0.63`), and Temperature Scaling (`T = 1.789`) are fit strictly inside **5-fold subject-disjoint cross-validation** on the 35 learning nights (`a01–a20`, `b01–b05`, `c01–c10`).
    * The held-out test set is evaluated once via `python evaluate.py --split test --seed 42` after freezing architecture and hyperparameters.
 2. **Clinical Honesty Baked Into Code & UI:**
    * Minute-level Apnea-ECG labels (`A`/`N`) measure **Estimated Apnea Burden (`eAHI`, apnea-minutes/hr)** rather than discrete PSG event-count AHI. Every UI card, chart, and report labels `eAHI (Estimated Apnea Burden)` and frames output strictly as **pre-screening triage**, never autonomous diagnosis.
@@ -86,7 +86,7 @@ flowchart LR
 * `src/models.py`:
   * **`CardioBreathNet`:** Separate lightweight stems for EDR and RRI (`1200 → 300`, 1 Hz effective rate) → parallel **Multi-Scale 1D-CNN** (`k = 5, 15, 31`) + Squeeze-and-Excitation channel attention → **2-layer Bidirectional GRU** (`hidden=96`, explicit dynamic-batch `h0` for clean ONNX export) → **Temporal Attention Pooling** → logit classifier.
   * **`compute_gradcam_1d`:** Hook-safe 1D Grad-CAM over the fused Multi-Scale CNN output, upsampled back to `1200` points (5 minutes @ 4 Hz).
-* `src/calibration.py`: Out-of-fold L-BFGS-B **Temperature Scaling** (`T = 1.835`) and **5-fold Deep Ensemble** aggregation returning minute probabilities, epistemic std, and recording-level `eAHI` + **90% confidence intervals**.
+* `src/calibration.py`: Out-of-fold L-BFGS-B **Temperature Scaling** (`T = 1.789`) and **5-fold Deep Ensemble** aggregation returning minute probabilities, epistemic std, and recording-level `eAHI` + **90% confidence intervals**.
 * `train.py` & `notebooks/train_colab.ipynb`: Deterministic CLI (`--model all|cardiobreath|lgbm|raw_cnn|rri_only|edr_only|dual_1min`, `--seed 42`, `--smoke`) plus a turnkey Colab T4 notebook that trains all models, runs ONNX export + evaluation, and zips `cardiobreath_trained_artifacts.zip`.
 * `scripts/export_onnx.py`: Exports all 5 `CardioBreathNet` folds to `artifacts/onnx/cardiobreath/fold_{0..4}.onnx` (`1.67 MB`/fold, verified `max_abs_diff <= 7e-7` vs. PyTorch) + dynamic INT8 quantized variants and CPU latency benchmarks.
 
@@ -151,11 +151,11 @@ flowchart LR
 | Model | AUROC (95% CI) | AUPRC | Accuracy | Sens | Spec | F1 | eAHI MAE (/hr) | Pearson *r* | Screen Sens (`>=5`) | ECE |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Baseline 1: HRV + LightGBM** | 0.909 [0.879, 0.936] | 0.853 | 0.790 | 0.914 | 0.712 | 0.770 | 10.33 [7.70, 13.39] | 0.863 | 1.000 | 0.089 |
-| **Baseline 2: Raw 1-min ECG CNN** | 0.777 [0.663, 0.869] | 0.727 | 0.685 | 0.718 | 0.664 | 0.637 | 17.81 [12.87, 23.19] | 0.372 | 0.957 | 0.144 |
-| **Ablation A: RRI-Only (5-min)** | 0.965 [0.947, 0.978] | 0.951 | 0.902 | 0.904 | 0.901 | 0.876 | 3.97 [2.81, 5.33] | 0.963 | 1.000 | 0.064 |
-| **Ablation B: EDR-Only (5-min)** | 0.900 [0.850, 0.938] | 0.878 | 0.832 | 0.774 | 0.868 | 0.779 | 6.53 [4.24, 8.88] | 0.876 | 0.957 | 0.048 |
-| **Ablation C: Dual-Stream (1-min)** | 0.931 [0.905, 0.955] | 0.894 | 0.851 | 0.869 | 0.839 | 0.817 | 5.61 [3.92, 7.51] | 0.933 | 1.000 | 0.100 |
-| **CardioBreath (Dual-Stream 5-Fold)** | **0.973 [0.961, 0.982]** | **0.958** | **0.909** | 0.832 | **0.958** | **0.876** | **3.27 [1.75, 5.01]** | **0.965** | **1.000** | **0.052** |
+| **Baseline 2: Raw 1-min ECG CNN** | 0.785 [0.680, 0.874] | 0.705 | 0.591 | 0.932 | 0.378 | 0.637 | 23.54 [17.30, 30.11] | 0.426 | 1.000 | 0.130 |
+| **Ablation A: RRI-Only (5-min)** | 0.965 [0.947, 0.978] | 0.949 | 0.903 | 0.885 | 0.914 | 0.875 | 3.93 [2.70, 5.33] | 0.958 | 1.000 | 0.043 |
+| **Ablation B: EDR-Only (5-min)** | 0.894 [0.837, 0.936] | 0.874 | 0.838 | 0.727 | 0.908 | 0.775 | 6.65 [4.37, 9.04] | 0.882 | 0.913 | 0.113 |
+| **Ablation C: Dual-Stream (1-min)** | 0.933 [0.907, 0.956] | 0.896 | 0.850 | 0.868 | 0.839 | 0.817 | 5.48 [3.74, 7.42] | 0.932 | 1.000 | 0.068 |
+| **CardioBreath (Dual-Stream 5-Fold)** | 0.972 [0.960, 0.982] | 0.956 | 0.906 | 0.820 | 0.960 | 0.870 | 3.52 [2.03, 5.17] | 0.965 | 1.000 | 0.034 |
 
 ---
 
