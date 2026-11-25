@@ -82,8 +82,9 @@
     inset: 0;
     z-index: 50;
     pointer-events: none;
-    background: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.18) 0 1px, transparent 1px 3px);
-    mix-blend-mode: multiply;
+    background: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.16) 0 1px, transparent 1px 3px);
+    /* own GPU layer and no blend mode: a blended full-page overlay halved the scene's frame rate */
+    transform: translateZ(0);
   }
   html[data-crt="off"] body::after {
     display: none;

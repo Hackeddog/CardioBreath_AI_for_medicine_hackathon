@@ -36,26 +36,6 @@ function EcgStrip({ ecg }: { ecg: WindowInspectorData }) {
   );
 }
 
-/** Pixel moon: a 12 x 12 disc with craters, drawn on a crisp grid. */
-function PixelMoon({ className }: { className?: string }) {
-  const r = 5.5;
-  const cells: React.ReactNode[] = [];
-  for (let y = 0; y < 12; y++)
-    for (let x = 0; x < 12; x++) {
-      const dx = x - r;
-      const dy = y - r;
-      if (dx * dx + dy * dy > r * r + 1) continue;
-      const crater = (x === 3 && y === 4) || (x === 4 && y === 4) || (x === 7 && y === 7) || (x === 8 && y === 3);
-      const shade = dx + dy > 4;
-      cells.push(<rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill={crater ? "#e0c98f" : shade ? "#ecd9a6" : "#fff4cf"} />);
-    }
-  return (
-    <svg viewBox="0 0 12 12" shapeRendering="crispEdges" className={className} aria-hidden>
-      {cells}
-    </svg>
-  );
-}
-
 export default function Hero({ analysis, ecg, onTrySample, onUpload, onTour, onSeeNight }: HeroProps) {
   const center = ecg?.time_window_label.match(/Center:\s*([\d:]+)/)?.[1];
   return (
@@ -94,7 +74,6 @@ export default function Hero({ analysis, ecg, onTrySample, onUpload, onTour, onS
         </div>
 
         <figure className="relative lg:col-span-6">
-          <PixelMoon className="absolute -top-14 right-2 h-12 w-12 sm:-top-16 sm:h-14 sm:w-14" />
           <div className="card-raised p-3">
             <div className="flex items-center justify-between px-1 pb-2 font-hud text-xl leading-none">
               <span className="text-coral">
