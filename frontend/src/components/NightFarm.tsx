@@ -1,0 +1,492 @@
+"use client";
+
+import React, { useEffect, useRef } from "react";
+
+/**
+ * Background: a quiet farm at night where sheep hop a fence one at a time, like counting sheep.
+ * Same hi-bit technique as before: every layer is painted at about 250 px tall with ordered dithering,
+ * scaled up crisp and baked once per resize, so a frame is a few drawImage calls plus a handful of sprites.
+ * Only slow things move (clouds, star twinkle, fireflies, grass, sheep). Decorative only: aria-hidden.
+ */
+
+const C = {
+  sky: ["#1a2036", "#1f2740", "#26304b", "#2e3955", "#38435e"], // top -> horizon
+  star: "#d9d4c0",
+  moon: "#efe6c8",
+  moonShade: "#d6cbaa",
+  cloud: "#2f3854",
+  cloudLit: "#434d6a",
+  farHill: "#222a41",
+  town: "#283047",
+  townLight: "#b39663",
+  midHill: "#26332e",
+  midRim: "#34443b",
+  field: "#212b26",
+  fieldLit: "#2d3a2f",
+  grass: "#46573f",
+  wood: "#6b5a48",
+  woodLit: "#8a7660",
+  woodShade: "#463b31",
+  barn: "#4a3a3c",
+  barnShade: "#3a2e32",
+  roof: "#2a2733",
+  window: "#e2b46a",
+  wool: "#e6e0cf",
+  woolShade: "#b5ae9e",
+  face: "#3a3642",
+  mouth: "#c98d8a",
+  firefly: "#e8e0a0",
+};
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
+
+/* Sheep, 16 x 10, facing right. w wool, s wool shade, f face and legs, m open mouth (yawn). */
+const BODY = [
+  "....wwwww.......",
+  "..wwwwwwwww.....",
+  ".wwwwwwwwwwwff..",
+  "wwwwwwwwwwwffff.",
+  "wwwwwwwwwwwfffff",
+  "swwwwwwwwwwsfff.",
+  ".sswwwwwwwss....",
+  "..ssssssssss....",
+];
+const LEGS = {
+  a: ["..f..f...f..f...", "..f..f...f..f..."],
+  b: ["...ff.....ff....", "...ff.....ff...."],
+  tuck: [".ff........ff...", "................"],
+};
+
+// Loop timing, in seconds and foreground units (one unit = 2 art pixels: the foreground is drawn chunkier).
+const SPACING = 3.5; // one sheep every 3.5 s
+const SPEED = 11; // walking speed, units/s
+const HOP_T = 1.1; // time in the air
+const HOP_DX = 34; // distance covered by a hop (clears the 12 px fence)
+const HOP_H = 15; // apex height
+const PAUSE_T = 2.2; // a yawning sheep stops this long
+const FENCE_W = 12;
+const START_X = -18;
+
+const yawns = (i: number) => i > 0 && (Math.imul(i, 2654435761) >>> 0) % 100 < 22;
+
+function rng(seed: number) {
+  let s = seed >>> 0;
+  return () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296);
+}
+function cnv(w: number, h: number) {
+  const c = document.createElement("canvas");
+  c.width = Math.max(1, Math.ceil(w));
+  c.height = Math.max(1, Math.ceil(h));
+  return c;
+}
+function hex(c: string) {
+  return [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+}
+/** Upscale a low-res canvas by an integer factor with hard pixel edges. */
+function crisp(src: HTMLCanvasElement, s: number) {
+  const out = cnv(src.width * s, src.height * s);
+  const g = out.getContext("2d")!;
+  g.imageSmoothingEnabled = false;
+  g.drawImage(src, 0, 0, out.width, out.height);
+  return out;
+}
+function sprite(rows: string[], map: Record<string, string>, P: number) {
+  const lo = cnv(rows[0].length, rows.length);
+  const g = lo.getContext("2d")!;
+  rows.forEach((row, y) => [...row].forEach((ch, x) => map[ch] && ((g.fillStyle = map[ch]), g.fillRect(x, y, 1, 1))));
+  return crisp(lo, P);
+}
+
+/* ---------- baked layers (low res `lw x lh`) ---------- */
+
+function paintSky(lw: number, lh: number, hz: number, moonX: number, moonY: number, moonR: number) {
+  const c = cnv(lw, lh);
+  const g = c.getContext("2d")!;
+  const img = g.createImageData(lw, lh);
+  const cols = C.sky.map(hex);
+  for (let y = 0; y < lh; y++) {
+    const t = Math.min(1, y / hz) * (cols.length - 1);
+    const b = Math.min(cols.length - 2, Math.floor(t));
+    const f = t - b;
+    for (let x = 0; x < lw; x++) {
+      const col = f > BAYER[(y % 4) * 4 + (x % 4)] ? cols[b + 1] : cols[b];
+      const i = (y * lw + x) * 4;
+      img.data.set([col[0], col[1], col[2], 255], i);
+    }
+  }
+  g.putImageData(img, 0, 0);
+  // faint, dithered moon halo: two rings of sparse light pixels, no blur
+  const [mr, mg, mb] = hex(C.moon);
+  for (let y = moonY - moonR * 3; y < moonY + moonR * 3; y++)
+    for (let x = moonX - moonR * 3; x < moonX + moonR * 3; x++) {
+      const d = Math.hypot(x - moonX, y - moonY) / moonR;
+      if (d < 1 || d > 3) continue;
+      const a = 0.16 * (1 - (d - 1) / 2);
+      if (a > BAYER[(((y % 4) + 4) % 4) * 4 + (((x % 4) + 4) % 4)] * 0.3) {
+        g.fillStyle = `rgba(${mr},${mg},${mb},${a.toFixed(3)})`;
+        g.fillRect(x, y, 1, 1);
+      }
+    }
+  for (let y = -moonR; y <= moonR; y++)
+    for (let x = -moonR; x <= moonR; x++) {
+      const q = (x * x + y * y) / (moonR * moonR);
+      if (q > 1) continue;
+      const shade = Math.hypot(x + moonR * 0.3, y + moonR * 0.25) > moonR * 1.05; // lit from the upper left
+      const mare = [[-0.3, -0.2, 0.28], [0.25, 0.1, 0.2], [-0.05, 0.4, 0.16]].some(([mx, my, mr]) => Math.hypot(x / moonR - mx, y / moonR - my) < mr);
+      g.fillStyle = shade || mare ? C.moonShade : C.moon;
+      g.fillRect(moonX + x, moonY + y, 1, 1);
+    }
+  const r = rng(3);
+  g.fillStyle = C.star;
+  for (let i = 0; i < lw * 0.18; i++) {
+    const x = Math.floor(r() * lw), y = Math.floor(r() * hz * 0.75);
+    if (Math.hypot(x - moonX, y - moonY) < moonR * 3.2) continue;
+    g.globalAlpha = 0.2 + r() * 0.45;
+    g.fillRect(x, y, 1, 1);
+  }
+  g.globalAlpha = 1;
+  return c;
+}
+
+/** A strip of soft clouds that tiles horizontally. */
+function paintClouds(w: number, h: number, seed: number, count: number) {
+  const c = cnv(w, h);
+  const g = c.getContext("2d")!;
+  const r = rng(seed);
+  for (let n = 0; n < count; n++) {
+    const cx = r() * w, cy = h * (0.35 + r() * 0.4), rx = 14 + r() * 26, ry = 3 + r() * 3;
+    for (let y = Math.floor(cy - ry * 2); y < cy + ry; y++)
+      for (let x = Math.floor(cx - rx); x < cx + rx; x++) {
+        const nx = (x - cx) / rx;
+        const top = cy - ry * (1 + 0.8 * Math.max(0, Math.sin(nx * 4 + n) * (1 - nx * nx))); // bumpy top, flat base
+        if (y < top || nx * nx > 1 - ((y - cy) / (ry * 3)) ** 2) continue;
+        g.fillStyle = y - top < 1.5 ? C.cloudLit : C.cloud;
+        g.fillRect(((x % w) + w) % w, y, 1, 1);
+      }
+  }
+  return c;
+}
+
+function paintLand(lw: number, lh: number, hz: number, fieldTop: number, P: number) {
+  const art = cnv(lw, lh);
+  const g = art.getContext("2d")!;
+  const r = rng(17);
+  const col = (x: number, y0: number, color: string, rim?: string) => {
+    g.fillStyle = color;
+    g.fillRect(x, y0, 1, lh - y0);
+    if (rim) (g.fillStyle = rim), g.fillRect(x, y0, 1, 1);
+  };
+  // far hills with a sleeping town on the ridge
+  const far = (x: number) => Math.round(hz - 7 - 5 * Math.sin(x * 0.017 + 1) - 3 * Math.sin(x * 0.045));
+  for (let x = 0; x < lw; x++) col(x, far(x), C.farHill);
+  const lights: [number, number][] = [];
+  for (let x = Math.round(lw * 0.42); x < lw * 0.8; ) {
+    const w = 4 + Math.floor(r() * 4), h = 3 + Math.floor(r() * 4);
+    const base = far(x + w / 2) + 1;
+    g.fillStyle = C.town;
+    g.fillRect(x, base - h, w, h);
+    for (let k = 0; k < Math.ceil(w / 2); k++) g.fillRect(x + k, base - h - k, w - k * 2, 1); // pitched roof
+    if (r() < 0.35) lights.push([x + 1 + Math.floor(r() * (w - 2)), base - 2]);
+    x += w + 1 + Math.floor(r() * 6);
+  }
+  g.fillStyle = C.townLight;
+  g.globalAlpha = 0.55; // a few windows still lit, the rest asleep
+  for (const [x, y] of lights.slice(0, 5)) g.fillRect(x, y, 1, 1);
+  g.globalAlpha = 1;
+  // rolling mid hills, moonlit rim
+  const mid = (x: number) => Math.round(hz + 4 - 6 * Math.sin(x * 0.011 + 2) - 2 * Math.sin(x * 0.05));
+  for (let x = 0; x < lw; x++) col(x, mid(x), C.midHill, C.midRim);
+  // barn with one warm window, on the right-hand hill
+  const bx = Math.round(lw * 0.86), bw = 20, bh = 12;
+  const by = fieldTop + 2;
+  g.fillStyle = C.barn;
+  g.fillRect(bx, by - bh, bw, bh);
+  g.fillStyle = C.barnShade;
+  g.fillRect(bx + bw - 4, by - bh, 4, bh);
+  g.fillStyle = C.roof;
+  for (let k = 0; k <= bw / 2 + 1; k++) g.fillRect(bx - 1 + k, by - bh - k + Math.floor(k / 2), bw + 2 - k * 2, 1);
+  g.fillRect(bx + 7, by - 6, 6, 6); // door
+  const wx = bx + 4, wy = by - bh + 3;
+  g.fillStyle = C.window;
+  g.fillRect(wx, wy, 3, 3);
+  // field in the foreground: dithered lit band at the top, sparse grass specks
+  const ft = (x: number) => Math.round(fieldTop - 2 * Math.sin(x * 0.02 + 0.5));
+  for (let x = 0; x < lw; x++) {
+    const y0 = ft(x);
+    col(x, y0, C.field);
+    for (let y = y0; y < y0 + 6; y++)
+      if ((1 - (y - y0) / 6) * 0.8 > BAYER[(y % 4) * 4 + (x % 4)]) (g.fillStyle = C.fieldLit), g.fillRect(x, y, 1, 1);
+  }
+  g.fillStyle = C.fieldLit;
+  for (let i = 0; i < lw * 0.6; i++) g.fillRect(Math.floor(r() * lw), fieldTop + 6 + Math.floor(r() * (lh - fieldTop - 6)), 1, 1);
+  const out = crisp(art, P);
+  // the one warm window's glow, baked at full resolution
+  const o = out.getContext("2d")!;
+  const gx = (wx + 1.5) * P, gy = (wy + 1.5) * P;
+  const glow = o.createRadialGradient(gx, gy, 0, gx, gy, P * 10);
+  glow.addColorStop(0, "rgba(226,180,106,0.22)");
+  glow.addColorStop(1, "rgba(226,180,106,0)");
+  o.fillStyle = glow;
+  o.fillRect(gx - P * 10, gy - P * 10, P * 20, P * 20);
+  return out;
+}
+
+/** The fence section the sheep hop: two posts, two rails. */
+function paintFence(P: number) {
+  const lo = cnv(FENCE_W, 11);
+  const g = lo.getContext("2d")!;
+  for (const x of [1, FENCE_W - 3]) {
+    g.fillStyle = C.wood;
+    g.fillRect(x, 0, 2, 11);
+    g.fillStyle = C.woodLit;
+    g.fillRect(x, 0, 2, 1);
+    g.fillStyle = C.woodShade;
+    g.fillRect(x + 1, 1, 1, 10);
+  }
+  for (const y of [3, 7]) {
+    g.fillStyle = C.wood;
+    g.fillRect(0, y, FENCE_W, 2);
+    g.fillStyle = C.woodLit;
+    g.fillRect(0, y, FENCE_W, 1);
+  }
+  return crisp(lo, P);
+}
+
+/* ---------- sheep path (pure function of age, so a still frame is just as valid) ---------- */
+
+type SheepPose = { x: number; y: number; frame: "a" | "b" | "tuck" | "yawn"; squash: number; z: number };
+
+function sheepAt(i: number, a: number, fenceX: number): SheepPose | null {
+  const hopX = fenceX - 18; // take off here (left edge of the sheep)
+  const pauseX = fenceX - 46;
+  const pause = yawns(i) ? PAUSE_T : 0;
+  const tPause = (pauseX - START_X) / SPEED;
+  const tHop = (hopX - START_X) / SPEED + pause;
+  const legs = (x: number) => (Math.floor((x - START_X) / 3) % 2 ? "b" : "a");
+  if (a < 0) return null;
+  if (a < tHop) {
+    if (pause && a >= tPause && a < tPause + pause) {
+      const p = a - tPause;
+      return { x: pauseX, y: 0, frame: p > 0.5 && p < 1.4 ? "yawn" : "a", squash: 0, z: p };
+    }
+    const x = START_X + SPEED * (a >= tPause + pause ? a - pause : a);
+    return { x, y: 0, frame: legs(x), squash: 0, z: -1 };
+  }
+  if (a < tHop + HOP_T) {
+    const u = (a - tHop) / HOP_T;
+    return { x: hopX + HOP_DX * u, y: HOP_H * 4 * u * (1 - u), frame: "tuck", squash: 0, z: -1 };
+  }
+  const b = a - tHop - HOP_T;
+  const x = hopX + HOP_DX + SPEED * b;
+  return { x, y: 0, frame: legs(x), squash: b < 0.22 ? Math.sin((b / 0.22) * Math.PI) : 0, z: -1 };
+}
+const apexAge = (i: number, fenceX: number) => (fenceX - 18 - START_X) / SPEED + (yawns(i) ? PAUSE_T : 0) + HOP_T / 2;
+
+/* ---------- component ---------- */
+
+export default function NightFarm({ running, dim }: { running: boolean; dim: "none" | "light" | "heavy" }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const runningRef = useRef(running);
+  const kick = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    runningRef.current = running;
+    kick.current();
+  }, [running]);
+
+  useEffect(() => {
+    const cv = ref.current!;
+    const g = cv.getContext("2d", { alpha: false })!; // opaque: the sky covers every pixel
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let font = "monospace";
+    let raf = 0;
+    let last = performance.now();
+    let t = -1; // scene clock; set on first build so the first sheep clears the fence about a second in
+
+    let W = 0, H = 0, P = 3, F = 6, lw = 0, gy = 0, fenceX = 0, maxAge = 0;
+    let built = false;
+    let sky: HTMLCanvasElement, land: HTMLCanvasElement, fence: HTMLCanvasElement;
+    let cloudsA: HTMLCanvasElement, cloudsB: HTMLCanvasElement;
+    let sheep: Record<SheepPose["frame"], HTMLCanvasElement>;
+    let twinkles: { x: number; y: number; period: number; ph: number }[] = [];
+    let flies: { x: number; y: number; ph: number; period: number }[] = [];
+    let tufts: number[] = [];
+
+    const build = () => {
+      const rect = cv.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = Math.round(rect.width * dpr);
+      H = Math.round(rect.height * dpr);
+      cv.width = W;
+      cv.height = H;
+      P = Math.max(2, Math.round(H / 250)); // one art pixel, in device pixels
+      lw = Math.ceil(W / P);
+      const lh = Math.ceil(H / P);
+      F = P * 2;
+      const fw = Math.ceil(W / F); // scene width in foreground units
+      const hz = Math.round(lh * 0.72);
+      const fieldTop = Math.round(lh * 0.84);
+      gy = Math.round(lh * 0.955);
+      fenceX = Math.round(fw * 0.72);
+      maxAge = apexAge(1, fenceX) + 2 + (fw + 20 - (fenceX + 16)) / SPEED + PAUSE_T;
+      if (t < 0) t = apexAge(0, fenceX) - 1.2;
+      const r = rng(5);
+
+      const moonR = Math.max(8, Math.round(lh * 0.06));
+      sky = crisp(paintSky(lw, lh, hz, Math.round(lw * 0.8), Math.round(lh * 0.17), moonR), P);
+      const tileW = Math.max(lw, 320);
+      cloudsA = crisp(paintClouds(tileW, Math.round(hz * 0.5), 23, 5), P);
+      cloudsB = crisp(paintClouds(tileW, Math.round(hz * 0.35), 41, 4), P);
+      land = paintLand(lw, lh, hz, fieldTop, P);
+      fence = paintFence(F);
+      const map = { w: C.wool, s: C.woolShade, f: C.face, m: C.mouth };
+      const yawnBody = BODY.map((row, y) => (y === 5 ? row.slice(0, 14) + "m" + row.slice(15) : row));
+      sheep = {
+        a: sprite([...BODY, ...LEGS.a], map, F),
+        b: sprite([...BODY, ...LEGS.b], map, F),
+        tuck: sprite([...BODY, ...LEGS.tuck], map, F),
+        yawn: sprite([...yawnBody, ...LEGS.a], map, F),
+      };
+      twinkles = Array.from({ length: 14 }, () => ({ x: r() * W, y: r() * hz * 0.6 * P, period: 4 + r() * 5, ph: r() * 6 }));
+      flies = Array.from({ length: 7 }, () => ({ x: r() * W, y: (hz + 6 + r() * (gy - hz - 14)) * P, ph: r() * 6, period: 3 + r() * 3 }));
+      tufts = Array.from({ length: Math.ceil(lw / 14) }, (_, i) => i * 14 + Math.floor(r() * 8));
+      built = true;
+    };
+
+    const tiled = (img: HTMLCanvasElement, offset: number, y: number) => {
+      const w = img.width;
+      for (let x = -(((offset % w) + w) % w); x < W; x += w) g.drawImage(img, x, y);
+    };
+
+    const frame = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const moving = runningRef.current && !reduce;
+      if (moving) t += dt;
+      g.imageSmoothingEnabled = false;
+      g.globalAlpha = 1;
+
+      g.drawImage(sky, 0, 0);
+      g.fillStyle = C.star;
+      for (const s of twinkles) {
+        g.globalAlpha = 0.15 + 0.55 * (0.5 + 0.5 * Math.sin((t / s.period) * Math.PI * 2 + s.ph));
+        g.fillRect(Math.round(s.x / P) * P, Math.round(s.y / P) * P, P, P);
+      }
+      g.globalAlpha = 0.8;
+      tiled(cloudsA, t * P * 1.6, Math.round(H * 0.05));
+      g.globalAlpha = 0.6;
+      tiled(cloudsB, t * P * 0.9 + W * 0.4, Math.round(H * 0.24));
+      g.globalAlpha = 1;
+      g.drawImage(land, 0, 0);
+
+      // fireflies: slow wander, slow pulse
+      g.fillStyle = C.firefly;
+      for (const f of flies) {
+        const a = Math.max(0, Math.sin((t / f.period) * Math.PI * 2 + f.ph));
+        if (a < 0.05) continue;
+        const x = f.x + Math.sin(t * 0.13 + f.ph) * P * 12;
+        const y = f.y + Math.sin(t * 0.21 + f.ph * 2) * P * 4;
+        g.globalAlpha = a * 0.25;
+        g.fillRect(x - P, y - P, P * 3, P * 3);
+        g.globalAlpha = a * 0.9;
+        g.fillRect(x, y, P, P);
+      }
+      g.globalAlpha = 1;
+
+      const groundY = gy * P;
+      g.drawImage(fence, fenceX * F, groundY - fence.height);
+
+      // the sheep: one every SPACING seconds, each a pure function of its age
+      const iMax = Math.floor(t / SPACING);
+      const iMin = Math.max(0, Math.ceil((t - maxAge) / SPACING));
+      let count = iMin;
+      g.font = `${P * 7}px ${font}`;
+      g.textAlign = "left";
+      g.textBaseline = "alphabetic";
+      for (let i = iMin; i <= iMax; i++) {
+        const age = t - i * SPACING;
+        if (age >= apexAge(i, fenceX)) count++;
+        const s = sheepAt(i, age, fenceX);
+        if (!s || s.x * F > W + F * 2) continue;
+        const img = sheep[s.frame];
+        const sx = 1 + 0.1 * s.squash, sy = 1 - 0.14 * s.squash; // squash on landing, anchored at the feet
+        const w = img.width * sx, h = img.height * sy;
+        const x = s.x * F - (w - img.width) / 2;
+        const y = groundY - s.y * F - h;
+        g.drawImage(img, x, y, w, h);
+        if (s.z >= 0.6) {
+          g.fillStyle = C.wool;
+          for (let k = 0; k < 3; k++) {
+            const q = s.z - 0.6 - k * 0.45;
+            if (q < 0 || q > 1.2) continue;
+            g.globalAlpha = 0.8 * (1 - q / 1.2);
+            g.fillText("z", x + (15 + k * 3 + Math.sin(q * 3)) * F, y - (1 + q * 8) * F);
+          }
+          g.globalAlpha = 1;
+        }
+      }
+
+      // grass along the path, swaying a fraction of a pixel
+      g.fillStyle = C.grass;
+      for (const tx of tufts) {
+        const sway = Math.sin(t * 0.9 + tx * 0.15) * P * 0.6;
+        for (let k = 0; k < 3; k++) {
+          const bx = (tx + k * 2) * P;
+          const bh = (2 + ((tx + k) % 2)) * P;
+          g.fillRect(bx, groundY - P, P, P * 2);
+          g.fillRect(bx + sway, groundY - bh, P, bh - P);
+        }
+      }
+
+      // the count, small, in the corner
+      g.fillStyle = C.moon;
+      g.globalAlpha = 0.75;
+      g.font = `${P * 7}px ${font}`;
+      g.textAlign = "right";
+      g.fillText(`${count} sheep`, W - P * 6, H - P * 4);
+      g.globalAlpha = 1;
+
+      if (moving) raf = requestAnimationFrame(frame);
+    };
+
+    kick.current = () => {
+      if (!built) return;
+      cancelAnimationFrame(raf);
+      last = performance.now();
+      raf = requestAnimationFrame(frame);
+    };
+
+    let resizeTimer = 0;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        build();
+        kick.current();
+      }, 150);
+    };
+
+    let alive = true;
+    document.fonts.ready.then(() => {
+      if (!alive) return;
+      font = getComputedStyle(document.documentElement).getPropertyValue("--font-pixel").trim() || "monospace";
+      build();
+      kick.current();
+    });
+    window.addEventListener("resize", onResize);
+    return () => {
+      alive = false;
+      cancelAnimationFrame(raf);
+      clearTimeout(resizeTimer);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-[var(--bar-h)] top-[var(--header-h)] z-0">
+      <canvas ref={ref} data-scene data-running={running} className="h-full w-full [image-rendering:pixelated]" />
+      {/* the scene stays still and recedes behind data, so nothing moves behind a number */}
+      <div
+        className={`absolute inset-0 bg-bg transition-opacity duration-700 ${dim === "heavy" ? "opacity-80" : dim === "light" ? "opacity-40" : "opacity-0"}`}
+      />
+    </div>
+  );
+}

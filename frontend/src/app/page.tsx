@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Upload } from "lucide-react";
 import Navbar, { PAGES } from "@/components/Navbar";
 import Hero, { Evidence } from "@/components/Hero";
-import NightDrive from "@/components/NightDrive";
+import NightFarm from "@/components/NightFarm";
 import Tour from "@/components/Tour";
 import TriageSummaryPanel from "@/components/TriageSummaryPanel";
 import FullNightTimeline from "@/components/FullNightTimeline";
@@ -37,6 +37,8 @@ export default function HomePage() {
   const [page, setPage] = useState(0);
   const [tourOpen, setTourOpen] = useState(false);
   const [scenePaused, setScenePaused] = useState(false);
+  // Clinical mode: the visitor's saved choice, or by default off on Start and on from Result onward.
+  const [clinicalPref, setClinicalPref] = useState<"on" | "off" | null>(null);
 
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [cases, setCases] = useState<DemoCaseInfo[]>([]);
@@ -79,6 +81,8 @@ export default function HomePage() {
     window.addEventListener("hashchange", sync);
     // The scene always starts running; only an OS-level reduced-motion setting starts it still.
     setScenePaused(matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const saved = localStorage.getItem("cb-clinical");
+    if (saved === "on" || saved === "off") setClinicalPref(saved);
     return () => window.removeEventListener("hashchange", sync);
   }, []);
 
@@ -106,6 +110,18 @@ export default function HomePage() {
   }, [go, tourOpen]);
 
   const toggleScene = () => setScenePaused((p) => !p);
+
+  const clinical = clinicalPref ? clinicalPref === "on" : page > 0;
+  const toggleClinical = () => {
+    const next = clinical ? "off" : "on";
+    localStorage.setItem("cb-clinical", next);
+    setClinicalPref(next);
+  };
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-clinical", clinical);
+  }, [clinical]);
+  // The scene only moves on the two non-data stages; behind numbers it is a dimmed still frame.
+  const sceneMoves = page === P.start || page === P.how;
 
   /* ---------- data (unchanged behaviour) ---------- */
 
@@ -225,7 +241,7 @@ export default function HomePage() {
 
   const needNight = (
     <div className="card mx-auto max-w-lg p-8 text-center">
-      <p className="font-pixel text-lg font-bold">No night loaded yet</p>
+      <p className="text-lg font-semibold tracking-tight">No night loaded yet</p>
       <p className="mt-2 text-muted">{loadingNight ? "The sample night is still being analyzed." : "Load the sample night or upload an ECG first."}</p>
       <button type="button" onClick={() => go(P.result)} className="btn-primary mt-5">
         Go to the result
@@ -264,7 +280,7 @@ export default function HomePage() {
         ) : (
           !loadingNight && (
             <div className="card p-8 text-center">
-              <p className="font-pixel text-lg font-bold">No recording loaded</p>
+              <p className="text-lg font-semibold tracking-tight">No recording loaded</p>
               <p className="mt-2 text-muted">Load the sample night or upload a single-lead ECG as CSV.</p>
               <div className="mt-5 flex flex-wrap justify-center gap-3">
                 {cases.length > 0 && (
@@ -283,7 +299,7 @@ export default function HomePage() {
 
       <div className="space-y-5 lg:col-span-7">
         <div>
-          <h2 className="font-pixel text-2xl font-bold">Screen a night</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Screen a night</h2>
           <p className="mt-2 max-w-[56ch] text-muted short:hidden">
             Pick a held-out test night or upload your own recording. The result updates for whatever is loaded here.
           </p>
@@ -326,7 +342,7 @@ export default function HomePage() {
                   disabled={loadingNight}
                   aria-pressed={noiseSnr === opt.value}
                   onClick={() => setNoiseSnr(opt.value)}
-                  className={`min-h-11 flex-1 px-3 font-hud text-xl leading-none ${
+                  className={`min-h-11 flex-1 px-3 text-sm font-medium leading-none ${
                     noiseSnr === opt.value ? "bg-primary text-primary-ink" : "text-muted hover:text-ink"
                   }`}
                 >
@@ -388,7 +404,7 @@ export default function HomePage() {
               <button type="button" onClick={() => setSelectedMinute((m) => Math.max(0, m - 1))} className="btn-secondary px-3" aria-label="Previous minute">
                 ◀
               </button>
-              <span className="min-w-[4.5rem] text-center font-hud text-2xl leading-none" aria-live="polite">
+              <span className="min-w-[4.5rem] text-center text-base font-semibold leading-none" aria-live="polite">
                 {sel?.time_label ?? "…"}
               </span>
               <button
@@ -433,8 +449,12 @@ export default function HomePage() {
         onTour={() => setTourOpen(true)}
         scenePaused={scenePaused}
         onToggleScene={toggleScene}
+        clinical={clinical}
+        onToggleClinical={toggleClinical}
       />
-      <NightDrive page={page} paused={scenePaused} dim={page > 0} />
+      <div hidden={clinical}>
+        <NightFarm running={!clinical && !scenePaused && sceneMoves} dim={page === P.start ? "none" : sceneMoves ? "light" : "heavy"} />
+      </div>
 
       <input
         ref={fileRef}
@@ -497,7 +517,7 @@ export default function HomePage() {
 
       <nav
         aria-label="Stage navigation"
-        className="fixed inset-x-0 bottom-0 z-40 h-[var(--bar-h)] border-t-[3px] border-line bg-[rgb(13_10_38/0.94)]"
+        className="fixed inset-x-0 bottom-0 z-40 h-[var(--bar-h)] border-t-[3px] border-line bg-[rgb(21_26_44/0.96)]"
       >
         <div className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-3 px-4 sm:px-6">
           <button type="button" onClick={() => go(page - 1)} disabled={page === 0} className="btn-secondary min-w-[6.5rem] px-3">
@@ -505,7 +525,7 @@ export default function HomePage() {
             <span className="sm:hidden">Back</span>
           </button>
           <div className="flex items-center gap-3">
-            <p className="font-hud text-xl leading-none text-gold" aria-live="polite">
+            <p className="text-sm font-medium leading-none text-gold" aria-live="polite">
               Stage {page + 1} of {PAGES.length} · {PAGES[page].label}
             </p>
             <div className="hidden gap-1 sm:flex">

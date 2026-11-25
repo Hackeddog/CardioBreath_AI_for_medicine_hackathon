@@ -28,7 +28,6 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         pixel: ["var(--font-pixel)", "var(--font-inter)", "sans-serif"],
-        hud: ["var(--font-hud)", "ui-monospace", "monospace"],
       },
       transitionTimingFunction: { DEFAULT: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
       // short laptop windows: stages compact a step so they fit without scrolling

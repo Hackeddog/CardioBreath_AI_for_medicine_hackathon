@@ -108,7 +108,7 @@ export default function FullNightTimeline({
     <section aria-labelledby="timeline-title" className="card p-5 sm:p-6 short:py-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 id="timeline-title" className="font-pixel text-xl font-bold">
+          <h2 id="timeline-title" className="text-xl font-semibold tracking-tight">
             The night, minute by minute
           </h2>
           <p className="mt-1 max-w-[60ch] tabular-nums">{summary}</p>

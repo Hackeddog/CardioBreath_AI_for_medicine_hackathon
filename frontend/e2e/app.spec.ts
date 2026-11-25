@@ -9,6 +9,12 @@ const notice = (page: Page) => page.getByRole("alert").filter({ hasText: /\S/ })
 const triage = (page: Page) => page.getByRole("region", { name: "Screening result" });
 const stageTab = (page: Page, name: string) =>
   page.getByRole("navigation", { name: "Stages" }).getByRole("button", { name, exact: true });
+const clinicalToggle = (page: Page) => page.getByRole("button", { name: "Clinical mode" });
+const scene = (page: Page) => page.locator("canvas[data-scene]");
+// Two reads of the canvas pixels: equal means nothing moved.
+const sceneFrame = (page: Page) => scene(page).evaluate((c: HTMLCanvasElement) => c.toDataURL().length + ":" + c.toDataURL().slice(-200));
+const preferClinical = (page: Page, value: "on" | "off") =>
+  page.addInitScript((v) => localStorage.setItem("cb-clinical", v), value);
 
 // The cutoff slider lives in a disclosure under the result.
 async function openCutoff(page: Page) {
@@ -151,19 +157,93 @@ test("guided tour walks through the stages and closes with Escape", async ({ pag
   await expect(tour).toHaveCount(0);
 });
 
-test("background scene runs by default and can be paused", async ({ page }) => {
+test("night farm scene runs on the start stage and can be paused", async ({ page }) => {
   await page.goto("/");
-  const scene = page.locator("canvas[data-scene]");
-  await expect(scene).toHaveAttribute("data-running", "true");
+  await expect(scene(page)).toBeVisible();
+  await expect(scene(page)).toHaveAttribute("data-running", "true");
   // The canvas actually changes between frames while running.
-  const shot = () => scene.evaluate((c: HTMLCanvasElement) => c.toDataURL().length + ":" + c.toDataURL().slice(-200));
   await page.waitForTimeout(1500);
-  const a = await shot();
+  const a = await sceneFrame(page);
   await page.waitForTimeout(400);
-  expect(await shot()).not.toBe(a);
+  expect(await sceneFrame(page)).not.toBe(a);
   await page.getByRole("button", { name: "Pause scene" }).click();
-  await expect(scene).toHaveAttribute("data-running", "false");
+  await expect(scene(page)).toHaveAttribute("data-running", "false");
   await expect(page.getByRole("button", { name: "Play scene" })).toBeVisible();
+});
+
+test("scene is a still, dimmed frame behind data stages and moves again on How it works", async ({ page }) => {
+  await preferClinical(page, "off");
+  await page.goto("/#/night");
+  await expect(scene(page)).toBeVisible();
+  await expect(scene(page)).toHaveAttribute("data-running", "false");
+  await page.waitForTimeout(1500);
+  const a = await sceneFrame(page);
+  await page.waitForTimeout(800);
+  expect(await sceneFrame(page)).toBe(a);
+  for (const name of ["Result", "Signals", "Research"]) {
+    await stageTab(page, name).click();
+    await expect(scene(page)).toHaveAttribute("data-running", "false");
+  }
+  await stageTab(page, "How it works").click();
+  await expect(scene(page)).toHaveAttribute("data-running", "true");
+});
+
+test("clinical mode: on by default from Result, remembered, hides the scene and stops music", async ({ page }) => {
+  // Record every AudioContext so the test checks that the music really stopped, not just its button.
+  await page.addInitScript(() => {
+    const Real = window.AudioContext;
+    const made: AudioContext[] = [];
+    (window as unknown as { __audio: AudioContext[] }).__audio = made;
+    window.AudioContext = class extends Real {
+      constructor(o?: AudioContextOptions) {
+        super(o);
+        made.push(this);
+      }
+    };
+  });
+  await page.goto("/#/result");
+  await expect(clinicalToggle(page)).toHaveAttribute("aria-pressed", "true");
+  await expect(scene(page)).toBeHidden();
+  await stageTab(page, "Start").click();
+  await expect(clinicalToggle(page)).toHaveAttribute("aria-pressed", "false");
+  await expect(scene(page)).toBeVisible();
+
+  const music = page.getByRole("button", { name: "Music" });
+  await music.click();
+  await expect(music).toHaveAttribute("aria-pressed", "true");
+  await clinicalToggle(page).click();
+  await expect(clinicalToggle(page)).toHaveAttribute("aria-pressed", "true");
+  await expect(scene(page)).toBeHidden();
+  await expect(music).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /scene/ })).toHaveCount(0);
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __audio: AudioContext[] }).__audio.map((c) => c.state)))
+    .toEqual(["closed"]);
+
+  await page.reload(); // the choice is remembered, even on the start stage
+  await expect(clinicalToggle(page)).toHaveAttribute("aria-pressed", "true");
+  await expect(scene(page)).toBeHidden();
+  await clinicalToggle(page).click();
+  await stageTab(page, "Night").click();
+  await expect(clinicalToggle(page)).toHaveAttribute("aria-pressed", "false");
+  await expect(scene(page)).toBeVisible();
+});
+
+test("no stage overflows or hides content at laptop and projector sizes", async ({ page }) => {
+  await loadSample(page);
+  await page.waitForTimeout(2500); // inspector window loads
+  const sizes = [[1280, 720], [1366, 768], [1440, 900], [1533, 686], [1920, 1080]];
+  const bad: string[] = [];
+  for (const [width, height] of sizes) {
+    await page.setViewportSize({ width, height });
+    for (const id of ["start", "result", "night", "signals", "how", "research"]) {
+      await page.evaluate((h) => (window.location.hash = h), `/${id}`);
+      await page.waitForTimeout(700);
+      const over = await page.locator(`section[data-page="${id}"]`).evaluate((s) => s.scrollHeight - s.clientHeight);
+      if (over > 0) bad.push(`${id} @ ${width}x${height}: ${over}px`);
+    }
+  }
+  expect(bad).toEqual([]);
 });
 
 test("music starts only when asked and stops again", async ({ page }) => {
@@ -193,10 +273,15 @@ test("no serious or critical axe violations on any stage", async ({ page }) => {
 
 test.describe("reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
-  test("transitions are off and the scene starts paused", async ({ page }) => {
-    await loadSample(page);
+  test("transitions are off and the scene is a still frame", async ({ page }) => {
+    await page.goto("/");
     const d = await page.locator(".btn-primary").first().evaluate((el) => getComputedStyle(el).transitionDuration);
     expect(parseFloat(d)).toBeLessThan(0.001);
     await expect(page.getByRole("button", { name: "Play scene" })).toBeVisible();
+    await expect(scene(page)).toHaveAttribute("data-running", "false");
+    await page.waitForTimeout(1500);
+    const a = await sceneFrame(page);
+    await page.waitForTimeout(800);
+    expect(await sceneFrame(page)).toBe(a);
   });
 });
