@@ -37,7 +37,7 @@ export default function HomePage() {
   const [page, setPage] = useState(0);
   const [tourOpen, setTourOpen] = useState(false);
   const [scenePaused, setScenePaused] = useState(false);
-  // Clinical mode: the visitor's saved choice, or by default off on Start and on from Result onward.
+  // Clinical mode: off unless the visitor turns it on; the choice is remembered.
   const [clinicalPref, setClinicalPref] = useState<"on" | "off" | null>(null);
 
   const [health, setHealth] = useState<HealthStatus | null>(null);
@@ -111,7 +111,7 @@ export default function HomePage() {
 
   const toggleScene = () => setScenePaused((p) => !p);
 
-  const clinical = clinicalPref ? clinicalPref === "on" : page > 0;
+  const clinical = clinicalPref === "on";
   const toggleClinical = () => {
     const next = clinical ? "off" : "on";
     localStorage.setItem("cb-clinical", next);

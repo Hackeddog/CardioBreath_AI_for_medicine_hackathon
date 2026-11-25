@@ -188,7 +188,7 @@ test("scene is a still, dimmed frame behind data stages and moves again on How i
   await expect(scene(page)).toHaveAttribute("data-running", "true");
 });
 
-test("clinical mode: on by default from Result, remembered, hides the scene and stops music", async ({ page }) => {
+test("clinical mode: off by default on every stage, remembered, hides the scene and stops music", async ({ page }) => {
   // Record every AudioContext so the test checks that the music really stopped, not just its button.
   await page.addInitScript(() => {
     const Real = window.AudioContext;
@@ -202,8 +202,8 @@ test("clinical mode: on by default from Result, remembered, hides the scene and 
     };
   });
   await page.goto("/#/result");
-  await expect(clinicalToggle(page)).toHaveAttribute("aria-pressed", "true");
-  await expect(scene(page)).toBeHidden();
+  await expect(clinicalToggle(page)).toHaveAttribute("aria-pressed", "false");
+  await expect(scene(page)).toBeVisible();
   await stageTab(page, "Start").click();
   await expect(clinicalToggle(page)).toHaveAttribute("aria-pressed", "false");
   await expect(scene(page)).toBeVisible();
