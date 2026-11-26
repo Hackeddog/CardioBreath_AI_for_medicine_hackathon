@@ -65,6 +65,7 @@ export default function HomePage() {
   const nightAbort = useRef<AbortController | null>(null);
   const uploadAbort = useRef<AbortController | null>(null);
   const loadedKey = useRef("");
+  const lastLoaded = useRef<{ caseId: string; threshold: number; noiseSnr: number | null; compareBaseline: boolean } | null>(null);
   const shownCase = useRef<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const pageRefs = useRef<(HTMLElement | null)[]>([]);
@@ -170,12 +171,22 @@ export default function HomePage() {
       });
       if (nightAbort.current !== controller) return;
       loadedKey.current = keyOf(caseId, thr, snr, compBase);
+      lastLoaded.current = { caseId, threshold: thr, noiseSnr: snr, compareBaseline: compBase };
       const newCase = res.case_id !== shownCase.current; // read before the ref moves; the updater runs later
       shownCase.current = res.case_id;
       setAnalysis(res);
       setSelectedMinute((prev) => (newCase || prev >= res.duration_minutes ? res.default_inspect_minute : prev));
     } catch (err) {
       if (nightAbort.current !== controller || isAbortError(err)) return;
+      const prev = lastLoaded.current;
+      if (prev) {
+        // Revert controls to the displayed card so UI state stays synced and retrying works.
+        setSelectedCase(prev.caseId);
+        setThreshold(prev.threshold);
+        setAppliedThreshold(prev.threshold);
+        setNoiseSnr(prev.noiseSnr);
+        setCompareBaseline(prev.compareBaseline);
+      }
       setNotice(friendlyError(err, "analysis", caseId));
     } finally {
       if (nightAbort.current === controller) setLoadingNight(false);
@@ -192,10 +203,11 @@ export default function HomePage() {
     if (!analysis) return;
     const controller = new AbortController();
     const caseId = analysis.case_id;
+    const activeNoise = analysis.noise_snr_db;
     // Short delay so stepping the timeline with arrow keys doesn't fire a request per key press.
     const t = setTimeout(() => {
       setLoadingWindow(true);
-      inspectWindow(caseId, selectedMinute, noiseSnr, controller.signal)
+      inspectWindow(caseId, selectedMinute, activeNoise, controller.signal)
         .then((w) => {
           if (controller.signal.aborted) return;
           setWindowData(w);
@@ -212,7 +224,7 @@ export default function HomePage() {
       controller.abort();
       clearTimeout(t);
     };
-  }, [analysis?.case_id, selectedMinute, noiseSnr]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [analysis?.case_id, analysis?.noise_snr_db, selectedMinute]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUploadCsv = async (file: File) => {
     nightAbort.current?.abort();
@@ -230,6 +242,7 @@ export default function HomePage() {
       const usedThr = res.threshold_used;
       // Mark this result as loaded and sync thresholds so pending debounces do not re-fetch.
       loadedKey.current = keyOf(res.case_id, usedThr, null, compareBaseline);
+      lastLoaded.current = { caseId: res.case_id, threshold: usedThr, noiseSnr: null, compareBaseline };
       shownCase.current = res.case_id;
       setThreshold(usedThr);
       setAppliedThreshold(usedThr);

@@ -110,3 +110,14 @@ def test_window_slicing_and_hrv_feature_shapes() -> None:
     assert feats.shape == (6, len(HRV_FEATURE_NAMES))
     assert np.isfinite(dual).all()
     assert np.isfinite(feats).all()
+
+
+def test_slice_windows_skip_raw_matches_dual() -> None:
+    ecg, _ = _synthesize_breathing_modulated_ecg(duration_sec=360, fs=100.0)
+    res = run_dsp_pipeline(ecg, fs=100.0, n_minutes=6, prefer_neurokit=False)
+
+    dual_full, _ = slice_windows(res.edr_4hz, res.rri_4hz, res.ecg_clean, n_minutes=6, include_raw=True)
+    dual_only, raw_empty = slice_windows(res.edr_4hz, res.rri_4hz, res.ecg_clean, n_minutes=6, include_raw=False)
+
+    assert np.array_equal(dual_full, dual_only)
+    assert raw_empty.size == 0
