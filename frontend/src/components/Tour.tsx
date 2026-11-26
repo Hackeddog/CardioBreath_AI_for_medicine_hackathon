@@ -21,6 +21,61 @@ export const TOUR_STEPS: TourStep[] = [
   { page: "research", target: "#research-title", title: "The full benchmark", body: "Baselines, ablations, calibration and the limitations. It is a screening aid, not a diagnosis." },
 ];
 
+export const TOUR_PROMPT_KEY = "cardiobreath_tour_prompted_v1";
+
+export function TourPrompt({ open, onStart, onSkip }: { open: boolean; onStart: () => void; onSkip: () => void }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (open) headingRef.current?.focus();
+  }, [open]);
+
+  if (!open) return null;
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") onSkip();
+    else if (e.key === "Tab") {
+      const f = [...(dialogRef.current?.querySelectorAll<HTMLElement>("button, [tabindex='-1']") ?? [])];
+      const i = f.indexOf(document.activeElement as HTMLElement);
+      const n = f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length];
+      n?.focus();
+    } else return;
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[70] grid place-items-center bg-[rgb(8_10_20/0.72)] p-4" onClick={onSkip} onKeyDown={onKeyDown}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tour-prompt-title"
+        aria-describedby="tour-prompt-body"
+        onClick={(e) => e.stopPropagation()}
+        className="card-raised w-full max-w-md p-6"
+      >
+        <p className="text-sm font-medium leading-none text-gold">Quick walkthrough</p>
+        <h2 id="tour-prompt-title" ref={headingRef} tabIndex={-1} className="mt-2 text-lg font-semibold tracking-tight">
+          Take a quick tour of CardioBreath?
+        </h2>
+        <p id="tour-prompt-body" className="mt-2 text-sm text-muted">
+          Eight short steps from single-lead ECG to apnea triage, timeline, and signal inspection.
+        </p>
+        <div className="mt-5 flex flex-wrap items-center justify-end gap-3">
+          <button type="button" onClick={onSkip} className="min-h-11 px-3 text-sm font-medium leading-none text-muted hover:text-ink">
+            Skip for now
+          </button>
+          <button type="button" onClick={onStart} className="btn-primary px-4">
+            Take the guided tour
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface TourProps {
   open: boolean;
   onClose: () => void;

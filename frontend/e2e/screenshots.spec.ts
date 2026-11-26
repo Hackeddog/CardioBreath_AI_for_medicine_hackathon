@@ -11,7 +11,10 @@ test.skip(!label, "set SHOTS=<label> to capture screenshots");
 for (const mode of ["scene", "clinical"] as const) {
   for (const [width, height] of sizes) {
     test(`${mode} stages at ${width}px`, async ({ page }) => {
-      await page.addInitScript((v) => localStorage.setItem("cb-clinical", v), mode === "clinical" ? "on" : "off");
+      await page.addInitScript((v) => {
+        localStorage.setItem("cb-clinical", v);
+        localStorage.setItem("cardiobreath_tour_prompted_v1", "true");
+      }, mode === "clinical" ? "on" : "off");
       await page.setViewportSize({ width, height });
       await page.goto("/");
       await page.getByRole("button", { name: "Try a sample night" }).first().click(); // nothing loads until asked

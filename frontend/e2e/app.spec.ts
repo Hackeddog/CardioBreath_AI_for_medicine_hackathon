@@ -16,6 +16,12 @@ const sceneFrame = (page: Page) => scene(page).evaluate((c: HTMLCanvasElement) =
 const preferClinical = (page: Page, value: "on" | "off") =>
   page.addInitScript((v) => localStorage.setItem("cb-clinical", v), value);
 
+test.beforeEach(async ({ page }, info) => {
+  if (!info.title.includes("first-time tour prompt")) {
+    await page.addInitScript(() => localStorage.setItem("cardiobreath_tour_prompted_v1", "true"));
+  }
+});
+
 // The cutoff slider lives in a disclosure under the result.
 async function openCutoff(page: Page) {
   await page.getByText("Adjust cutoff, compare baseline").click();
@@ -324,4 +330,28 @@ test.describe("reduced motion", () => {
     await page.waitForTimeout(800);
     expect(await sceneFrame(page)).toBe(a);
   });
+});
+
+test("first-time tour prompt launches tour, remembers dismissal, and allows manual reopen", async ({ page }) => {
+  await page.goto("/");
+  const prompt = page.getByRole("dialog", { name: "Take a quick tour of CardioBreath?" });
+  await expect(prompt).toBeVisible();
+  await prompt.getByRole("button", { name: "Take the guided tour" }).click();
+  await expect(prompt).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Welcome to CardioBreath" })).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  await page.reload();
+  await expect(prompt).toHaveCount(0);
+
+  await page.evaluate(() => localStorage.removeItem("cardiobreath_tour_prompted_v1"));
+  await page.reload();
+  await expect(prompt).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(prompt).toHaveCount(0);
+
+  await page.reload();
+  await expect(prompt).toHaveCount(0);
+  await page.getByRole("button", { name: "Tour", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Welcome to CardioBreath" })).toBeVisible();
 });
