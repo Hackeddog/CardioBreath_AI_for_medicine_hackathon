@@ -58,7 +58,7 @@ export default function HomePage() {
   const [heroEcg, setHeroEcg] = useState<WindowInspectorData | null>(null);
   const [evaluation, setEvaluation] = useState<EvaluationPayload | null>(null);
 
-  const [loadingNight, setLoadingNight] = useState<boolean>(true);
+  const [loadingNight, setLoadingNight] = useState<boolean>(false);
   const [uploading, setUploading] = useState<boolean>(false);
   const [loadingWindow, setLoadingWindow] = useState<boolean>(false);
   const [notice, setNotice] = useState<Notice | null>(null);
@@ -137,13 +137,9 @@ export default function HomePage() {
         setDefaultThreshold(h.default_threshold);
         setCases(c);
         setEvaluation(ev);
-        if (c.length > 0) setSelectedCase(c[0].case_id);
-        else setLoadingNight(false);
+        // No case is selected here: inference runs only when the visitor clicks Try a sample night or uploads.
       })
-      .catch((err) => {
-        setNotice(friendlyError(err, "analysis"));
-        setLoadingNight(false);
-      });
+      .catch((err) => setNotice(friendlyError(err, "analysis")));
   }, []);
 
   // Slider moves update the label at once; the request waits until dragging pauses.
@@ -177,6 +173,16 @@ export default function HomePage() {
     } catch (err) {
       if (nightAbort.current !== controller || isAbortError(err)) return;
       setNotice(friendlyError(err, "analysis", caseId));
+      // Roll the controls back to the result still on screen, so the selected noise level, recording and
+      // cutoff never disagree with the card. Matching loadedKey also stops the effect from retrying.
+      if (loadedKey.current) {
+        const [c, t, s, b] = JSON.parse(loadedKey.current) as [string, number, number | null, boolean];
+        setSelectedCase(c);
+        setThreshold(t);
+        setAppliedThreshold(t);
+        setNoiseSnr(s);
+        setCompareBaseline(b);
+      }
     } finally {
       if (nightAbort.current === controller) setLoadingNight(false);
     }
@@ -499,7 +505,7 @@ export default function HomePage() {
       <main
         id="main"
         // mb keeps the stage above the fixed stage bar, so its last rows can be scrolled into view
-        className="relative z-10 mb-[var(--bar-h)] min-h-0 flex-1 overflow-hidden"
+        className="relative z-10 mb-[calc(var(--bar-h)_+_var(--badge-h))] min-h-0 flex-1 overflow-hidden"
         style={{ touchAction: "pan-y" }}
         onPointerDown={(e) => {
           const t = e.target as HTMLElement;
@@ -537,7 +543,7 @@ export default function HomePage() {
 
       <nav
         aria-label="Stage navigation"
-        className="fixed inset-x-0 bottom-0 z-40 h-[var(--bar-h)] border-t-[3px] border-line bg-[rgb(21_26_44/0.96)]"
+        className="fixed inset-x-0 bottom-[var(--badge-h)] z-40 h-[var(--bar-h)] border-t-[3px] border-line bg-[rgb(21_26_44/0.96)]"
       >
         <div className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-3 px-4 sm:px-6">
           <button type="button" onClick={() => go(page - 1)} disabled={page === 0} className="btn-secondary min-w-[6.5rem] px-3">

@@ -30,19 +30,30 @@ async function loadSample(page: Page) {
   await expect(page.getByText("Updating result…")).toHaveCount(0);
 }
 
-test("sample night is requested once and shows the x08 result", async ({ page }) => {
+test("nothing is analyzed until asked; then the sample night is requested once (#16)", async ({ page }) => {
   const analyzeCalls: string[] = [];
   page.on("request", (r) => {
-    if (r.url().includes("/api/analyze/case/")) analyzeCalls.push(r.url());
+    if (r.url().includes("/api/analyze/")) analyzeCalls.push(r.url());
   });
-  await loadSample(page);
+  await page.goto("/");
+  await expect(page.getByText("Model ready")).toBeVisible();
+  await page.waitForTimeout(1500);
+  expect(analyzeCalls).toEqual([]); // only health, cases and the static evaluation report on load
+  await expect(page.getByText("Not analyzed yet")).toBeVisible();
+  await stageTab(page, "Result").click();
+  await expect(page.getByText("No recording loaded")).toBeVisible();
+  await stageTab(page, "Start").click();
+  await page.getByRole("button", { name: "Try a sample night" }).first().click();
+  await expect(page).toHaveURL(/#\/result$/);
+  await expect(triage(page)).toContainText("37.9");
+  await expect(page.getByText("Updating result…")).toHaveCount(0);
   const t = triage(page);
   await expect(t).toContainText("Severe");
   await expect(t).toContainText("35.5 to 40.3");
   await expect(t).toContainText("Sleep-lab reference 37.6");
   await expect(t).toContainText(/priority PSG referral/i);
   await page.waitForTimeout(1000);
-  expect(analyzeCalls).toHaveLength(1);
+  expect(analyzeCalls.filter((u) => u.includes("/api/analyze/case/"))).toHaveLength(1);
 });
 
 test("stages move sideways with arrow keys, tabs and the back button", async ({ page }) => {
@@ -96,6 +107,10 @@ test("server errors never show internals", async ({ page }) => {
   await expect(alert).toContainText("Something went wrong on our side");
   await expect(alert).not.toContainText("Traceback");
   await expect(alert).not.toContainText("inference.py");
+  // #17: the failed 5 dB run must not stay selected over the clean result still shown
+  await expect(page.getByRole("button", { name: "Clean" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "5 dB" })).toHaveAttribute("aria-pressed", "false");
+  await expect(triage(page)).toContainText("37.9");
 });
 
 test("dragging the cutoff: the last value wins", async ({ page }) => {
@@ -269,6 +284,31 @@ test("no serious or critical axe violations on any stage", async ({ page }) => {
     const bad = violations.filter((v) => v.impact === "serious" || v.impact === "critical");
     expect(bad.map((v) => `${name}: ${v.id} @ ${v.nodes.slice(0, 3).map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
   }
+});
+
+test("stage bar buttons stay clear of the Netlify free-tier badge", async ({ page }) => {
+  await page.goto("/");
+  // Stand-in for the badge Netlify injects on free sites: a fixed iframe in the bottom-right corner.
+  await page.evaluate(() => {
+    const f = document.createElement("iframe");
+    f.id = "nl-badge-frame";
+    f.style.cssText = "position:fixed;bottom:0;right:0;width:197px;height:64px;border:0;z-index:2147483645";
+    document.body.appendChild(f);
+  });
+  const bad: string[] = [];
+  for (const [width, height] of [[1535, 695], [1280, 720], [1920, 1080], [768, 1024], [375, 812]]) {
+    await page.setViewportSize({ width, height });
+    await page.waitForTimeout(200);
+    const hits = await page.evaluate(() => {
+      const b = document.getElementById("nl-badge-frame")!.getBoundingClientRect();
+      const overlap = (r: DOMRect) => r.width > 0 && r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top;
+      return [...document.querySelectorAll('nav[aria-label="Stage navigation"] button, nav[aria-label="Stage navigation"] p')]
+        .filter((el) => overlap(el.getBoundingClientRect()))
+        .map((el) => el.textContent?.trim() || el.getAttribute("aria-label") || "?");
+    });
+    if (hits.length) bad.push(`${width}x${height}: ${hits.join(", ")}`);
+  }
+  expect(bad).toEqual([]);
 });
 
 test.describe("reduced motion", () => {

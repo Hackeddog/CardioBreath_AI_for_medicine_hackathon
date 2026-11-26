@@ -663,7 +663,7 @@ export default function NightFarm({ running, dim }: { running: boolean; dim: "no
   }, []);
 
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-[var(--bar-h)] top-[var(--header-h)] z-0">
+    <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--bar-h)_+_var(--badge-h))] top-[var(--header-h)] z-0">
       <canvas ref={ref} data-scene data-running={running} className="h-full w-full [image-rendering:pixelated]" />
       {/* the scene stays still and recedes behind data, so nothing moves behind a number */}
       <div

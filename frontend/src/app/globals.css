@@ -43,6 +43,7 @@
   --px: 3px; /* one "pixel" of the UI chrome */
   --header-h: 64px;
   --bar-h: 64px;
+  --badge-h: 0px; /* room under the stage bar for a hosting badge; see the Netlify rules below */
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --paper-minor: rgb(166 217 192 / 0.06);
   --paper-major: rgb(166 217 192 / 0.14);
@@ -52,6 +53,22 @@
   :root {
     --header-h: 54px;
     --bar-h: 56px;
+  }
+}
+
+/*
+ * Netlify's free tier pins a "Powered by Netlify" badge (an iframe, about 194 x 61 px) to the bottom-right
+ * corner, over the stage bar's Next button. These rules apply only when that badge is on the page:
+ * wide screens reserve its width at the end of the bar; narrower ones lift the bar and give it a strip.
+ */
+@media (min-width: 1024px) {
+  body:has(#nl-badge-frame) nav[aria-label="Stage navigation"] > div {
+    padding-right: max(1.5rem, calc(13rem - max(0px, (100vw - 1400px) / 2)));
+  }
+}
+@media (max-width: 1023.98px) {
+  html:has(#nl-badge-frame) {
+    --badge-h: 64px;
   }
 }
 
