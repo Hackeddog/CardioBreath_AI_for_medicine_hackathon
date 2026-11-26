@@ -5,7 +5,7 @@ import { Upload } from "lucide-react";
 import Navbar, { PAGES } from "@/components/Navbar";
 import Hero, { Evidence } from "@/components/Hero";
 import NightFarm from "@/components/NightFarm";
-import Tour from "@/components/Tour";
+import Tour, { TOUR_PROMPT_KEY, TourPrompt } from "@/components/Tour";
 import TriageSummaryPanel from "@/components/TriageSummaryPanel";
 import FullNightTimeline from "@/components/FullNightTimeline";
 import SignalInspector from "@/components/SignalInspector";
@@ -38,6 +38,7 @@ const pageFromHash = () => {
 export default function HomePage() {
   const [page, setPage] = useState(0);
   const [tourOpen, setTourOpen] = useState(false);
+  const [tourPromptOpen, setTourPromptOpen] = useState(false);
   const [scenePaused, setScenePaused] = useState(false);
   // Clinical mode: off unless the visitor turns it on; the choice is remembered.
   const [clinicalPref, setClinicalPref] = useState<"on" | "off" | null>(null);
@@ -89,8 +90,33 @@ export default function HomePage() {
     setScenePaused(matchMedia("(prefers-reduced-motion: reduce)").matches);
     const saved = localStorage.getItem("cb-clinical");
     if (saved === "on" || saved === "off") setClinicalPref(saved);
+    try {
+      if (localStorage.getItem(TOUR_PROMPT_KEY) !== "true") setTourPromptOpen(true);
+    } catch {
+      // restricted storage falls back to showing the initial prompt
+      setTourPromptOpen(true);
+    }
     return () => window.removeEventListener("hashchange", sync);
   }, []);
+
+  const markTourPromptSeen = useCallback(() => {
+    try {
+      localStorage.setItem(TOUR_PROMPT_KEY, "true");
+    } catch {
+      // ignore storage restrictions
+    }
+  }, []);
+
+  const startTour = useCallback(() => {
+    markTourPromptSeen();
+    setTourPromptOpen(false);
+    setTourOpen(true);
+  }, [markTourPromptSeen]);
+
+  const skipTourPrompt = useCallback(() => {
+    markTourPromptSeen();
+    setTourPromptOpen(false);
+  }, [markTourPromptSeen]);
 
   // If focus was inside the page that just slid away (now inert), hand it to the new page.
   useEffect(() => {
@@ -103,7 +129,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (tourOpen || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (tourOpen || tourPromptOpen || e.altKey || e.ctrlKey || e.metaKey) return;
       const t = e.target as HTMLElement;
       if (t.closest("input, select, textarea, [role='slider'], [contenteditable='true']")) return;
       if (e.key === "ArrowRight") go(pageFromHash() + 1);
@@ -113,7 +139,7 @@ export default function HomePage() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go, tourOpen]);
+  }, [go, tourOpen, tourPromptOpen]);
 
   const toggleScene = () => setScenePaused((p) => !p);
 
@@ -302,7 +328,7 @@ export default function HomePage() {
       elapsedMs={elapsedMs}
       onTrySample={trySample}
       onUpload={pickFile}
-      onTour={() => setTourOpen(true)}
+      onTour={startTour}
       onSeeNight={() => go(P.night)}
     />,
 
@@ -492,7 +518,7 @@ export default function HomePage() {
         page={page}
         onPage={go}
         health={health}
-        onTour={() => setTourOpen(true)}
+        onTour={startTour}
         scenePaused={scenePaused}
         onToggleScene={toggleScene}
         clinical={clinical}
@@ -601,6 +627,7 @@ export default function HomePage() {
         </div>
       </nav>
 
+      <TourPrompt open={tourPromptOpen} onStart={startTour} onSkip={skipTourPrompt} />
       <Tour open={tourOpen} onClose={() => setTourOpen(false)} onPage={go} />
     </div>
   );
