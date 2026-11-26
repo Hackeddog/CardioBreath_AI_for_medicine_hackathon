@@ -112,10 +112,10 @@ cd ..
 #### Live Azure Backend Verification & Deployment
 ```bash
 # Test the deployed Azure Container Apps backend health check
-curl https://cardiobreath-api.bravegrass-ba6ace58.eastasia.azurecontainerapps.io/api/health
+curl https://cardiobreath-api
 
 # Test case evaluation on the deployed backend
-curl -X POST https://cardiobreath-api.bravegrass-ba6ace58.eastasia.azurecontainerapps.io/api/analyze/case/x08 \
+curl -X POST https://cardiobreath-api\
   -H "Content-Type: application/json" \
   -d '{"compare_baseline": true}'
 
