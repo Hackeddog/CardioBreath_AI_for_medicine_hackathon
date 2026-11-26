@@ -3,11 +3,13 @@
 import React from "react";
 import { Upload } from "lucide-react";
 import type { EvaluationPayload, FullNightAnalysis, WindowInspectorData } from "@/lib/types";
-import { Reveal, SeverityBadge, sentenceCase } from "./ui";
+import { Reveal, SeverityBadge, formatElapsed, sentenceCase } from "./ui";
 
 interface HeroProps {
   analysis: FullNightAnalysis | null;
   ecg: WindowInspectorData | null;
+  loading?: boolean;
+  elapsedMs?: number;
   onTrySample: () => void;
   onUpload: () => void;
   onTour: () => void;
@@ -36,7 +38,7 @@ function EcgStrip({ ecg }: { ecg: WindowInspectorData }) {
   );
 }
 
-export default function Hero({ analysis, ecg, onTrySample, onUpload, onTour, onSeeNight }: HeroProps) {
+export default function Hero({ analysis, ecg, loading = false, elapsedMs = 0, onTrySample, onUpload, onTour, onSeeNight }: HeroProps) {
   const center = ecg?.time_window_label.match(/Center:\s*([\d:]+)/)?.[1];
   const sampleShown = analysis !== null && !analysis.case_id.startsWith("upload_");
   return (
@@ -81,14 +83,34 @@ export default function Hero({ analysis, ecg, onTrySample, onUpload, onTour, onS
                 <span aria-hidden>♥ </span>
                 {analysis && !analysis.case_id.startsWith("upload_") ? `Night ${analysis.case_id}` : "Sample night"}
               </span>
-              <span className="text-muted">{center ? `${STRIP_SECONDS} s around ${center}` : sampleShown ? "Loading…" : "Not analyzed yet"}</span>
+              <span className="text-muted">
+                {center ? (
+                  `${STRIP_SECONDS} s around ${center}`
+                ) : loading ? (
+                  <>
+                    Running analysis… <span aria-hidden="true" className="tabular-nums">{formatElapsed(elapsedMs)}</span>
+                  </>
+                ) : sampleShown ? (
+                  "Loading…"
+                ) : (
+                  "Not analyzed yet"
+                )}
+              </span>
             </div>
             <div className="ecg-paper overflow-hidden">
               {ecg ? (
                 <EcgStrip ecg={ecg} />
               ) : (
                 <div className="grid aspect-[10/3] place-items-center px-4 text-center text-base font-semibold text-primary">
-                  {sampleShown ? "Loading the sample night…" : "Try a sample night to see its ECG here."}
+                  {loading ? (
+                    <span>
+                      Running analysis… <span aria-hidden="true" className="tabular-nums">{formatElapsed(elapsedMs)}</span>
+                    </span>
+                  ) : sampleShown ? (
+                    "Loading the sample night…"
+                  ) : (
+                    "Try a sample night to see its ECG here."
+                  )}
                 </div>
               )}
             </div>
