@@ -325,3 +325,20 @@ test.describe("reduced motion", () => {
     expect(await sceneFrame(page)).toBe(a);
   });
 });
+
+test("live elapsed timer ticks during sample screening and noise reanalysis", async ({ page }) => {
+  await page.route("**/api/analyze/case/**", async (route) => {
+    await new Promise((r) => setTimeout(r, 700));
+    await route.continue();
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Try a sample night" }).first().click();
+  await expect(page).toHaveURL(/#\/result$/);
+  await expect(page.getByText(/\d+\.\ds/)).toBeVisible();
+  await expect(triage(page)).toContainText("37.9");
+
+  await page.getByRole("button", { name: "10 dB" }).click();
+  await expect(page.getByText("Updating result…")).toBeVisible();
+  await expect(triage(page)).toContainText(/\d+\.\ds/);
+  await expect(page.getByText("Updating result…")).toHaveCount(0);
+});
