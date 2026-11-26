@@ -3,7 +3,7 @@
 import React from "react";
 import { AlertTriangle, ChevronDown } from "lucide-react";
 import type { FullNightAnalysis } from "@/lib/types";
-import { SeverityBadge, SeverityScale, TIERS, sentenceCase, tierOf } from "./ui";
+import { SeverityBadge, SeverityScale, TIERS, formatElapsed, sentenceCase, tierOf } from "./ui";
 
 interface TriageSummaryPanelProps {
   analysis: FullNightAnalysis;
@@ -13,6 +13,7 @@ interface TriageSummaryPanelProps {
   compareBaseline: boolean;
   onToggleBaseline: (val: boolean) => void;
   updating: boolean;
+  elapsedMs?: number;
 }
 
 function quality(pct: number) {
@@ -29,6 +30,7 @@ export default function TriageSummaryPanel({
   compareBaseline,
   onToggleBaseline,
   updating,
+  elapsedMs = 0,
 }: TriageSummaryPanelProps) {
   const tier = tierOf(analysis.severity_tier);
   const usablePct = Math.round(analysis.usable_ratio * 1000) / 10;
@@ -66,10 +68,19 @@ export default function TriageSummaryPanel({
           <p className={`mt-5 rounded-lg p-4 font-semibold short:mt-3 short:p-3 ${TIERS[tier].cls}`}>{sentenceCase(analysis.triage_action)}</p>
         </div>
 
-        <p className="mt-2 min-h-5 text-sm text-muted tabular-nums" role="status" aria-live="polite">
-          {updating
-            ? "Updating result…"
-            : `Analyzed in ${(analysis.inference_ms / 1000).toFixed(1)} s on CPU · cutoff ${analysis.threshold_used.toFixed(2)}`}
+        <p className="mt-2 min-h-5 text-sm text-muted tabular-nums">
+          <span role="status" aria-live="polite">
+            {updating
+              ? "Updating result…"
+              : `Analyzed in ${(analysis.inference_ms / 1000).toFixed(1)} s on CPU · cutoff ${analysis.threshold_used.toFixed(2)}`}
+          </span>
+          {updating && (
+            <span aria-hidden="true">
+              {" "}
+              {formatElapsed(elapsedMs)}
+              {elapsedMs >= 10000 ? " · Running 5-fold ECG inference on CPU…" : ""}
+            </span>
+          )}
         </p>
 
         {poorSignal && (

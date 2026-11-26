@@ -92,24 +92,21 @@ cd frontend && npm install && npm run dev
 
 ### Automated Testing & Quality Checks (Backend & Frontend)
 
-#### Backend Testing & Code Quality
 ```bash
-# Run full automated test suite (DSP, ML, calibration, ONNX parity, metrics, and FastAPI contracts)
+# 1. Activate environment (conda or .venv)
+conda activate cardiobreath   # or: .\.venv\Scripts\activate
+
+# 2. Backend tests & lint (DSP, ML, calibration, ONNX parity, metrics, FastAPI, package)
 pytest tests/ -v
-
-# Run Python static analysis and lint checks
 ruff check src scripts backend tests train.py evaluate.py
-```
 
-#### Frontend Testing & Build Verification
-```bash
+# 3. Frontend lint, production build, and Playwright E2E + accessibility tests
 cd frontend
-
-# Verify TypeScript types, React linting, and Next.js rules
 npm run lint
-
-# Test production static build and exports
 npm run build
+npx playwright install chromium   # first time only
+npm run test:e2e                  # starts uvicorn on 127.0.0.1:7860 automatically
+cd ..
 ```
 
 #### Live Azure Backend Verification & Deployment

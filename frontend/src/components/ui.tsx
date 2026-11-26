@@ -189,19 +189,36 @@ const STEPS = [
   { label: "Building timeline", at: 5500 },
 ];
 
-export function AnalysisProgress() {
-  const [elapsed, setElapsed] = useState(0);
+export function formatElapsed(ms: number): string {
+  return `${(ms / 1000).toFixed(1)}s`;
+}
+
+export function useElapsedTimer(active: boolean, resetKey: string | number = 0): number {
+  const [elapsedMs, setElapsedMs] = useState(0);
   useEffect(() => {
-    const start = Date.now();
-    const id = setInterval(() => setElapsed(Date.now() - start), 250);
+    setElapsedMs(0);
+    if (!active) return;
+    const start = performance.now();
+    const id = setInterval(() => setElapsedMs(performance.now() - start), 100);
     return () => clearInterval(id);
-  }, []);
-  const current = STEPS.reduce((acc, s, i) => (elapsed >= s.at ? i : acc), 0);
+  }, [active, resetKey]);
+  return elapsedMs;
+}
+
+export function AnalysisProgress({ elapsedMs = 0 }: { elapsedMs?: number }) {
+  const current = STEPS.reduce((acc, s, i) => (elapsedMs >= s.at ? i : acc), 0);
 
   return (
     <div role="status" aria-live="polite" className="card p-5">
-      <p className="font-semibold">Analyzing the night</p>
-      <p className="text-sm text-muted">This takes about 8 seconds on a CPU.</p>
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="font-semibold">Analyzing the night</p>
+        <span aria-hidden="true" className="text-sm font-medium text-muted tabular-nums">
+          {formatElapsed(elapsedMs)}
+        </span>
+      </div>
+      <p className="text-sm text-muted">
+        {elapsedMs >= 10000 ? "Waking model server or running 5-fold ECG inference on CPU…" : "This takes about 8 seconds on a CPU."}
+      </p>
       <ol className="mt-4 flex flex-col gap-3 sm:flex-row sm:gap-6">
         {STEPS.map((s, i) => {
           const done = i < current;

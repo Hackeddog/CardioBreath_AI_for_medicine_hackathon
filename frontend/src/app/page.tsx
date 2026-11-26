@@ -10,7 +10,7 @@ import TriageSummaryPanel from "@/components/TriageSummaryPanel";
 import FullNightTimeline from "@/components/FullNightTimeline";
 import SignalInspector from "@/components/SignalInspector";
 import ResearchBenchmarkView from "@/components/ResearchBenchmarkView";
-import { AnalysisProgress, NoticeBanner, friendlyError, type Notice } from "@/components/ui";
+import { AnalysisProgress, NoticeBanner, friendlyError, useElapsedTimer, type Notice } from "@/components/ui";
 import { analyzeCase, fetchCases, fetchEvaluation, fetchHealth, inspectWindow, uploadCsvEcg } from "@/lib/api";
 import type { DemoCaseInfo, EvaluationPayload, FullNightAnalysis, HealthStatus, WindowInspectorData } from "@/lib/types";
 
@@ -60,9 +60,11 @@ export default function HomePage() {
   const [evaluation, setEvaluation] = useState<EvaluationPayload | null>(null);
 
   const [loadingNight, setLoadingNight] = useState<boolean>(false);
+  const [analysisRunId, setAnalysisRunId] = useState(0);
   const [uploading, setUploading] = useState<boolean>(false);
   const [loadingWindow, setLoadingWindow] = useState<boolean>(false);
   const [notice, setNotice] = useState<Notice | null>(null);
+  const elapsedMs = useElapsedTimer(loadingNight, analysisRunId);
   const nightAbort = useRef<AbortController | null>(null);
   const uploadAbort = useRef<AbortController | null>(null);
   const loadedKey = useRef("");
@@ -182,6 +184,7 @@ export default function HomePage() {
     nightAbort.current?.abort();
     const controller = new AbortController();
     nightAbort.current = controller;
+    setAnalysisRunId((n) => n + 1);
     setLoadingNight(true);
     setNotice(null);
     try {
@@ -264,6 +267,7 @@ export default function HomePage() {
     nightAbort.current = controller;
     uploadAbort.current = controller;
     go(P.result);
+    setAnalysisRunId((n) => n + 1);
     setLoadingNight(true);
     setUploading(true);
     setNotice(null);
@@ -320,6 +324,8 @@ export default function HomePage() {
       key="start"
       analysis={analysis}
       ecg={heroEcg}
+      loading={loadingNight}
+      elapsedMs={elapsedMs}
       onTrySample={trySample}
       onUpload={pickFile}
       onTour={startTour}
@@ -329,7 +335,7 @@ export default function HomePage() {
     /* result */
     <div key="result" className="grid items-start gap-6 lg:grid-cols-12 lg:gap-8">
       <div className="lg:col-span-5">
-        {showProgress && <AnalysisProgress />}
+        {showProgress && <AnalysisProgress elapsedMs={elapsedMs} />}
         {analysis && threshold !== null ? (
           <div className={showProgress ? "mt-6" : ""}>
             <TriageSummaryPanel
@@ -340,6 +346,7 @@ export default function HomePage() {
               compareBaseline={compareBaseline}
               onToggleBaseline={setCompareBaseline}
               updating={loadingNight}
+              elapsedMs={elapsedMs}
             />
           </div>
         ) : (
