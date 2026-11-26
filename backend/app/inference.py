@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import gc
 import json
+import os
 import re
 import threading
 import time
@@ -87,8 +89,14 @@ class CardioBreathInferenceEngine:
         self.smoke_weights = bool(self.deploy_meta.get("smoke", False))
 
         self.onnx_sessions: list[ort.InferenceSession] = []
+        onnx_threads = max(1, int(os.getenv("CARDIOBREATH_ONNX_THREADS", os.getenv("OMP_NUM_THREADS", "4"))))
         sess_opts = ort.SessionOptions()
-        sess_opts.intra_op_num_threads = 4
+        sess_opts.intra_op_num_threads = onnx_threads
+        sess_opts.inter_op_num_threads = 1
+        # Disable arena caching so peak batch activations are released back to the OS.
+        sess_opts.enable_cpu_mem_arena = False
+        sess_opts.enable_mem_pattern = False
+        self._onnx_batch_size = max(1, int(os.getenv("CARDIOBREATH_ONNX_BATCH_SIZE", "32")))
         for fold_idx in range(5):
             fpath = self.onnx_dir / f"cardiobreath_fold_{fold_idx}.onnx"
             if fpath.exists():
@@ -126,7 +134,7 @@ class CardioBreathInferenceEngine:
         self._gradcam_lock = threading.Lock()
         self._cache: OrderedDict[tuple[str, float | None], CachedNightBundle] = OrderedDict()
         self._uploads: OrderedDict[str, tuple[np.ndarray, float]] = OrderedDict()
-        self._max_cache = 16
+        self._max_cache = max(1, int(os.getenv("CARDIOBREATH_MAX_CACHE", "4")))
 
     def health(self) -> dict[str, Any]:
         return {
@@ -163,13 +171,16 @@ class CardioBreathInferenceEngine:
             labels = d["labels"].astype(np.int64) if "labels" in d else None
         return ecg, fs, labels
 
-    def _run_onnx_ensemble(self, dual_windows: np.ndarray) -> np.ndarray:
+    def _run_onnx_ensemble(self, dual_windows: np.ndarray, batch_size: int | None = None) -> np.ndarray:
         if not self.onnx_sessions:
             raise RuntimeError("No ONNX models loaded in artifacts/onnx/cardiobreath.")
+        bs = max(1, batch_size or self._onnx_batch_size)
+        x = np.ascontiguousarray(dual_windows, dtype=np.float32)
+        n = x.shape[0]
         fold_probs = []
-        x = dual_windows.astype(np.float32)
         for sess in self.onnx_sessions:
-            logits = sess.run(["logits"], {"signals": x})[0]
+            chunks = [sess.run(["logits"], {"signals": x[i : i + bs]})[0] for i in range(0, n, bs)]
+            logits = np.concatenate(chunks, axis=0)
             fold_probs.append(apply_temperature(logits, self.temperature))
         return np.stack(fold_probs, axis=0).astype(np.float32)
 
@@ -199,6 +210,8 @@ class CardioBreathInferenceEngine:
                 dsp_cfg=self.dsp_cfg,
                 prefer_neurokit=False,  # Fast deterministic Pan-Tompkins (<200 ms for 8 hrs!)
             )
+            if snr_key is not None:
+                gc.collect()
             dual_windows, _ = slice_windows(
                 dsp_res.edr_4hz,
                 dsp_res.rri_4hz,
@@ -207,6 +220,7 @@ class CardioBreathInferenceEngine:
                 context_minutes=int(self.dsp_cfg.get("context_minutes", 5)),
                 target_fs=float(self.dsp_cfg.get("sampling_rate_dsp", 4.0)),
                 raw_fs=100.0,  # run_dsp_pipeline resamples ecg_clean to 100 Hz
+                include_raw=False,
             )
             hrv_feats = extract_hrv_features_per_minute(
                 dsp_res.rri_raw_4hz,
@@ -252,6 +266,7 @@ class CardioBreathInferenceEngine:
             self._cache[cache_key] = bundle
             if len(self._cache) > self._max_cache:
                 self._cache.popitem(last=False)
+                gc.collect()
             return bundle
 
     def analyze_case(

@@ -416,6 +416,7 @@ def inject_motion_artifact(
     sos_emg = signal.butter(3, [20.0 / nyq, min(46.0 / nyq, 0.96)], btype="bandpass", output="sos")
     emg = signal.sosfiltfilt(sos_emg, white)
     noise = 0.45 * (wander / max(np.std(wander), 1e-6)) + 0.85 * (emg / max(np.std(emg), 1e-6))
+    del t, wander, white, emg
 
     if burst_fraction < 1.0:
         mask = np.zeros(n, dtype=np.float64)
@@ -425,6 +426,7 @@ def inject_motion_artifact(
         for s in starts:
             mask[s : s + burst_len] = 1.0
         noise = noise * mask
+        del mask
 
     sig_power = float(np.mean((x - np.mean(x)) ** 2))
     noise_power = float(np.mean(noise**2))
@@ -444,6 +446,7 @@ def slice_windows(
     context_minutes: int = 5,
     target_fs: float = 4.0,
     raw_fs: float = 100.0,
+    include_raw: bool = True,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Slice centered 5-min dual-stream (N, 2, 1200) and 1-min raw ECG (N, 1, 6000) windows."""
     pts_per_min_4hz = round(60.0 * target_fs)
@@ -466,6 +469,9 @@ def slice_windows(
         end = start + win_len_4hz
         dual[m, 0] = edr_pad[start:end]
         dual[m, 1] = rri_pad[start:end]
+
+    if not include_raw:
+        return dual, np.empty((0, 1, 0), dtype=np.float32)
 
     pts_per_min_raw = round(60.0 * raw_fs)
     req_raw = n_minutes * pts_per_min_raw

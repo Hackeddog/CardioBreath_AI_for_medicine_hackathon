@@ -235,3 +235,12 @@ def test_internal_errors_do_not_leak_exception_text(monkeypatch: pytest.MonkeyPa
     resp = client.post("/api/analyze/case/x08", json={})
     assert resp.status_code == 500
     assert "secret" not in resp.text
+
+
+def test_onnx_minibatch_matches_unbatched() -> None:
+    rng = np.random.default_rng(42)
+    dual = rng.standard_normal((70, 2, 1200), dtype=np.float32)
+    batched = engine._run_onnx_ensemble(dual, batch_size=32)
+    unbatched = engine._run_onnx_ensemble(dual, batch_size=len(dual))
+    assert batched.shape == unbatched.shape
+    assert np.allclose(batched, unbatched, atol=1e-5)
