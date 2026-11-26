@@ -38,6 +38,7 @@ function EcgStrip({ ecg }: { ecg: WindowInspectorData }) {
 
 export default function Hero({ analysis, ecg, onTrySample, onUpload, onTour, onSeeNight }: HeroProps) {
   const center = ecg?.time_window_label.match(/Center:\s*([\d:]+)/)?.[1];
+  const sampleShown = analysis !== null && !analysis.case_id.startsWith("upload_");
   return (
     <section aria-labelledby="hero-title" className="relative">
       <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
@@ -80,13 +81,15 @@ export default function Hero({ analysis, ecg, onTrySample, onUpload, onTour, onS
                 <span aria-hidden>♥ </span>
                 {analysis && !analysis.case_id.startsWith("upload_") ? `Night ${analysis.case_id}` : "Sample night"}
               </span>
-              <span className="text-muted">{center ? `${STRIP_SECONDS} s around ${center}` : "Loading…"}</span>
+              <span className="text-muted">{center ? `${STRIP_SECONDS} s around ${center}` : sampleShown ? "Loading…" : "Not analyzed yet"}</span>
             </div>
             <div className="ecg-paper overflow-hidden">
               {ecg ? (
                 <EcgStrip ecg={ecg} />
               ) : (
-                <div className="grid aspect-[10/3] place-items-center text-base font-semibold text-primary">Loading the sample night…</div>
+                <div className="grid aspect-[10/3] place-items-center px-4 text-center text-base font-semibold text-primary">
+                  {sampleShown ? "Loading the sample night…" : "Try a sample night to see its ECG here."}
+                </div>
               )}
             </div>
             {analysis && !analysis.case_id.startsWith("upload_") && (
