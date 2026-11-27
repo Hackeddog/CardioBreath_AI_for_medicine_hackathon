@@ -1,17 +1,19 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Upload } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import Navbar, { PAGES } from "@/components/Navbar";
 import Hero, { Evidence } from "@/components/Hero";
 import NightFarm from "@/components/NightFarm";
 import Tour, { TOUR_PROMPT_KEY, TourPrompt } from "@/components/Tour";
+import PdfPromptModal from "@/components/PdfPromptModal";
 import TriageSummaryPanel from "@/components/TriageSummaryPanel";
 import FullNightTimeline from "@/components/FullNightTimeline";
 import SignalInspector from "@/components/SignalInspector";
 import ResearchBenchmarkView from "@/components/ResearchBenchmarkView";
 import { AnalysisProgress, NoticeBanner, friendlyError, useElapsedTimer, type Notice } from "@/components/ui";
 import { analyzeCase, fetchCases, fetchEvaluation, fetchHealth, inspectWindow, uploadCsvEcg } from "@/lib/api";
+import { downloadClinicalPdf } from "@/lib/pdfReport";
 import type { DemoCaseInfo, EvaluationPayload, FullNightAnalysis, HealthStatus, WindowInspectorData } from "@/lib/types";
 
 const NOISE_OPTIONS: { label: string; value: number | null }[] = [
@@ -39,6 +41,7 @@ export default function HomePage() {
   const [page, setPage] = useState(0);
   const [tourOpen, setTourOpen] = useState(false);
   const [tourPromptOpen, setTourPromptOpen] = useState(false);
+  const [pdfPromptOpen, setPdfPromptOpen] = useState(false);
   const [scenePaused, setScenePaused] = useState(false);
   // Clinical mode: off unless the visitor turns it on; the choice is remembered.
   const [clinicalPref, setClinicalPref] = useState<"on" | "off" | null>(null);
@@ -129,7 +132,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (tourOpen || tourPromptOpen || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (tourOpen || tourPromptOpen || pdfPromptOpen || e.altKey || e.ctrlKey || e.metaKey) return;
       const t = e.target as HTMLElement;
       if (t.closest("input, select, textarea, [role='slider'], [contenteditable='true']")) return;
       if (e.key === "ArrowRight") go(pageFromHash() + 1);
@@ -139,7 +142,7 @@ export default function HomePage() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go, tourOpen, tourPromptOpen]);
+  }, [go, tourOpen, tourPromptOpen, pdfPromptOpen]);
 
   const toggleScene = () => setScenePaused((p) => !p);
 
@@ -435,16 +438,31 @@ export default function HomePage() {
           </div>
         </div>
 
-        {analysis && (
-          <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={() => go(P.night)} className="btn-primary">
-              See the night ▶
-            </button>
-            <button type="button" onClick={() => go(P.signals)} className="btn-secondary">
-              Inspect the signals
-            </button>
-          </div>
-        )}
+        <div className="flex flex-wrap gap-3">
+          {analysis && (
+            <>
+              <button type="button" onClick={() => go(P.night)} className="btn-primary">
+                See the night ▶
+              </button>
+              <button type="button" onClick={() => go(P.signals)} className="btn-secondary">
+                Inspect the signals
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            disabled={!analysis || loadingNight}
+            onClick={() => {
+              if (!analysis || loadingNight) return;
+              if (clinical) setPdfPromptOpen(true);
+              else downloadClinicalPdf(analysis, { clinicalMode: false });
+            }}
+            className="btn-secondary"
+          >
+            <Download className="h-4 w-4" aria-hidden />
+            Download PDF
+          </button>
+        </div>
       </div>
     </div>,
 
@@ -629,6 +647,14 @@ export default function HomePage() {
 
       <TourPrompt open={tourPromptOpen} onStart={startTour} onSkip={skipTourPrompt} />
       <Tour open={tourOpen} onClose={() => setTourOpen(false)} onPage={go} />
+      <PdfPromptModal
+        open={pdfPromptOpen}
+        onClose={() => setPdfPromptOpen(false)}
+        onSubmit={(meta) => {
+          if (analysis) downloadClinicalPdf(analysis, { ...meta, clinicalMode: true });
+          setPdfPromptOpen(false);
+        }}
+      />
     </div>
   );
 }
