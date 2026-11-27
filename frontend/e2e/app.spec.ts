@@ -354,6 +354,8 @@ test("first-time tour prompt launches tour, remembers dismissal, and allows manu
   await expect(prompt).toHaveCount(0);
   await page.getByRole("button", { name: "Tour", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "Welcome to CardioBreath" })).toBeVisible();
+});
+
 test("live elapsed timer ticks during sample screening and noise reanalysis", async ({ page }) => {
   await page.route("**/api/analyze/case/**", async (route) => {
     await new Promise((r) => setTimeout(r, 700));
@@ -369,4 +371,29 @@ test("live elapsed timer ticks during sample screening and noise reanalysis", as
   await expect(page.getByText("Updating result…")).toBeVisible();
   await expect(triage(page)).toContainText(/\d+\.\ds/);
   await expect(page.getByText("Updating result…")).toHaveCount(0);
+});
+
+test("clinical PDF download works directly in standard mode and prompts in clinical mode", async ({ page }) => {
+  await page.goto("/#/result");
+  const pdfBtn = page.getByRole("button", { name: "Download PDF" });
+  await expect(pdfBtn).toBeDisabled();
+
+  await page.getByRole("button", { name: "Try a sample night" }).first().click();
+  await expect(triage(page)).toContainText("37.9");
+  await expect(pdfBtn).toBeEnabled();
+
+  const [stdDownload] = await Promise.all([page.waitForEvent("download"), pdfBtn.click()]);
+  expect(stdDownload.suggestedFilename()).toMatch(/^CardioBreath_Report_x08_\d{4}-\d{2}-\d{2}\.pdf$/);
+
+  await clinicalToggle(page).click();
+  await pdfBtn.click();
+  const modal = page.getByRole("dialog", { name: "Add clinical interpretation" });
+  await expect(modal).toBeVisible();
+  await modal.getByLabel("Interpretation / Impression").fill("Severe apnea burden; refer for PSG.");
+  const [clinDownload] = await Promise.all([
+    page.waitForEvent("download"),
+    modal.getByRole("button", { name: "Generate PDF" }).click(),
+  ]);
+  expect(clinDownload.suggestedFilename()).toMatch(/^CardioBreath_Report_x08_\d{4}-\d{2}-\d{2}\.pdf$/);
+  await expect(modal).toHaveCount(0);
 });
